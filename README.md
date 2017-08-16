@@ -4,7 +4,8 @@ Xaptum, Inc.'s implementation of elliptic-curve-based Direct Anonymous Attestati
 
 # Requirements
 
--The CMake build system is used for building.
+- The CMake build system is used for building.
+- (currently) Libsodium
 
 # Building
 
