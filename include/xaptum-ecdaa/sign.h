@@ -20,4 +20,16 @@
 #define XAPTUM_ECDAA_SIGN_H
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
+
+int sign(uint8_t* message);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

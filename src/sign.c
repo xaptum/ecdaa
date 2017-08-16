@@ -17,3 +17,16 @@
  *****************************************************************************/
 
 #include "sign.h"
+
+#include <assert.h>
+#include <stdlib.h>
+
+int sign(uint8_t* message)
+{
+    if (message == NULL)
+    {
+        return -1;
+    }
+
+    return 0;
+}

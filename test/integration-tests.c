@@ -16,4 +16,30 @@
  *
  *****************************************************************************/
 
+#include <xaptum-ecdaa.h>
 
+#include <stdio.h>
+#include <stdint.h>
+#include <assert.h>
+
+void basic_test();
+
+int main()
+{
+    basic_test();
+
+    return 0;
+}
+
+void basic_test()
+{
+    printf("Starting basic_test...\n");
+
+    uint8_t message[] = {0x3, 0x1, 0xa};
+
+    int ret = sign(message);
+
+    assert(ret == 0);
+
+    printf("\tsuccess\n");
+}
