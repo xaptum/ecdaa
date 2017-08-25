@@ -22,5 +22,6 @@
 
 #include "xaptum-ecdaa/sign.h"
 #include "xaptum-ecdaa/join_member.h"
+#include "xaptum-ecdaa/context.h"
 
 #endif

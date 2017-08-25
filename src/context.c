@@ -30,7 +30,7 @@ int generate_issuer_key_pair(issuer_public_key_t *pk,
 {
 
     // Secret key is
-    // two random Bignums
+    // two random Bignums.
     random_num_mod_order(&sk->x, rng);
     random_num_mod_order(&sk->y, rng);
 
@@ -56,6 +56,36 @@ int generate_issuer_key_pair(issuer_public_key_t *pk,
 
     // TODO: Finish this (construct the hash-input, do the hash, output to 'c')
     // c = Hash(Ux | Uy | basepoint | X | Y)
+    // sx = rx + c*x (mod p)
+    // sy = ry + c*y (mod p)
+
+    return 0;
+}
+
+int generate_member_join_key_pair(member_join_public_key_t *pk,
+                                  member_join_secret_key_t *sk,
+                                  csprng *rng)
+{
+    // Secret key is
+    // a random Bignum.
+    random_num_mod_order(&sk->sk, rng);
+
+    // Public key is
+    // 1) G1 generator raised to sk...
+    set_to_basepoint(&pk->Q);
+    ECP_BN254_mul(&pk->Q, sk->sk);
+
+    // 2) and a Schnorr-type signature to prove our knowledge of sk.
+    BIG_256_56 r;
+    random_num_mod_order(&r, rng);
+    ECP_BN254 U;
+    set_to_basepoint(&U);
+    ECP_BN254_mul(&U, r);
+
+    // TODO: Finish this (construct the hash-input, do the hash, output to 'c')
+    // c = Hash(U | basepoint | Q | nonce)
+    // sx = rx + c*x (mod p)
+    // sy = ry + c*y (mod p)
 
     return 0;
 }

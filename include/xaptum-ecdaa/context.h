@@ -17,6 +17,7 @@
  *****************************************************************************/
 
 #include <amcl/randapi.h>
+#include <amcl/ecp_BN254.h>
 #include <amcl/ecp2_BN254.h>
 #include <amcl/big_256_56.h>
 
@@ -32,6 +33,8 @@ typedef struct {
     ECP2_BN254 X;
     ECP2_BN254 Y;
     BIG_256_56 c;
+    BIG_256_56 sx;
+    BIG_256_56 sy;
 } issuer_public_key_t;
 
 typedef struct {
@@ -45,14 +48,17 @@ int generate_issuer_key_pair(issuer_public_key_t *pk,
 
 typedef struct {
     BIG_256_56 sk;
-    ECP2_BN254 Q;
-    csprng *rng;
-    issuer_public_key_t *issuer_pk;
-} join_member_context_t;
+} member_join_secret_key_t;
 
-int construct_join_member_context(join_member_context_t *ctx,
-                                  csprng *rng,
-                                  const issuer_public_key_t *issuer_pk);
+typedef struct {
+    ECP_BN254 Q;
+    BIG_256_56 c;
+    BIG_256_56 s;
+} member_join_public_key_t;
+
+int generate_member_join_key_pair(member_join_public_key_t *pk,
+                                  member_join_secret_key_t *sk,
+                                  csprng *rng);
 
 
 #ifdef __cplusplus

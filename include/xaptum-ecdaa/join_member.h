@@ -30,7 +30,8 @@ extern "C" {
 
 int create_first_join_message(uint8_t *out_buffer,
                               uint32_t out_length,
-                              join_member_context_t *ctx);
+                              member_join_public_key_t *pk,
+                              member_join_secret_key_t *sk);
 
 #ifdef __cplusplus
 }
