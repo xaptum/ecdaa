@@ -34,11 +34,11 @@ add_dependencies(xecdaa AMCL)
 
 target_include_directories(xecdaa
         PUBLIC include
-        PRIVATE include/xaptum-ecdaa
-        PRIVATE ${AMCL_INCLUDE_DIRS})
+        PUBLIC include/xaptum-ecdaa
+        PUBLIC ${AMCL_INCLUDE_DIRS})
 
 target_link_libraries(xecdaa
-        PRIVATE ${AMCL_LIBRARIES})
+        PUBLIC ${AMCL_LIBRARIES})
 
 enable_testing()
 add_subdirectory(test)
