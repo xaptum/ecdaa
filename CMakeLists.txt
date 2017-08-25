@@ -14,6 +14,9 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
+list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
+find_package(AMCL REQUIRED QUIET)
+
 project(xaptum-ecdaa
         LANGUAGES C
         VERSION "0.1.0")
@@ -26,9 +29,15 @@ set(XAPTUM_ECDAA_SRCS
 
 add_library(xecdaa ${XAPTUM_ECDAA_SRCS})
 
+add_dependencies(xecdaa AMCL)
+
 target_include_directories(xecdaa
         PUBLIC include
-        PRIVATE include/xaptum-ecdaa)
+        PRIVATE include/xaptum-ecdaa
+        PRIVATE ${AMCL_INCLUDE_DIRS})
+
+target_link_libraries(xecdaa
+        PRIVATE ${AMCL_LIBRARIES})
 
 enable_testing()
 add_subdirectory(test)

@@ -18,11 +18,18 @@
 
 #include <xaptum-ecdaa.h>
 
+#include <amcl/pair_BN254.h>
+#include <amcl/randapi.h>
+
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
 
-void basic_test();
+void gen_keypair(ECP_BN254 *pub_out, BIG_256_56 *priv_out, csprng *RNG);
+
+void do_dh(ECP_BN254 *secret_out, ECP_BN254 *other_pub, BIG_256_56 my_priv);
+
+static void basic_test();
 
 int main()
 {
@@ -33,13 +40,57 @@ int main()
 
 void basic_test()
 {
-    printf("Starting basic_test...\n");
+    printf("Starting integration::basic_test...\n");
 
-    uint8_t message[] = {0x3, 0x1, 0xa};
+    csprng RNG;
+    char seed_as_bytes[] = {0};
+    octet seed = {.len=1, .max=1, .val=seed_as_bytes};
+    CREATE_CSPRNG(&RNG, &seed);
 
-    int ret = sign(message);
+    ECP_BN254 pub_one;
+    BIG_256_56 priv_one;
+    gen_keypair(&pub_one, &priv_one, &RNG);
 
-    assert(ret == 0);
+    ECP_BN254 pub_two;
+    BIG_256_56 priv_two;
+    gen_keypair(&pub_two, &priv_two, &RNG);
+
+    ECP_BN254 secret_one;
+    do_dh(&secret_one, &pub_two, priv_one);
+
+    ECP_BN254 secret_two;
+    do_dh(&secret_two, &pub_one, priv_two);
+
+    assert(1 == ECP_BN254_equals(&secret_one, &secret_two));
+    
+    KILL_CSPRNG(&RNG);
 
     printf("\tsuccess\n");
+}
+
+void gen_keypair(ECP_BN254 *pub_out, BIG_256_56 *priv_out, csprng *RNG)
+{
+    // Set basepoint
+    BIG_256_56 gx;
+    BIG_256_56 gy;
+    BIG_256_56_rcopy(gx, CURVE_Gx_BN254); /* rcopy -> r for "ROM" (i.e. const) */
+    BIG_256_56_rcopy(gy, CURVE_Gy_BN254);
+    ECP_BN254_set(pub_out, gx, gy);
+
+    // Generate priv key
+    BIG_256_56 curve_order;
+    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
+    BIG_256_56_randomnum(*priv_out, curve_order, RNG);
+    // char priv_as_bytes[1];
+    // priv_as_bytes[0] = rand() % 255;
+    // BIG_256_56_fromBytesLen(*priv_out, priv_as_bytes, 1);
+
+    // Multiply basepoint by priv_out
+    ECP_BN254_mul(pub_out, *priv_out);
+}
+
+void do_dh(ECP_BN254 *secret_out, ECP_BN254 *other_pub, BIG_256_56 my_priv)
+{
+    ECP_BN254_copy(secret_out, other_pub);
+    ECP_BN254_mul(secret_out, my_priv);
 }

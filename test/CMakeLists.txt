@@ -26,12 +26,13 @@ foreach(case_file ${TEST_SRCS})
 
   add_executable(${case_name} ${case_file})
   target_link_libraries(${case_name}
-    PRIVATE
-    xecdaa
+    PRIVATE xecdaa
+    PRIVATE ${AMCL_LIBRARIES}
     )
   target_include_directories(${case_name}
           PRIVATE
           ${PROJECT_SOURCE_DIR}/include/xaptum-ecdaa/
+          PRIVATE ${AMCL_INCLUDE_DIRS}
           )
   set_target_properties(${case_name} PROPERTIES
           RUNTIME_OUTPUT_DIRECTORY ${CURRENT_TEST_BINARY_DIR}
@@ -40,4 +41,6 @@ foreach(case_file ${TEST_SRCS})
   add_test(NAME ${case_name}
           COMMAND ${CURRENT_TEST_BINARY_DIR}/${case_name}
           )
+
+  add_dependencies(${case_name} AMCL)
 endforeach()
