@@ -67,7 +67,7 @@ void g2_basepoint_not_inf()
 
 void random_num_mod_order_is_valid()
 {
-    printf("Starting random_num_mod_order_is_valid::g2_basepoint_not_inf...\n");
+    printf("Starting pairing_curve_utils::random_num_mod_order_is_valid...\n");
 
     BIG_256_56 curve_order;
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
