@@ -20,6 +20,8 @@
 
 #include <amcl/randapi.h>
 
+#include <sodium.h>
+
 #include <stdio.h>
 #include <assert.h>
 
@@ -73,7 +75,7 @@ void random_num_mod_order_is_valid()
     csprng rng;
 #define SEED_LEN 256
     char seed_as_bytes[SEED_LEN];
-    // TODO Seed
+    randombytes_buf(seed_as_bytes, SEED_LEN);
     octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
     CREATE_CSPRNG(&rng, &seed);
 

@@ -30,6 +30,7 @@ foreach(case_file ${TEST_SRCS})
   add_executable(${case_name} ${case_file})
   target_link_libraries(${case_name}
     PRIVATE xecdaa
+    PRIVATE sodium
     )
   target_include_directories(${case_name}
           PRIVATE ${PROJECT_SOURCE_DIR}/include/xaptum-ecdaa/
