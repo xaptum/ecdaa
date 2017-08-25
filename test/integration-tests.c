@@ -25,9 +25,9 @@
 #include <stdint.h>
 #include <assert.h>
 
-void gen_keypair(ECP_BN254 *pub_out, BIG_256_56 *priv_out, csprng *RNG);
+static void gen_keypair(ECP_BN254 *pub_out, BIG_256_56 *priv_out, csprng *RNG);
 
-void do_dh(ECP_BN254 *secret_out, ECP_BN254 *other_pub, BIG_256_56 my_priv);
+static void do_dh(ECP_BN254 *secret_out, ECP_BN254 *other_pub, BIG_256_56 my_priv);
 
 static void basic_test();
 

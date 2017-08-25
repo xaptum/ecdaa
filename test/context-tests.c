@@ -16,11 +16,12 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_XAPTUM_ECDAA_H
-#define XAPTUM_ECDAA_XAPTUM_ECDAA_H
-#pragma once
+#include <xaptum-ecdaa/context.h>
 
-#include "xaptum-ecdaa/sign.h"
-#include "xaptum-ecdaa/join_member.h"
+#include <stdio.h>
+#include <assert.h>
 
-#endif
+int main()
+{
+    return 0;
+}

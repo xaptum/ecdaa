@@ -19,7 +19,10 @@ include(CTest)
 set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/testBin/)
 
 set(TEST_SRCS
-    integration-tests.c)
+        pairing_curve_utils-tests.c
+        context-tests.c
+        integration-tests.c
+        )
 
 foreach(case_file ${TEST_SRCS})
   get_filename_component(case_name ${case_file} NAME_WE)

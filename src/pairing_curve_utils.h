@@ -16,11 +16,27 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_XAPTUM_ECDAA_H
-#define XAPTUM_ECDAA_XAPTUM_ECDAA_H
+#ifndef XAPTUM_ECDAA_PAIRING_CURVE_UTILS_H
+#define XAPTUM_ECDAA_PAIRING_CURVE_UTILS_H
 #pragma once
 
-#include "xaptum-ecdaa/sign.h"
-#include "xaptum-ecdaa/join_member.h"
+#include <amcl/ecp_BN254.h>
+#include <amcl/big_256_56.h>
+#include <amcl/ecp2_BN254.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void random_num_mod_order(BIG_256_56 *num_out, csprng *rng);
+
+void set_to_basepoint(ECP_BN254 *point);
+
+void set_to_basepoint2(ECP2_BN254 *point);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
+

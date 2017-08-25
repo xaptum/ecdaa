@@ -16,11 +16,25 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_XAPTUM_ECDAA_H
-#define XAPTUM_ECDAA_XAPTUM_ECDAA_H
+#ifndef XAPTUM_ECDAA_JOIN_MEMBER_H
+#define XAPTUM_ECDAA_JOIN_MEMBER_H
 #pragma once
 
-#include "xaptum-ecdaa/sign.h"
-#include "xaptum-ecdaa/join_member.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
+
+#include <xaptum-ecdaa/context.h>
+
+int create_first_join_message(uint8_t *out_buffer,
+                              uint32_t out_length,
+                              join_member_context_t *ctx);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
+
