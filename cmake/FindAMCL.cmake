@@ -20,9 +20,8 @@ set(AMCL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/amcl/)
 set(AMCL_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/../amcl/version3/c/)
 set(AMCL_HEADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/amcl/amcl/)
 
-# Set config options to build BN254 pairing-friendly curve
-# (and Ed25519, to satisfy the linker when we use some ECDH-related functions)
-set(AMCL_CONFIG_OPTIONS "1\\n17\\n0\\n")
+# Set config options to build BN254 pairing-friendly curve, only
+set(AMCL_CONFIG_OPTIONS "17\\n0\\n")
 if (NOT TARGET AMCL)
         ExternalProject_Add(AMCL
                 PREFIX ${AMCL_PREFIX} 
