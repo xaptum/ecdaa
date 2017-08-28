@@ -44,14 +44,33 @@ int verify(ecdaa_signature_t *signature,
     set_to_basepoint2(&basepoint2);
 
     // 2) Check e(R, Y) == e(S, P_2)
-    if (NULL == issuer_pk)
+    FP12_BN254 pairing_one;
+    PAIR_BN254_ate(&pairing_one, &issuer_pk->Y, &signature->R);
+    PAIR_BN254_fexp(&pairing_one);
+
+    FP12_BN254 pairing_one_prime;
+    PAIR_BN254_ate(&pairing_one_prime, &basepoint2, &signature->S);
+    PAIR_BN254_fexp(&pairing_one_prime);
+
+    int pairing_one_ret = FP12_BN254_equals(&pairing_one, &pairing_one_prime);
+    if (1 != pairing_one_ret)
         return -1;
-    // FP12_BN254 pairing_one, pairing_one_prime;
-    // PAIR_BN254_ate(&pairing_one, &issuer_pk->Y, &signature->R);
-    // PAIR_BN254_ate(&pairing_one_prime, &basepoint2, &signature->S);
-    // int pairing_one_ret = FP12_BN254_equals(&pairing_one, &pairing_one_prime);
-    // if (1 != pairing_one_ret)
-    //     return -1;
+
+    // 3) Check e(T, P_2) == e(R+W, X)
+    FP12_BN254 pairing_two;
+    PAIR_BN254_ate(&pairing_two, &basepoint2, &signature->T);
+    PAIR_BN254_fexp(&pairing_two);
+
+    ECP_BN254 RW;
+    ECP_BN254_copy(&RW, &signature->R);
+    ECP_BN254_add(&RW, &signature->W);
+    FP12_BN254 pairing_two_prime;
+    PAIR_BN254_ate(&pairing_two_prime, &issuer_pk->X, &RW);
+    PAIR_BN254_fexp(&pairing_two_prime);
+
+    int pairing_two_ret = FP12_BN254_equals(&pairing_two, &pairing_two_prime);
+    if (1 != pairing_two_ret)
+        return -1;
 
     return 0;
 }
