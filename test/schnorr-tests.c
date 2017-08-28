@@ -54,7 +54,7 @@ int main()
 
 void schnorr_keygen_sane()
 {
-    printf("Starting mpi_utils::schnorr_keygen_sane...\n");
+    printf("Starting schnorr::schnorr_keygen_sane...\n");
 
     ECP_BN254 public_one, public_two;
     BIG_256_56 private_one, private_two;
@@ -82,7 +82,7 @@ void schnorr_keygen_sane()
 
 void schnorr_keygen_integration()
 {
-    printf("Starting mpi_utils::schnorr_keygen_integration...\n");
+    printf("Starting schnorr::schnorr_keygen_integration...\n");
 
     ECP_BN254 public;
     BIG_256_56 private;
@@ -113,7 +113,7 @@ void schnorr_keygen_integration()
 
 void schnorr_sign_sane()
 {
-    printf("Starting mpi_utils::schnorr_sign_sane...\n");
+    printf("Starting schnorr::schnorr_sign_sane...\n");
 
     ECP_BN254 public;
     BIG_256_56 private;
@@ -148,7 +148,7 @@ void schnorr_sign_sane()
 
 void schnorr_verify_wrong_key()
 {
-    printf("Starting mpi_utils::schnorr_verify_wrong_key...\n");
+    printf("Starting schnorr::schnorr_verify_wrong_key...\n");
 
     ECP_BN254 public, public_wrong;
     BIG_256_56 private, private_wrong;
@@ -181,7 +181,7 @@ void schnorr_verify_wrong_key()
 
 void schnorr_verify_wrong_msg()
 {
-    printf("Starting mpi_utils::schnorr_verify_wrong_msg...\n");
+    printf("Starting schnorr::schnorr_verify_wrong_msg...\n");
 
     ECP_BN254 public;
     BIG_256_56 private;
@@ -215,7 +215,7 @@ void schnorr_verify_wrong_msg()
 
 void schnorr_verify_bad_sig()
 {
-    printf("Starting mpi_utils::schnorr_verify_bad_sig...\n");
+    printf("Starting schnorr::schnorr_verify_bad_sig...\n");
 
     ECP_BN254 public;
     BIG_256_56 private;
@@ -245,7 +245,7 @@ void schnorr_verify_bad_sig()
 
 void schnorr_sign_integration()
 {
-    printf("Starting mpi_utils::schnorr_sign_integration...\n");
+    printf("Starting schnorr::schnorr_sign_integration...\n");
 
     ECP_BN254 public;
     BIG_256_56 private;
@@ -279,7 +279,7 @@ void schnorr_sign_benchmark()
 {
     unsigned rounds = 2500;
 
-    printf("Starting mpi_utils::schnorr_sign_benchmark (%d iterations)...\n", rounds);
+    printf("Starting schnorr::schnorr_sign_benchmark (%d iterations)...\n", rounds);
 
     ECP_BN254 public;
     BIG_256_56 private;
