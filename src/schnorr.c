@@ -26,8 +26,6 @@
 
 #include <assert.h>
 
-static int check_point_membership(ECP_BN254 *point);
-
 void schnorr_keygen(ECP_BN254 *public_out,
                     BIG_256_56 *private_out,
                     csprng *rng)
