@@ -94,13 +94,14 @@ void member_secret_is_valid()
 
     member_join_secret_key_t sk1;
     member_join_public_key_t pk1;
-    generate_member_join_key_pair(&pk1, &sk1, &rng);
+    nonce_t nonce = {{0}};
+    generate_member_join_key_pair(&pk1, &sk1, nonce, &rng);
 
     TEST_ASSERT(!pk1.Q.inf);
 
     member_join_secret_key_t sk2;
     member_join_public_key_t pk2;
-    generate_member_join_key_pair(&pk2, &sk2, &rng);
+    generate_member_join_key_pair(&pk2, &sk2, nonce, &rng);
     TEST_ASSERT(BIG_256_56_comp(sk1.sk, sk2.sk) != 0);
 
     KILL_CSPRNG(&rng);
@@ -117,7 +118,8 @@ void member_public_is_valid()
 
     member_join_secret_key_t sk;
     member_join_public_key_t pk;
-    generate_member_join_key_pair(&pk, &sk, &rng);
+    nonce_t nonce = {{0}};
+    generate_member_join_key_pair(&pk, &sk, nonce, &rng);
 
     TEST_ASSERT(0 == check_point_membership(&pk.Q));
 

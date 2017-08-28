@@ -61,22 +61,14 @@ int generate_member_join_key_pair(member_join_public_key_t *pk,
     schnorr_keygen(&pk->Q, &sk->sk, rng);
 
     // 2) and a Schnorr-type signature on the Schnorr-type public_key itself concatenated with the nonce.
-    //  (Sign 1) Build message buffer to be signed (serialized_public_key | msg)
     ECP_BN254 basepoint;
     set_to_basepoint(&basepoint);
-    uint8_t msg[97];
-    size_t serialized_point_length = 2*MODBYTES_256_56 + 1;
-    assert( (serialized_point_length + sizeof(nonce_t)) == sizeof(msg));
-    octet pk_as_oct = {.len=0, .max=serialized_point_length, .val=(char*)msg};
-    ECP_BN254_toOctet(&pk_as_oct, &pk->Q);
-    memcpy(msg + serialized_point_length, nonce.data, sizeof(nonce));
-
-    //  (Sign 2) Sign the message buffer, and save to (pk->c, pk->s).
     int sign_ret = schnorr_sign(&pk->c,
                                 &pk->s,
-                                msg,
-                                sizeof(msg),
+                                nonce.data,
+                                sizeof(nonce),
                                 &basepoint,
+                                &pk->Q,
                                 sk->sk,
                                 rng);
 
@@ -133,6 +125,8 @@ int generate_credential(credential_t *cred,
     ECP_BN254_add(&cred->C, &Qxyl);
 
     // TODO: Do a 'single-random-double-Schnorr signature, save into c_out, s_out
+
+    // TODO: Clear sensitive memory?
 
     return 0;
 }
