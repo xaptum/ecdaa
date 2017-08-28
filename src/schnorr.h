@@ -65,23 +65,32 @@ void convert_schnorr_public_key_to_bytes(octet *public_key_as_bytes, ECP_BN254 *
 /*
  * Perform traditional Schnorr signature of msg_in.
  *
- * c_out = Hash ( RAND(Z_p)*group_generator | group_generator | public_key | msg_in )
+ * c_out = Hash ( RAND(Z_p)*basepoint | basepoint | msg_in )
  * s_out = s = RAND(Z_p) + c_out * private_key
  *
  * c_out and s_out will be reduced modulo the group order (and thus normalized) upon return
+ *
+ * NOTE: For a secure signature, msg_in _must_ also include the signer's public key
+ *  (cf. Bernhard, et al. ASIACRYPT 2012).
+ *  We're not requiring this because some uses of 'Schnorr-like' signatures in LRSW-DAA
+ *  use slightly-different conventions.
+ *
+ *  Returns:
+ *   0 on success
+ *   -1 if basepoint is not valid
  */
-void schnorr_sign(BIG_256_56 *c_out,
-                  BIG_256_56 *s_out,
+int schnorr_sign(BIG_256_56 *c_out,
+                 BIG_256_56 *s_out,
                   uint8_t *msg_in,
                   uint32_t msg_len,
-                  ECP_BN254 *public_key,
+                  ECP_BN254 *basepoint,
                   BIG_256_56 private_key,
                   csprng *rng);
 
 /*
  * Verify that (c, s) is a valid Schnorr signature of msg_in.
  *
- * Check c = Hash( s*group_generator - c*public_key | group_generator | public_key | msg_in )
+ * Check c = Hash( s*basepoint - c*public_key | basepoint | msg_in )
  * NOTE: Assumes public key has already been checked for validity!
  *
  * c and s must be reduced modulo group order (and thus normalized, too), first
@@ -94,6 +103,7 @@ int schnorr_verify(BIG_256_56 c,
                    BIG_256_56 s,
                    uint8_t *msg_in,
                    uint32_t msg_len,
+                   ECP_BN254 *basepoint,
                    ECP_BN254 *public_key);
 
 #ifdef __cplusplus

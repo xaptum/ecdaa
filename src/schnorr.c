@@ -26,6 +26,8 @@
 
 #include <assert.h>
 
+static int check_point_membership(ECP_BN254 *point);
+
 void schnorr_keygen(ECP_BN254 *public_out,
                     BIG_256_56 *private_out,
                     csprng *rng)
@@ -57,33 +59,15 @@ int convert_schnorr_public_key_from_bytes(octet *public_key_as_bytes, ECP_BN254 
         ret = -1;
 
     if (0 == ret) {
-        // Check public_key for basic validity
-        ECP_BN254 pub_key_copy;
-        if (1 != ECP_BN254_set(&pub_key_copy, Q_x, Q_y))
-            ret = -1;
-        if (ECP_BN254_isinf(&pub_key_copy))
-            ret = -1;
-
         // Copy putative group key into output
-        ECP_BN254_copy(public_key, &pub_key_copy);
+        if (1 != ECP_BN254_set(public_key, Q_x, Q_y))
+            ret = -1;
 
-        /* Check point is not in wrong group */
+        if (ECP_BN254_isinf(public_key))
+            ret = -1;
+
         if (0 == ret) {
-            int nb = BIG_256_56_nbits(curve_order);
-            BIG_256_56 k;
-            BIG_256_56_one(k);
-            BIG_256_56_shl(k, (nb+4)/2);
-            BIG_256_56_add(k, curve_order, k);
-            BIG_256_56_sdiv(k, curve_order); /* get co-factor */
-
-            while (BIG_256_56_parity(k) == 0) {
-                ECP_BN254_dbl(&pub_key_copy);
-                BIG_256_56_fshr(k,1);
-            }
-
-            if (!BIG_256_56_isunity(k))
-                ECP_BN254_mul(&pub_key_copy,k);
-            if (ECP_BN254_isinf(&pub_key_copy))
+            if (0 != check_point_membership(public_key))
                 ret = -1;
         }
     }
@@ -102,76 +86,64 @@ void convert_schnorr_public_key_to_bytes(octet *public_key_as_bytes, ECP_BN254 *
     BIG_256_56_toBytes(&(public_key_as_bytes->val[MODBYTES_256_56+1]), Q_y);
 }
 
-void schnorr_sign(BIG_256_56 *c_out,
+int schnorr_sign(BIG_256_56 *c_out,
                  BIG_256_56 *s_out,
                  uint8_t *msg_in,
                  uint32_t msg_len,
-                 ECP_BN254 *public_key,
+                 ECP_BN254 *basepoint,
                  BIG_256_56 private_key,
                  csprng *rng)
 {
-    uint8_t hash_input_begin[195];
-    size_t serialized_point_length = 2*MODBYTES_256_56 + 1;
-    assert(3*serialized_point_length == sizeof(hash_input_begin));
-    octet R_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input_begin};
-    octet P_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input_begin + serialized_point_length};
-    octet Q_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input_begin + 2*serialized_point_length};
+    // 1) (Commit 1) Verify basepoint belongs to group
+    if (0 != check_point_membership(basepoint))
+        return -1;
 
-    // 1) Choose random k <- Z_n
+    // 2) (Commit 2) Choose random k <- Z_n
     BIG_256_56 k;
     random_num_mod_order(&k, rng);
 
-    // 2) Multiply generator by k: R = k*P
+    // 3) (Commit 3) Multiply basepoint by k: R = k*basepoint
     ECP_BN254 R;
-    set_to_basepoint(&R);
-    ECP_BN254_toOctet(&P_serialized, &R);   // Copy P (generator) into buffer
+    ECP_BN254_copy(&R, basepoint);
     ECP_BN254_mul(&R, k);
-    ECP_BN254_toOctet(&R_serialized, &R);   // Copy R into buffer
 
-    // 3) Compute c = Hash ( R | P | public_key | msg_in )
-    ECP_BN254_toOctet(&Q_serialized, public_key);   // Copy Q (public_key) into buffer
+    // 4) (Sign 1) Compute c = Hash( R | basepoint | msg_in )
+    uint8_t hash_input_begin[130];
+    size_t serialized_point_length = 2*MODBYTES_256_56 + 1;
+    assert(2*serialized_point_length == sizeof(hash_input_begin));
+    octet R_serialized = {.len = 0,
+                          .max = serialized_point_length,
+                          .val = (char*)hash_input_begin};
+    octet basepoint_serialized = {.len = 0,
+                                  .max = serialized_point_length,
+                                  .val = (char*)hash_input_begin + serialized_point_length};
+    ECP_BN254_toOctet(&R_serialized, &R);   // Serialize R into buffer
+    ECP_BN254_toOctet(&basepoint_serialized, basepoint);   // Serialize basepoint into buffer
     hash_into_mpi_two(c_out, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
 
-    // 4) Compute s = k + c * private_key
+    // 5) (Sign 2) Compute s = k + c * private_key
     BIG_256_56 curve_order;
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
     mpi_mod_mul_and_add(s_out, k, *c_out, private_key, curve_order);    // normalizes and mod-reduces s_out and c_out
 
     // Clear intermediate, sensitive memory.
     BIG_256_56_zero(k);
+
+    return 0;
 }
 
 int schnorr_verify(BIG_256_56 c,
                    BIG_256_56 s,
                    uint8_t *msg_in,
                    uint32_t msg_len,
+                   ECP_BN254 *basepoint,
                    ECP_BN254 *public_key)
 {
     // NOTE: Assumes public_key has already been checked for validity.
 
-    uint8_t hash_input_begin[195];
-    size_t serialized_point_length = 2*MODBYTES_256_56 + 1;
-    assert(3*serialized_point_length == sizeof(hash_input_begin));
-    octet R_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input_begin};
-    octet P_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input_begin + serialized_point_length};
-    octet Q_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input_begin + 2*serialized_point_length};
-
-    // 1) Multiply generator by s (R = s*P)
+    // 1) Multiply basepoint by s (R = s*P)
     ECP_BN254 R;
-    set_to_basepoint(&R);
-    ECP_BN254_toOctet(&P_serialized, &R);   // Copy P (generator) into buffer
+    ECP_BN254_copy(&R, basepoint);
     ECP_BN254_mul(&R, s);
 
     // 2) Multiply public_key by c (Q_c = c *public_key)
@@ -181,12 +153,21 @@ int schnorr_verify(BIG_256_56 c,
 
     // 3) Compute difference of R and c*Q, and save to R (R = s*P - c*public_key)
     ECP_BN254_sub(&R, &Q_c);
-    ECP_BN254_toOctet(&R_serialized, &R);   // Copy R into buffer
 
-    // 4) Compute c' = Hash ( R | P | public_key | msg_in )
+    // 4) Compute c' = Hash( R | basepoint | msg_in )
     //      (modular-reduce c', too).
+    uint8_t hash_input_begin[130];
+    size_t serialized_point_length = 2*MODBYTES_256_56 + 1;
+    assert(2*serialized_point_length == sizeof(hash_input_begin));
+    octet R_serialized = {.len = 0,
+                          .max = serialized_point_length,
+                          .val = (char*)hash_input_begin};
+    octet basepoint_serialized = {.len = 0,
+                                  .max = serialized_point_length,
+                                  .val = (char*)hash_input_begin + serialized_point_length};
+    ECP_BN254_toOctet(&R_serialized, &R);   // Serialize R into buffer
+    ECP_BN254_toOctet(&basepoint_serialized, basepoint);   // Serialize basepoint into buffer
     BIG_256_56 c_prime;
-    ECP_BN254_toOctet(&Q_serialized, public_key);   // Copy Q (public_key) into buffer
     hash_into_mpi_two(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
     BIG_256_56 curve_order;
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
@@ -196,6 +177,35 @@ int schnorr_verify(BIG_256_56 c,
     if (0 != BIG_256_56_comp(c_prime, c)) {
         return -1;
     }
+
+    return 0;
+}
+
+int check_point_membership(ECP_BN254 *point)
+{
+    ECP_BN254 point_copy;
+    ECP_BN254_copy(&point_copy, point);
+
+    BIG_256_56 curve_order;
+    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
+
+    /* Check point is not in wrong group */
+    int nb = BIG_256_56_nbits(curve_order);
+    BIG_256_56 k;
+    BIG_256_56_one(k);
+    BIG_256_56_shl(k, (nb+4)/2);
+    BIG_256_56_add(k, curve_order, k);
+    BIG_256_56_sdiv(k, curve_order); /* get co-factor */
+
+    while (BIG_256_56_parity(k) == 0) {
+        ECP_BN254_dbl(&point_copy);
+        BIG_256_56_fshr(k,1);
+    }
+
+    if (!BIG_256_56_isunity(k))
+        ECP_BN254_mul(&point_copy,k);
+    if (ECP_BN254_isinf(&point_copy))
+        return -1;
 
     return 0;
 }
