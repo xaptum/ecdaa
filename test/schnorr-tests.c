@@ -38,6 +38,7 @@ static void schnorr_verify_wrong_key();
 static void schnorr_verify_wrong_msg();
 static void schnorr_verify_bad_sig();
 static void schnorr_sign_integration();
+static void schnorr_sign_integration_other_basepoint();
 static void schnorr_sign_benchmark();
 
 int main()
@@ -49,6 +50,7 @@ int main()
     schnorr_verify_wrong_msg();
     schnorr_verify_bad_sig();
     schnorr_sign_integration();
+    schnorr_sign_integration_other_basepoint();
     schnorr_sign_benchmark();
 }
 
@@ -172,7 +174,7 @@ void schnorr_verify_wrong_key()
     set_to_basepoint(&basepoint);
     TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng));
 
-    TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public, &public_wrong));
+    TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public_wrong));
 
     KILL_CSPRNG(&rng);
 
@@ -206,7 +208,7 @@ void schnorr_verify_wrong_msg()
     set_to_basepoint(&basepoint);
     TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng));
 
-    TEST_ASSERT(-1 == schnorr_verify(c, s, msg_wrong, msg_len_wrong, &basepoint, &public, &public));
+    TEST_ASSERT(-1 == schnorr_verify(c, s, msg_wrong, msg_len_wrong, &basepoint, &public));
 
     KILL_CSPRNG(&rng);
 
@@ -236,7 +238,7 @@ void schnorr_verify_bad_sig()
 
     ECP_BN254 basepoint;
     set_to_basepoint(&basepoint);
-    TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public, &public));
+    TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public));
 
     KILL_CSPRNG(&rng);
 
@@ -268,7 +270,44 @@ void schnorr_sign_integration()
     set_to_basepoint(&basepoint);
     TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng));
 
-    TEST_ASSERT(0 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public, &public));
+    TEST_ASSERT(0 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public));
+
+    KILL_CSPRNG(&rng);
+
+    printf("\tsuccess\n");
+}
+
+void schnorr_sign_integration_other_basepoint()
+{
+    printf("Starting schnorr::schnorr_sign_integration_other_points...\n");
+
+    csprng rng;
+#define SEED_LEN 256
+    char seed_as_bytes[SEED_LEN];
+    randombytes_buf(seed_as_bytes, SEED_LEN);
+    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
+    CREATE_CSPRNG(&rng, &seed);
+
+    uint8_t *msg = (uint8_t*) "Test message";
+    uint32_t msg_len = strlen((char*)msg);
+
+    BIG_256_56 c, s;
+
+    ECP_BN254 basepoint;
+    set_to_basepoint(&basepoint);
+    BIG_256_56 rand;
+    random_num_mod_order(&rand, &rng);
+    ECP_BN254_mul(&basepoint, rand);
+
+    ECP_BN254 public;
+    BIG_256_56 private;
+    random_num_mod_order(&private, &rng);
+    ECP_BN254_copy(&public, &basepoint);
+    ECP_BN254_mul(&public, private);
+
+    TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng));
+
+    TEST_ASSERT(0 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public));
 
     KILL_CSPRNG(&rng);
 

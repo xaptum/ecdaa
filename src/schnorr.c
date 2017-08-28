@@ -89,7 +89,7 @@ int schnorr_sign(BIG_256_56 *c_out,
                  uint8_t *msg_in,
                  uint32_t msg_len,
                  ECP_BN254 *basepoint,
-                 ECP_BN254 *other_point_to_be_signed,
+                 ECP_BN254 *public_key,
                  BIG_256_56 private_key,
                  csprng *rng)
 {
@@ -106,7 +106,7 @@ int schnorr_sign(BIG_256_56 *c_out,
     ECP_BN254_copy(&R, basepoint);
     ECP_BN254_mul(&R, k);
 
-    // 4) (Sign 1) Compute c = Hash( R | basepoint | other_point_to_be_signed | msg_in )
+    // 4) (Sign 1) Compute c = Hash( R | basepoint | public_key | msg_in )
     uint8_t hash_input_begin[195];
     size_t serialized_point_length = 2*MODBYTES_256_56 + 1;
     assert(3*serialized_point_length == sizeof(hash_input_begin));
@@ -116,12 +116,12 @@ int schnorr_sign(BIG_256_56 *c_out,
     octet basepoint_serialized = {.len = 0,
                                   .max = serialized_point_length,
                                   .val = (char*)hash_input_begin + serialized_point_length};
-    octet otherpoint_serialized = {.len = 0,
-                                   .max = serialized_point_length,
-                                   .val = (char*)hash_input_begin + 2*serialized_point_length};
+    octet publickey_serialized = {.len = 0,
+                                  .max = serialized_point_length,
+                                  .val = (char*)hash_input_begin + 2*serialized_point_length};
     ECP_BN254_toOctet(&R_serialized, &R);   // Serialize R into buffer
     ECP_BN254_toOctet(&basepoint_serialized, basepoint);   // Serialize basepoint into buffer
-    ECP_BN254_toOctet(&otherpoint_serialized, other_point_to_be_signed);   // Serialize other_point into buffer
+    ECP_BN254_toOctet(&publickey_serialized, public_key);   // Serialize public_key into buffer
     hash_into_mpi_two(c_out, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
 
     // 5) (Sign 2) Compute s = k + c * private_key
@@ -140,7 +140,6 @@ int schnorr_verify(BIG_256_56 c,
                    uint8_t *msg_in,
                    uint32_t msg_len,
                    ECP_BN254 *basepoint,
-                   ECP_BN254 *other_point_to_be_signed,
                    ECP_BN254 *public_key)
 {
     // NOTE: Assumes public_key has already been checked for validity.
@@ -169,12 +168,12 @@ int schnorr_verify(BIG_256_56 c,
     octet basepoint_serialized = {.len = 0,
                                   .max = serialized_point_length,
                                   .val = (char*)hash_input_begin + serialized_point_length};
-    octet otherpoint_serialized = {.len = 0,
-                                   .max = serialized_point_length,
-                                   .val = (char*)hash_input_begin + 2*serialized_point_length};
+    octet publickey_serialized = {.len = 0,
+                                  .max = serialized_point_length,
+                                  .val = (char*)hash_input_begin + 2*serialized_point_length};
     ECP_BN254_toOctet(&R_serialized, &R);   // Serialize R into buffer
     ECP_BN254_toOctet(&basepoint_serialized, basepoint);   // Serialize basepoint into buffer
-    ECP_BN254_toOctet(&otherpoint_serialized, other_point_to_be_signed);   // Serialize other_point into buffer
+    ECP_BN254_toOctet(&publickey_serialized, public_key);   // Serialize public_key into buffer
     BIG_256_56 c_prime;
     hash_into_mpi_two(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
     BIG_256_56 curve_order;
