@@ -28,6 +28,8 @@ set(XAPTUM_ECDAA_SRCS
         ${XAPTUM_ECDAA_SRC_DIR}/mpi_utils.c
         ${XAPTUM_ECDAA_SRC_DIR}/schnorr.c
         ${XAPTUM_ECDAA_SRC_DIR}/context.c
+        ${XAPTUM_ECDAA_SRC_DIR}/sign.c
+        ${XAPTUM_ECDAA_SRC_DIR}/verify.c
         ${XAPTUM_ECDAA_SRC_DIR}/pairing_curve_utils.c)
 
 add_library(xecdaa ${XAPTUM_ECDAA_SRCS})

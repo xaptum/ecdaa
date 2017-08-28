@@ -16,36 +16,21 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_SIGN_H
-#define XAPTUM_ECDAA_SIGN_H
+#ifndef XAPTUM_ECDAA_VERIFY_H
+#define XAPTUM_ECDAA_VERIFY_H
 #pragma once
+
+#include <sign.h>
+#include <context.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <context.h>
-
-#include <amcl/randapi.h>
-#include <amcl/big_256_56.h>
-
-#include <stdint.h>
-
-typedef struct {
-    BIG_256_56 c;
-    BIG_256_56 s;
-    ECP_BN254 R;
-    ECP_BN254 S;
-    ECP_BN254 T;
-    ECP_BN254 W;
-} ecdaa_signature_t;
-
-int sign(ecdaa_signature_t *signature,
-         member_join_secret_key_t *sk,
-         credential_t *credential,
-         uint8_t* message,
-         uint32_t message_len,
-         csprng *rng);
+int verify(ecdaa_signature_t *signature,
+           issuer_public_key_t *issuer_pk,
+           uint8_t* message,
+           uint32_t message_len);
 
 #ifdef __cplusplus
 }
