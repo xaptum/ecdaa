@@ -46,6 +46,8 @@ int generate_issuer_key_pair(issuer_public_key_t *pk,
                              issuer_secret_key_t *sk,
                              csprng *rng);
 
+int verify_issuer_public_key(issuer_public_key_t *pk);
+
 typedef struct {
     BIG_256_56 sk;
 } member_join_secret_key_t;

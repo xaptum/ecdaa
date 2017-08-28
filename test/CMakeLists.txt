@@ -20,7 +20,9 @@ set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/testBin/)
 
 set(TEST_SRCS
         pairing_curve_utils-tests.c
-        context-tests.c
+        mpi_utils-tests.c
+        schnorr-tests.c
+        # context-tests.c
         integration-tests.c
         )
 
