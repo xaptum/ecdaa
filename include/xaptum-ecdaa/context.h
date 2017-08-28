@@ -63,6 +63,20 @@ int generate_member_join_key_pair(member_join_public_key_t *pk,
                                   nonce_t nonce,
                                   csprng *rng);
 
+typedef struct {
+    ECP_BN254 A;
+    ECP_BN254 B;
+    ECP_BN254 C;
+    ECP_BN254 D;
+} credential_t;
+
+int generate_credential(credential_t *cred,
+                        BIG_256_56 *c_out,
+                        BIG_256_56 *s_out,
+                        issuer_secret_key_t *issuer_sk,
+                        member_join_public_key_t *member_pk,
+                        csprng *rng);
+
 #ifdef __cplusplus
 }
 #endif

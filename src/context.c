@@ -82,3 +82,57 @@ int generate_member_join_key_pair(member_join_public_key_t *pk,
 
     return sign_ret;
 }
+
+int generate_credential(credential_t *cred,
+                        BIG_256_56 *c_out,
+                        BIG_256_56 *s_out,
+                        issuer_secret_key_t *issuer_sk,
+                        member_join_public_key_t *member_pk,
+                        csprng *rng)
+{
+    if (NULL == c_out || NULL == s_out)
+        return -1;  // Currently, just to use these parameters and make compiler happy.
+
+    BIG_256_56 curve_order;
+    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
+
+    // 1) Choose random l <- Z_p
+    BIG_256_56 l;
+    random_num_mod_order(&l, rng);
+
+    // 2) Multiply generator by l and save to cred->A (A = l*P)
+    set_to_basepoint(&cred->A);
+    ECP_BN254_mul(&cred->A, l);
+
+    // 3) Multiply A by my secret y and save to cred->B (B = y*A)
+    ECP_BN254_copy(&cred->B, &cred->A);
+    ECP_BN254_mul(&cred->B, issuer_sk->y);
+
+    // 4) Mod-multiply l and y
+    BIG_256_56 ly;
+    BIG_256_56_modmul(ly, l, issuer_sk->y, curve_order);
+
+    // 5) Multiply member's public_key by ly and save to cred->D (D = ly*Q)
+    ECP_BN254_copy(&cred->D, &member_pk->Q);
+    ECP_BN254_mul(&cred->D, ly);
+
+    // 6) Multiply A by my secret x (store in cred->C temporarily)
+    ECP_BN254_copy(&cred->C, &cred->A);
+    ECP_BN254_mul(&cred->C, issuer_sk->x);
+
+    // 7) Mod-multiply ly (see step 4) by my secret x
+    BIG_256_56 xyl;
+    BIG_256_56_modmul(xyl, ly, issuer_sk->x, curve_order);
+
+    // 8) Multiply member's public_key by xyl
+    ECP_BN254 Qxyl;
+    ECP_BN254_copy(&Qxyl, &member_pk->Q);
+    ECP_BN254_mul(&Qxyl, xyl);
+
+    // 9) Add Ax and xyl*Q and save to cred->C (C = x*A + xyl*Q)
+    ECP_BN254_add(&cred->C, &Qxyl);
+
+    // TODO: Do a 'single-random-double-Schnorr signature, save into c_out, s_out
+
+    return 0;
+}
