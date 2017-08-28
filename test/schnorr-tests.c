@@ -134,7 +134,7 @@ void schnorr_sign_sane()
 
     ECP_BN254 basepoint;
     set_to_basepoint(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, private, &rng));
+    TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng));
 
     TEST_ASSERT(0 == BIG_256_56_iszilch(c));
     TEST_ASSERT(0 == BIG_256_56_iszilch(s));
@@ -170,9 +170,9 @@ void schnorr_verify_wrong_key()
 
     ECP_BN254 basepoint;
     set_to_basepoint(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, private, &rng));
+    TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng));
 
-    TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public_wrong));
+    TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public, &public_wrong));
 
     KILL_CSPRNG(&rng);
 
@@ -204,9 +204,9 @@ void schnorr_verify_wrong_msg()
 
     ECP_BN254 basepoint;
     set_to_basepoint(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, private, &rng));
+    TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng));
 
-    TEST_ASSERT(-1 == schnorr_verify(c, s, msg_wrong, msg_len_wrong, &basepoint, &public));
+    TEST_ASSERT(-1 == schnorr_verify(c, s, msg_wrong, msg_len_wrong, &basepoint, &public, &public));
 
     KILL_CSPRNG(&rng);
 
@@ -236,7 +236,7 @@ void schnorr_verify_bad_sig()
 
     ECP_BN254 basepoint;
     set_to_basepoint(&basepoint);
-    TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public));
+    TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public, &public));
 
     KILL_CSPRNG(&rng);
 
@@ -266,9 +266,9 @@ void schnorr_sign_integration()
 
     ECP_BN254 basepoint;
     set_to_basepoint(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, private, &rng));
+    TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng));
 
-    TEST_ASSERT(0 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public));
+    TEST_ASSERT(0 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public, &public));
 
     KILL_CSPRNG(&rng);
 
@@ -304,7 +304,7 @@ void schnorr_sign_benchmark()
     ECP_BN254 basepoint;
     set_to_basepoint(&basepoint);
     for (unsigned i = 0; i < rounds; i++) {
-        schnorr_sign(&c, &s, msg, msg_len, &basepoint, private, &rng);
+        schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng);
     }
 
     struct timeval tv2;
