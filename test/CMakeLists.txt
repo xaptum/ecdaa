@@ -22,7 +22,7 @@ set(TEST_SRCS
         pairing_curve_utils-tests.c
         mpi_utils-tests.c
         schnorr-tests.c
-        # context-tests.c
+        context-tests.c
         )
 
 foreach(case_file ${TEST_SRCS})

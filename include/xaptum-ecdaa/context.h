@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+typedef struct {uint8_t data[32];} nonce_t;
+
 typedef struct {
     ECP2_BN254 X;
     ECP2_BN254 Y;
@@ -46,8 +48,6 @@ int generate_issuer_key_pair(issuer_public_key_t *pk,
                              issuer_secret_key_t *sk,
                              csprng *rng);
 
-int verify_issuer_public_key(issuer_public_key_t *pk);
-
 typedef struct {
     BIG_256_56 sk;
 } member_join_secret_key_t;
@@ -60,8 +60,8 @@ typedef struct {
 
 int generate_member_join_key_pair(member_join_public_key_t *pk,
                                   member_join_secret_key_t *sk,
+                                  nonce_t nonce,
                                   csprng *rng);
-
 
 #ifdef __cplusplus
 }

@@ -16,6 +16,8 @@
  *
  *****************************************************************************/
 
+#include "../src/schnorr.h"
+
 #include "xaptum_test.h"
 
 #include <xaptum-ecdaa/context.h>
@@ -117,17 +119,7 @@ void member_public_is_valid()
     member_join_public_key_t pk;
     generate_member_join_key_pair(&pk, &sk, &rng);
 
-#define SERIALIZED_POINT_SIZE 65
-    char public_key_as_bytes[65];
-    octet public_key_as_oct;
-    public_key_as_oct.max = 2*MODBYTES_256_56+1;
-    public_key_as_oct.len = 2*MODBYTES_256_56+1;
-    TEST_ASSERT(public_key_as_oct.len == SERIALIZED_POINT_SIZE);
-    public_key_as_oct.val = public_key_as_bytes;
-
-    ECP_BN254_toOctet(&public_key_as_oct, &pk.Q);
-
-    TEST_ASSERT(ECP_BN254_PUBLIC_KEY_VALIDATE(&public_key_as_oct) == 0);
+    TEST_ASSERT(0 == check_point_membership(&pk.Q));
 
     printf("\tsuccess\n");
 }
