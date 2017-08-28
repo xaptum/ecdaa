@@ -16,6 +16,8 @@
  *
  *****************************************************************************/
 
+#include "xaptum_test.h"
+
 #include "../src/schnorr.h"
 
 #include <amcl/big_256_56.h>
@@ -25,7 +27,6 @@
 
 #include <sys/time.h>
 
-#include <assert.h>
 #include <string.h>
 
 static void schnorr_keygen_sane();
@@ -66,11 +67,11 @@ void schnorr_keygen_sane()
     schnorr_keygen(&public_one, &private_one, &rng);
     schnorr_keygen(&public_two, &private_two, &rng);
 
-    assert(0 != BIG_256_56_comp(private_one, private_two));
-    assert(1 != ECP_BN254_equals(&public_one, &public_two));
+    TEST_ASSERT(0 != BIG_256_56_comp(private_one, private_two));
+    TEST_ASSERT(1 != ECP_BN254_equals(&public_one, &public_two));
 
-    assert(!public_one.inf);
-    assert(!public_two.inf);
+    TEST_ASSERT(!public_one.inf);
+    TEST_ASSERT(!public_two.inf);
 
     KILL_CSPRNG(&rng);
 
@@ -99,9 +100,9 @@ void schnorr_keygen_integration()
     convert_schnorr_public_key_to_bytes(&serialized, &public);
 
     ECP_BN254 de_serialized;
-    assert(0 == convert_schnorr_public_key_from_bytes(&serialized, &de_serialized));
+    TEST_ASSERT(0 == convert_schnorr_public_key_from_bytes(&serialized, &de_serialized));
 
-    assert(1 == ECP_BN254_equals(&de_serialized, &public));
+    TEST_ASSERT(1 == ECP_BN254_equals(&de_serialized, &public));
 
     KILL_CSPRNG(&rng);
 
@@ -131,10 +132,10 @@ void schnorr_sign_sane()
 
     schnorr_sign(&c, &s, msg, msg_len, &public, private, &rng);
 
-    assert(0 == BIG_256_56_iszilch(c));
-    assert(0 == BIG_256_56_iszilch(s));
-    assert(0 == BIG_256_56_isunity(c));
-    assert(0 == BIG_256_56_isunity(s));
+    TEST_ASSERT(0 == BIG_256_56_iszilch(c));
+    TEST_ASSERT(0 == BIG_256_56_iszilch(s));
+    TEST_ASSERT(0 == BIG_256_56_isunity(c));
+    TEST_ASSERT(0 == BIG_256_56_isunity(s));
 
     KILL_CSPRNG(&rng);
 
@@ -165,7 +166,7 @@ void schnorr_verify_wrong_key()
 
     schnorr_sign(&c, &s, msg, msg_len, &public, private, &rng);
 
-    assert(-1 == schnorr_verify(c, s, msg, msg_len, &public_wrong));
+    TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &public_wrong));
 
     KILL_CSPRNG(&rng);
 
@@ -197,7 +198,7 @@ void schnorr_verify_wrong_msg()
 
     schnorr_sign(&c, &s, msg, msg_len, &public, private, &rng);
 
-    assert(-1 == schnorr_verify(c, s, msg_wrong, msg_len_wrong, &public));
+    TEST_ASSERT(-1 == schnorr_verify(c, s, msg_wrong, msg_len_wrong, &public));
 
     KILL_CSPRNG(&rng);
 
@@ -225,7 +226,7 @@ void schnorr_verify_bad_sig()
 
     BIG_256_56 c, s;
 
-    assert(-1 == schnorr_verify(c, s, msg, msg_len, &public));
+    TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &public));
 
     KILL_CSPRNG(&rng);
 
@@ -255,7 +256,7 @@ void schnorr_sign_integration()
 
     schnorr_sign(&c, &s, msg, msg_len, &public, private, &rng);
 
-    assert(0 == schnorr_verify(c, s, msg, msg_len, &public));
+    TEST_ASSERT(1 == schnorr_verify(c, s, msg, msg_len, &public));
 
     KILL_CSPRNG(&rng);
 
@@ -301,7 +302,7 @@ void schnorr_sign_benchmark()
             elapsed,
             rounds * 1000000ULL / elapsed);
 
-    assert (elapsed < 2000 * rounds); // If we're taking more than 2ms per signature, something's wrong.
+    TEST_ASSERT (elapsed < 2000 * rounds); // If we're taking more than 2ms per signature, something's wrong.
 
     KILL_CSPRNG(&rng);
 }

@@ -16,6 +16,8 @@
  *
  *****************************************************************************/
 
+#include "xaptum_test.h"
+
 #include "../src/pairing_curve_utils.h"
 
 #include <amcl/randapi.h>
@@ -23,7 +25,6 @@
 #include <sodium.h>
 
 #include <stdio.h>
-#include <assert.h>
 
 static void g1_basepoint_not_inf();
 
@@ -48,7 +49,7 @@ void g1_basepoint_not_inf()
     ECP_BN254 point;
     set_to_basepoint(&point);
 
-    assert(!point.inf);
+    TEST_ASSERT(!point.inf);
 
     printf("\tsuccess\n");
 }
@@ -60,7 +61,7 @@ void g2_basepoint_not_inf()
     ECP2_BN254 point;
     set_to_basepoint2(&point);
 
-    assert(!point.inf);
+    TEST_ASSERT(!point.inf);
 
     printf("\tsuccess\n");
 }
@@ -83,10 +84,10 @@ void random_num_mod_order_is_valid()
     for (int i = 0; i < 50000; ++i) {
         random_num_mod_order(&num, &rng);
 
-        assert(BIG_256_56_iszilch(num) == 0);
-        assert(BIG_256_56_isunity(num) == 0);
+        TEST_ASSERT(BIG_256_56_iszilch(num) == 0);
+        TEST_ASSERT(BIG_256_56_isunity(num) == 0);
 
-        assert(BIG_256_56_comp(num, curve_order) == -1);
+        TEST_ASSERT(BIG_256_56_comp(num, curve_order) == -1);
     }
 
     KILL_CSPRNG(&rng);

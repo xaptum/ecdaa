@@ -16,24 +16,22 @@
  *
  *****************************************************************************/
 
-#include "xaptum_test.h"
+#define TEST_ASSERT(cond) \
+    do \
+    { \
+        if (!(cond)) { \
+            printf("Condition \'%s\' failed\n\tin file: \'%s\'\n\tin function: \'%s\'\n\tat line: %d\n", #cond,__FILE__,  __func__, __LINE__); \
+            printf("exiting"); \
+            exit(1); \
+        } \
+    } while(0);
 
-#include <xaptum-ecdaa/join_member.h>
+#define TEST_EXPECT(cond) \
+    do \
+    { \
+        if (!(cond)) { \
+            printf("Condition \'%s\' failed\n\tin file: \'%s\'\n\tin function: \'%s\'\n\tat line: %d\n", #cond,__FILE__,  __func__, __LINE__); \
+            printf("continuing"); \
+        } \
+    } while(0);
 
-#include <stdio.h>
-
-static void basic_test();
-
-int main()
-{
-    basic_test();
-
-    return 0;
-}
-
-void basic_test()
-{
-    printf("Starting join_member::basic_test...\n");
-
-    printf("\tsuccess\n");
-}

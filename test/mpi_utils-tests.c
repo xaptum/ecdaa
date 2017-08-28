@@ -16,12 +16,13 @@
  *
  *****************************************************************************/
 
+#include "xaptum_test.h"
+
 #include "../src/mpi_utils.h"
 
 #include <amcl/ecp_BN254.h>
 
 #include <stdio.h>
-#include <assert.h>
 #include <string.h>
 
 static void hash_not_zero();
@@ -58,9 +59,9 @@ void hash_not_zero()
     uint32_t msg_len = 1024;
     hash_into_mpi(&mpi, msg, msg_len);
 
-    assert(0 == BIG_256_56_iszilch(mpi));
+    TEST_ASSERT(0 == BIG_256_56_iszilch(mpi));
 
-    assert(0 == BIG_256_56_isunity(mpi));
+    TEST_ASSERT(0 == BIG_256_56_isunity(mpi));
 
     printf("\tsuccess!\n");
 }
@@ -76,9 +77,9 @@ void hash_two_not_zero()
     uint32_t msg2_len = 1024;
     hash_into_mpi_two(&mpi, msg1, msg1_len, msg2, msg2_len);
 
-    assert(0 == BIG_256_56_iszilch(mpi));
+    TEST_ASSERT(0 == BIG_256_56_iszilch(mpi));
 
-    assert(0 == BIG_256_56_isunity(mpi));
+    TEST_ASSERT(0 == BIG_256_56_isunity(mpi));
 
     printf("\tsuccess!\n");
 }
@@ -92,9 +93,9 @@ void hash_ok_with_no_msg()
     uint32_t msg_len = 0;
     hash_into_mpi(&mpi, msg, msg_len);
 
-    assert(0 == BIG_256_56_iszilch(mpi));
+    TEST_ASSERT(0 == BIG_256_56_iszilch(mpi));
 
-    assert(0 == BIG_256_56_isunity(mpi));
+    TEST_ASSERT(0 == BIG_256_56_isunity(mpi));
 
     printf("\tsuccess!\n");
 }
@@ -109,7 +110,7 @@ void hash_same_message()
     hash_into_mpi(&mpi1, msg, msg_len);
     hash_into_mpi(&mpi2, msg, msg_len);
 
-    assert(0 == BIG_256_56_comp(mpi1, mpi2));
+    TEST_ASSERT(0 == BIG_256_56_comp(mpi1, mpi2));
 
     printf("\tsuccess!\n");
 }
@@ -127,7 +128,7 @@ void hash_two_same_messages()
     hash_into_mpi_two(&mpi1, msg1, msg1_len, msg2, msg2_len);
     hash_into_mpi_two(&mpi2, msg1, msg1_len, msg2, msg2_len);
 
-    assert(0 == BIG_256_56_comp(mpi1, mpi2));
+    TEST_ASSERT(0 == BIG_256_56_comp(mpi1, mpi2));
 
     printf("\tsuccess!\n");
 }
@@ -138,7 +139,7 @@ void mul_and_add_all_zeros()
 
     BIG_256_56 modulus;
     BIG_256_56_rcopy(modulus, CURVE_Order_BN254);
-    assert(0 == BIG_256_56_iszilch(modulus));
+    TEST_ASSERT(0 == BIG_256_56_iszilch(modulus));
 
     BIG_256_56 m, x, b, y;
     BIG_256_56_zero(m);
@@ -146,7 +147,7 @@ void mul_and_add_all_zeros()
     BIG_256_56_zero(b);
 
     mpi_mod_mul_and_add(&y, b, m, x, modulus);
-    assert(1 == BIG_256_56_iszilch(b));
+    TEST_ASSERT(1 == BIG_256_56_iszilch(b));
 
     printf("\tsuccess\n");
 }
@@ -157,7 +158,7 @@ void mul_and_add_all_ones()
 
     BIG_256_56 modulus;
     BIG_256_56_rcopy(modulus, CURVE_Order_BN254);
-    assert(0 == BIG_256_56_iszilch(modulus));
+    TEST_ASSERT(0 == BIG_256_56_iszilch(modulus));
 
     BIG_256_56 m, x, b, y;
     BIG_256_56_one(m);
@@ -169,7 +170,7 @@ void mul_and_add_all_ones()
     BIG_256_56 expected = {0};
     expected[0] = 2;
 
-    assert(0 == BIG_256_56_comp(expected, y));
+    TEST_ASSERT(0 == BIG_256_56_comp(expected, y));
 
     printf("\tsuccess\n");
 }
@@ -189,7 +190,7 @@ void mul_and_add_modulus_two()
     BIG_256_56 y;
     mpi_mod_mul_and_add(&y, b, m, x, modulus);
 
-    assert(1 == BIG_256_56_iszilch(y));
+    TEST_ASSERT(1 == BIG_256_56_iszilch(y));
 
     printf("\tsuccess\n");
 }
@@ -200,15 +201,15 @@ void mul_and_add_normalization_works()
 
     BIG_256_56 modulus;
     BIG_256_56_rcopy(modulus, CURVE_Order_BN254);
-    assert(0 == BIG_256_56_iszilch(modulus));
+    TEST_ASSERT(0 == BIG_256_56_iszilch(modulus));
 
     // Just some random numbers, which make these non-normalized.
     BIG_256_56 m={12301239048798, INT64_MAX, 2034019249817234, INT64_MAX};
-    assert(-1 == BIG_256_56_comp(m, modulus));
+    TEST_ASSERT(-1 == BIG_256_56_comp(m, modulus));
     BIG_256_56 x={918741923908734908, 3984712409814, INT64_MAX, 2394871290871};
-    assert(-1 == BIG_256_56_comp(x, modulus));
+    TEST_ASSERT(-1 == BIG_256_56_comp(x, modulus));
     BIG_256_56 b={INT64_MAX, 13946129908734, 0, 19867128968128741};
-    assert(-1 == BIG_256_56_comp(b, modulus));
+    TEST_ASSERT(-1 == BIG_256_56_comp(b, modulus));
 
     BIG_256_56 m_norm, x_norm, b_norm;
     BIG_256_56_copy(m_norm, m);
@@ -224,11 +225,11 @@ void mul_and_add_normalization_works()
     BIG_256_56 y_expected;
     mpi_mod_mul_and_add(&y_expected, b_norm, m_norm, x_norm, modulus);
 
-    assert(0 == BIG_256_56_comp(m, m_norm));
-    assert(0 == BIG_256_56_comp(x, x_norm));
-    assert(0 == BIG_256_56_comp(b, b_norm));
+    TEST_ASSERT(0 == BIG_256_56_comp(m, m_norm));
+    TEST_ASSERT(0 == BIG_256_56_comp(x, x_norm));
+    TEST_ASSERT(0 == BIG_256_56_comp(b, b_norm));
 
-    assert(0 == BIG_256_56_comp(y, y_expected));
+    TEST_ASSERT(0 == BIG_256_56_comp(y, y_expected));
 
     printf("\tsuccess\n");
 }
@@ -239,7 +240,7 @@ void mul_and_add_greater_than_modulus_ok()
 
     BIG_256_56 modulus;
     BIG_256_56_rcopy(modulus, CURVE_Order_BN254);
-    assert(0 == BIG_256_56_iszilch(modulus));
+    TEST_ASSERT(0 == BIG_256_56_iszilch(modulus));
 
     BIG_256_56 excess = {0};
     excess[0] = 5239;   // amount by which MPIs will be > modulus (i.e. congruent to excess)
@@ -249,19 +250,19 @@ void mul_and_add_greater_than_modulus_ok()
     BIG_256_56_copy(m, modulus);
     BIG_256_56_add(m, m, excess);
     BIG_256_56_norm(m);
-    assert(1 == BIG_256_56_comp(m, modulus));
+    TEST_ASSERT(1 == BIG_256_56_comp(m, modulus));
 
     BIG_256_56 x;
     BIG_256_56_copy(x, modulus);
     BIG_256_56_add(x, x, excess);
     BIG_256_56_norm(x);
-    assert(1 == BIG_256_56_comp(x, modulus));
+    TEST_ASSERT(1 == BIG_256_56_comp(x, modulus));
 
     BIG_256_56 b;
     BIG_256_56_copy(b, modulus);
     BIG_256_56_add(b, b, excess);
     BIG_256_56_norm(b);
-    assert(1 == BIG_256_56_comp(b, modulus));
+    TEST_ASSERT(1 == BIG_256_56_comp(b, modulus));
 
     // Those MPIs mod'd by modulus:
     BIG_256_56 m_mod, x_mod, b_mod;
@@ -278,7 +279,7 @@ void mul_and_add_greater_than_modulus_ok()
     BIG_256_56 y_expected;
     mpi_mod_mul_and_add(&y_expected, b_mod, m_mod, x_mod, modulus);
 
-    assert(0 == BIG_256_56_comp(y, y_expected));
+    TEST_ASSERT(0 == BIG_256_56_comp(y, y_expected));
 
     printf("\tsuccess\n");
 }
@@ -301,7 +302,7 @@ void mul_and_add_small_sanity_check()
 
     mpi_mod_mul_and_add(&y, b, m, x, modulus);
 
-    assert(0 == BIG_256_56_comp(y_expected, y));
+    TEST_ASSERT(0 == BIG_256_56_comp(y_expected, y));
 
     printf("\tsuccess\n");
 }
