@@ -23,7 +23,6 @@ set(TEST_SRCS
         mpi_utils-tests.c
         schnorr-tests.c
         # context-tests.c
-        integration-tests.c
         )
 
 foreach(case_file ${TEST_SRCS})
