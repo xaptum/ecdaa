@@ -16,7 +16,7 @@
  *
  *****************************************************************************/
 
-#include "xaptum_test.h"
+#include "xaptum-test-utils.h"
 
 #include "../src/mpi_utils.h"
 

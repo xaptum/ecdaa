@@ -24,6 +24,7 @@ project(xaptum-ecdaa
 add_compile_options(-Werror -Wall -Wextra -std=c99)
 
 set(XAPTUM_ECDAA_SRC_DIR src)
+set(XAPTUM_ECDAA_TEST_DIR test)
 set(XAPTUM_ECDAA_SRCS
         ${XAPTUM_ECDAA_SRC_DIR}/credential.c
         ${XAPTUM_ECDAA_SRC_DIR}/explicit_bzero.c
@@ -36,7 +37,9 @@ set(XAPTUM_ECDAA_SRCS
         ${XAPTUM_ECDAA_SRC_DIR}/pairing_curve_utils.c
         ${XAPTUM_ECDAA_SRC_DIR}/schnorr.c
         ${XAPTUM_ECDAA_SRC_DIR}/signature.c
-        ${XAPTUM_ECDAA_SRC_DIR}/verify.c)
+        ${XAPTUM_ECDAA_SRC_DIR}/verify.c
+        ${XAPTUM_ECDAA_TEST_DIR}/xaptum-test-utils.c
+        )
 
 add_library(xecdaa ${XAPTUM_ECDAA_SRCS})
 
@@ -50,4 +53,4 @@ target_link_libraries(xecdaa
         PUBLIC ${AMCL_LIBRARIES})
 
 enable_testing()
-add_subdirectory(test)
+add_subdirectory(${XAPTUM_ECDAA_TEST_DIR})

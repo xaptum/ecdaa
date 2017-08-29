@@ -16,13 +16,11 @@
  *
  *****************************************************************************/
 
-#include "xaptum_test.h"
+#include "xaptum-test-utils.h"
 
 #include "../src/pairing_curve_utils.h"
 
 #include <amcl/randapi.h>
-
-#include <sodium.h>
 
 #include <stdio.h>
 
@@ -74,11 +72,7 @@ void random_num_mod_order_is_valid()
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
 
     csprng rng;
-#define SEED_LEN 256
-    char seed_as_bytes[SEED_LEN];
-    randombytes_buf(seed_as_bytes, SEED_LEN);
-    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
-    CREATE_CSPRNG(&rng, &seed);
+    create_test_rng(&rng);
 
     BIG_256_56 num;
     for (int i = 0; i < 50000; ++i) {
@@ -90,7 +84,7 @@ void random_num_mod_order_is_valid()
         TEST_ASSERT(BIG_256_56_comp(num, curve_order) == -1);
     }
 
-    KILL_CSPRNG(&rng);
+    destroy_test_rng(&rng);
 
     printf("\tsuccess\n");
 }

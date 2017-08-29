@@ -16,7 +16,7 @@
  *
  *****************************************************************************/
 
-#include "xaptum_test.h"
+#include "xaptum-test-utils.h"
 
 #include "../src/schnorr.h"
 
@@ -24,8 +24,6 @@
 
 #include <amcl/big_256_56.h>
 #include <amcl/ecp_BN254.h>
-
-#include <sodium.h>
 
 #include <sys/time.h>
 
@@ -62,11 +60,7 @@ void schnorr_keygen_sane()
     BIG_256_56 private_one, private_two;
 
     csprng rng;
-#define SEED_LEN 256
-    char seed_as_bytes[SEED_LEN];
-    randombytes_buf(seed_as_bytes, SEED_LEN);
-    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
-    CREATE_CSPRNG(&rng, &seed);
+    create_test_rng(&rng);
 
     schnorr_keygen(&public_one, &private_one, &rng);
     schnorr_keygen(&public_two, &private_two, &rng);
@@ -77,7 +71,7 @@ void schnorr_keygen_sane()
     TEST_ASSERT(!public_one.inf);
     TEST_ASSERT(!public_two.inf);
 
-    KILL_CSPRNG(&rng);
+    destroy_test_rng(&rng);
 
     printf("\tsuccess\n");
 }
@@ -90,11 +84,7 @@ void schnorr_keygen_integration()
     BIG_256_56 private;
 
     csprng rng;
-#define SEED_LEN 256
-    char seed_as_bytes[SEED_LEN];
-    randombytes_buf(seed_as_bytes, SEED_LEN);
-    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
-    CREATE_CSPRNG(&rng, &seed);
+    create_test_rng(&rng);
 
     schnorr_keygen(&public, &private, &rng);
 
@@ -108,7 +98,7 @@ void schnorr_keygen_integration()
 
     TEST_ASSERT(1 == ECP_BN254_equals(&de_serialized, &public));
 
-    KILL_CSPRNG(&rng);
+    destroy_test_rng(&rng);
 
     printf("\tsuccess\n");
 }
@@ -121,11 +111,7 @@ void schnorr_sign_sane()
     BIG_256_56 private;
 
     csprng rng;
-#define SEED_LEN 256
-    char seed_as_bytes[SEED_LEN];
-    randombytes_buf(seed_as_bytes, SEED_LEN);
-    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
-    CREATE_CSPRNG(&rng, &seed);
+    create_test_rng(&rng);
 
     ECP_BN254_mul(&public, private);
 
@@ -156,11 +142,7 @@ void schnorr_verify_wrong_key()
     BIG_256_56 private, private_wrong;
 
     csprng rng;
-#define SEED_LEN 256
-    char seed_as_bytes[SEED_LEN];
-    randombytes_buf(seed_as_bytes, SEED_LEN);
-    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
-    CREATE_CSPRNG(&rng, &seed);
+    create_test_rng(&rng);
 
     schnorr_keygen(&public, &private, &rng);
     schnorr_keygen(&public_wrong, &private_wrong, &rng);
@@ -176,7 +158,7 @@ void schnorr_verify_wrong_key()
 
     TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public_wrong));
 
-    KILL_CSPRNG(&rng);
+    destroy_test_rng(&rng);
 
     printf("\tsuccess\n");
 }
@@ -189,11 +171,7 @@ void schnorr_verify_wrong_msg()
     BIG_256_56 private;
 
     csprng rng;
-#define SEED_LEN 256
-    char seed_as_bytes[SEED_LEN];
-    randombytes_buf(seed_as_bytes, SEED_LEN);
-    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
-    CREATE_CSPRNG(&rng, &seed);
+    create_test_rng(&rng);
 
     schnorr_keygen(&public, &private, &rng);
 
@@ -210,7 +188,7 @@ void schnorr_verify_wrong_msg()
 
     TEST_ASSERT(-1 == schnorr_verify(c, s, msg_wrong, msg_len_wrong, &basepoint, &public));
 
-    KILL_CSPRNG(&rng);
+    destroy_test_rng(&rng);
 
     printf("\tsuccess\n");
 }
@@ -223,11 +201,7 @@ void schnorr_verify_bad_sig()
     BIG_256_56 private;
 
     csprng rng;
-#define SEED_LEN 256
-    char seed_as_bytes[SEED_LEN];
-    randombytes_buf(seed_as_bytes, SEED_LEN);
-    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
-    CREATE_CSPRNG(&rng, &seed);
+    create_test_rng(&rng);
 
     schnorr_keygen(&public, &private, &rng);
 
@@ -240,7 +214,7 @@ void schnorr_verify_bad_sig()
     set_to_basepoint(&basepoint);
     TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public));
 
-    KILL_CSPRNG(&rng);
+    destroy_test_rng(&rng);
 
     printf("\tsuccess\n");
 }
@@ -253,11 +227,7 @@ void schnorr_sign_integration()
     BIG_256_56 private;
 
     csprng rng;
-#define SEED_LEN 256
-    char seed_as_bytes[SEED_LEN];
-    randombytes_buf(seed_as_bytes, SEED_LEN);
-    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
-    CREATE_CSPRNG(&rng, &seed);
+    create_test_rng(&rng);
 
     schnorr_keygen(&public, &private, &rng);
 
@@ -272,7 +242,7 @@ void schnorr_sign_integration()
 
     TEST_ASSERT(0 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public));
 
-    KILL_CSPRNG(&rng);
+    destroy_test_rng(&rng);
 
     printf("\tsuccess\n");
 }
@@ -282,11 +252,7 @@ void schnorr_sign_integration_other_basepoint()
     printf("Starting schnorr::schnorr_sign_integration_other_points...\n");
 
     csprng rng;
-#define SEED_LEN 256
-    char seed_as_bytes[SEED_LEN];
-    randombytes_buf(seed_as_bytes, SEED_LEN);
-    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
-    CREATE_CSPRNG(&rng, &seed);
+    create_test_rng(&rng);
 
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
@@ -309,7 +275,7 @@ void schnorr_sign_integration_other_basepoint()
 
     TEST_ASSERT(0 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public));
 
-    KILL_CSPRNG(&rng);
+    destroy_test_rng(&rng);
 
     printf("\tsuccess\n");
 }
@@ -324,11 +290,7 @@ void schnorr_sign_benchmark()
     BIG_256_56 private;
 
     csprng rng;
-#define SEED_LEN 256
-    char seed_as_bytes[SEED_LEN];
-    randombytes_buf(seed_as_bytes, SEED_LEN);
-    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
-    CREATE_CSPRNG(&rng, &seed);
+    create_test_rng(&rng);
 
     schnorr_keygen(&public, &private, &rng);
 
@@ -357,5 +319,5 @@ void schnorr_sign_benchmark()
 
     TEST_ASSERT (elapsed < 2000 * rounds); // If we're taking more than 2ms per signature, something's wrong.
 
-    KILL_CSPRNG(&rng);
+    destroy_test_rng(&rng);
 }

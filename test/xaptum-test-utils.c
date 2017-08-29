@@ -16,22 +16,30 @@
  *
  *****************************************************************************/
 
-#define TEST_ASSERT(cond) \
-    do \
-    { \
-        if (!(cond)) { \
-            printf("Condition \'%s\' failed\n\tin file: \'%s\'\n\tin function: \'%s\'\n\tat line: %d\n", #cond,__FILE__,  __func__, __LINE__); \
-            printf("exiting"); \
-            exit(1); \
-        } \
-    } while(0);
+#include "xaptum-test-utils.h"
 
-#define TEST_EXPECT(cond) \
-    do \
-    { \
-        if (!(cond)) { \
-            printf("Condition \'%s\' failed\n\tin file: \'%s\'\n\tin function: \'%s\'\n\tat line: %d\n", #cond,__FILE__,  __func__, __LINE__); \
-            printf("continuing"); \
-        } \
-    } while(0);
+void get_test_seed(char *out, unsigned out_length)
+{
+    // Nb. This isn't intended to be secure.
+    // It's just for testing.
 
+    srand(time(NULL));
+    for (unsigned i = 0; i < out_length; ++i)
+        out[i] = rand();
+}
+
+void create_test_rng(csprng *rng)
+{
+    char seed_as_bytes[SEED_LEN];
+
+    get_test_seed(seed_as_bytes, SEED_LEN);
+
+    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
+
+    CREATE_CSPRNG(rng, &seed);
+}
+
+void destroy_test_rng(csprng *rng)
+{
+    KILL_CSPRNG(rng);
+}

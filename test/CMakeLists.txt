@@ -19,11 +19,12 @@ include(CTest)
 set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/testBin/)
 
 set(TEST_SRCS
-        pairing_curve_utils-tests.c
+        sign-and-verify-tests.c
+        issuer_keypair-tests.c
+        member_keypair-tests.c
         mpi_utils-tests.c
+        pairing_curve_utils-tests.c
         schnorr-tests.c
-        context-tests.c
-        integration-tests.c
         )
 
 foreach(case_file ${TEST_SRCS})
@@ -32,7 +33,6 @@ foreach(case_file ${TEST_SRCS})
   add_executable(${case_name} ${case_file})
   target_link_libraries(${case_name}
     PRIVATE xecdaa
-    PRIVATE sodium
     )
   target_include_directories(${case_name}
           PRIVATE ${PROJECT_SOURCE_DIR}/include/xaptum-ecdaa/
