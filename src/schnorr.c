@@ -18,6 +18,7 @@
 
 #include "schnorr.h"
 
+#include "explicit_bzero.h"
 #include "mpi_utils.h"
 #include "pairing_curve_utils.h"
 
@@ -126,7 +127,7 @@ int schnorr_sign(BIG_256_56 *c_out,
     mpi_mod_mul_and_add(s_out, k, *c_out, private_key, curve_order);    // normalizes and mod-reduces s_out and c_out
 
     // Clear intermediate, sensitive memory.
-    BIG_256_56_zero(k);
+    explicit_bzero(&k, sizeof(BIG_256_56));
 
     return 0;
 }
@@ -255,7 +256,7 @@ int issuer_schnorr_sign(BIG_256_56 *c_out,
     mpi_mod_mul_and_add(s_out, r, *c_out, ly, curve_order);    // normalizes and mod-reduces s_out and c_out
 
     // Clear intermediate, sensitive memory.
-    BIG_256_56_zero(r);
+    explicit_bzero(&r, sizeof(BIG_256_56));
 
     return 0;
 }
