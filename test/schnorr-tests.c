@@ -22,6 +22,11 @@
 
 #include "../src/pairing_curve_utils.h"
 
+#include <xaptum-ecdaa/credential.h>
+#include <xaptum-ecdaa/issuer_keypair.h>
+#include <xaptum-ecdaa/member_keypair.h>
+#include <xaptum-ecdaa/issuer_nonce.h>
+
 #include <amcl/big_256_56.h>
 #include <amcl/ecp_BN254.h>
 
@@ -37,6 +42,9 @@ static void schnorr_verify_wrong_msg();
 static void schnorr_verify_bad_sig();
 static void schnorr_sign_integration();
 static void schnorr_sign_integration_other_basepoint();
+static void schnorr_issuer_sign_sane();
+static void schnorr_issuer_sign_integration();
+
 static void schnorr_sign_benchmark();
 
 int main()
@@ -49,6 +57,8 @@ int main()
     schnorr_verify_bad_sig();
     schnorr_sign_integration();
     schnorr_sign_integration_other_basepoint();
+    schnorr_issuer_sign_sane();
+    schnorr_issuer_sign_integration();
     schnorr_sign_benchmark();
 }
 
@@ -280,6 +290,73 @@ void schnorr_sign_integration_other_basepoint()
     printf("\tsuccess\n");
 }
 
+void schnorr_issuer_sign_sane()
+{
+    printf("Starting schnorr::schnorr_issuer_sign_sane...\n");
+
+    ECP_BN254 member_public;
+    BIG_256_56 member_private;
+    BIG_256_56 issuer_private;
+    ECP_BN254_mul(&member_public, member_private);
+
+    ECP_BN254 B, D;
+
+    BIG_256_56 credential_random;
+
+    BIG_256_56 c, s;
+
+    csprng rng;
+    create_test_rng(&rng);
+
+    TEST_ASSERT(0 == issuer_schnorr_sign(&c, &s, &B, &member_public, &D, issuer_private, credential_random, &rng));
+
+    KILL_CSPRNG(&rng);
+
+    TEST_ASSERT(0 == BIG_256_56_iszilch(c));
+    TEST_ASSERT(0 == BIG_256_56_iszilch(s));
+    TEST_ASSERT(0 == BIG_256_56_isunity(c));
+    TEST_ASSERT(0 == BIG_256_56_isunity(s));
+
+    printf("\tsuccess\n");
+}
+
+void schnorr_issuer_sign_integration()
+{
+    printf("Starting schnorr::schnorr_issuer_sign_integration...\n");
+
+    csprng rng;
+    create_test_rng(&rng);
+
+    BIG_256_56 member_private = {2718, 0};
+    ECP_BN254 member_public;
+    set_to_basepoint(&member_public);
+    ECP_BN254_mul(&member_public, member_private);
+
+    BIG_256_56 issuer_private_key_y = {2718, 0};
+
+    BIG_256_56 credential_random = {314, 2718, 0};
+
+    ECP_BN254 B;
+    set_to_basepoint(&B);
+    ECP_BN254_mul(&B, credential_random);
+    ECP_BN254_mul(&B, issuer_private_key_y);
+
+    ECP_BN254 D;
+    ECP_BN254_copy(&D, &member_public);
+    ECP_BN254_mul(&D, credential_random);
+    ECP_BN254_mul(&D, issuer_private_key_y);
+
+    BIG_256_56 c, s;
+
+    TEST_ASSERT(0 == issuer_schnorr_sign(&c, &s, &B, &member_public, &D, issuer_private_key_y, credential_random, &rng));
+
+    TEST_ASSERT(0 == issuer_schnorr_verify(c, s, &B, &member_public, &D));
+
+    destroy_test_rng(&rng);
+
+    printf("\tsuccess\n");
+}
+
 void schnorr_sign_benchmark()
 {
     unsigned rounds = 2500;
@@ -321,3 +398,4 @@ void schnorr_sign_benchmark()
 
     destroy_test_rng(&rng);
 }
+

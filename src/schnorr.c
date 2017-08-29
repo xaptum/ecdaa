@@ -26,6 +26,8 @@
 
 #include <assert.h>
 
+static const size_t serialized_point_length = 2*MODBYTES_256_56 + 1;
+
 void schnorr_keygen(ECP_BN254 *public_out,
                     BIG_256_56 *private_out,
                     csprng *rng)
@@ -103,7 +105,6 @@ int schnorr_sign(BIG_256_56 *c_out,
 
     // 4) (Sign 1) Compute c = Hash( R | basepoint | public_key | msg_in )
     uint8_t hash_input_begin[195];
-    size_t serialized_point_length = 2*MODBYTES_256_56 + 1;
     assert(3*serialized_point_length == sizeof(hash_input_begin));
     octet R_serialized = {.len = 0,
                           .max = serialized_point_length,
@@ -161,7 +162,6 @@ int schnorr_verify(BIG_256_56 c,
     // 5) Compute c' = Hash( R | basepoint | msg_in )
     //      (modular-reduce c', too).
     uint8_t hash_input_begin[195];
-    size_t serialized_point_length = 2*MODBYTES_256_56 + 1;
     assert(3*serialized_point_length == sizeof(hash_input_begin));
     octet R_serialized = {.len = 0,
                           .max = serialized_point_length,
@@ -177,6 +177,162 @@ int schnorr_verify(BIG_256_56 c,
     ECP_BN254_toOctet(&publickey_serialized, public_key);   // Serialize public_key into buffer
     BIG_256_56 c_prime;
     hash_into_mpi_two(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
+    BIG_256_56 curve_order;
+    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
+    BIG_256_56_mod(c_prime, curve_order);
+
+    // 6) Compare c' and c
+    if (0 != BIG_256_56_comp(c_prime, c)) {
+        ret = -1;
+    }
+
+    return ret;
+}
+
+int issuer_schnorr_sign(BIG_256_56 *c_out,
+                        BIG_256_56 *s_out,
+                        ECP_BN254 *B,
+                        ECP_BN254 *member_public_key,
+                        ECP_BN254 *D,
+                        BIG_256_56 issuer_private_key_y,
+                        BIG_256_56 credential_random,
+                        csprng *rng)
+{
+    // 1) Set generator
+    ECP_BN254 generator;
+    set_to_basepoint(&generator);
+
+    // 2) Choose random r <- Z_n
+    BIG_256_56 r;
+    random_num_mod_order(&r, rng);
+
+    // 3) Multiply generator by r: U = r*generator
+    ECP_BN254 U;
+    ECP_BN254_copy(&U, &generator);
+    ECP_BN254_mul(&U, r);
+
+    // 4) Multiply member_public_key by r: V = r*member_public_key
+    ECP_BN254 V;
+    ECP_BN254_copy(&V, member_public_key);
+    ECP_BN254_mul(&V, r);
+
+    // 5) Compute c = Hash( U | V | generator | B | member_public_key | D )
+    uint8_t hash_input[390];
+    assert(6*serialized_point_length == sizeof(hash_input));
+    octet U_serialized = {.len = 0,
+                          .max = serialized_point_length,
+                          .val = (char*)hash_input};
+    octet V_serialized = {.len = 0,
+                          .max = serialized_point_length,
+                          .val = (char*)hash_input + serialized_point_length};
+    octet generator_serialized = {.len = 0,
+                                  .max = serialized_point_length,
+                                  .val = (char*)hash_input + 2*serialized_point_length};
+    octet B_serialized = {.len = 0,
+                          .max = serialized_point_length,
+                          .val = (char*)hash_input + 3*serialized_point_length};
+    octet publickey_serialized = {.len = 0,
+                                  .max = serialized_point_length,
+                                  .val = (char*)hash_input + 4*serialized_point_length};
+    octet D_serialized = {.len = 0,
+                          .max = serialized_point_length,
+                          .val = (char*)hash_input + 5*serialized_point_length};
+    ECP_BN254_toOctet(&U_serialized, &U);   // Serialize U into buffer
+    ECP_BN254_toOctet(&V_serialized, &V);   // Serialize V into buffer
+    ECP_BN254_toOctet(&generator_serialized, &generator);   // Serialize generator into buffer
+    ECP_BN254_toOctet(&B_serialized, B);   // Serialize B into buffer
+    ECP_BN254_toOctet(&publickey_serialized, member_public_key);   // Serialize member_public_key into buffer
+    ECP_BN254_toOctet(&D_serialized, D);   // Serialize D into buffer
+    hash_into_mpi(c_out, hash_input, sizeof(hash_input));
+
+    // 6) Compute ly = (credential_random x issuer_private_key_y) mod curve_order
+    BIG_256_56 curve_order;
+    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
+    BIG_256_56 ly;
+    BIG_256_56_modmul(ly, credential_random, issuer_private_key_y, curve_order);
+
+    // 7) Compute s = r + c * ly
+    mpi_mod_mul_and_add(s_out, r, *c_out, ly, curve_order);    // normalizes and mod-reduces s_out and c_out
+
+    // Clear intermediate, sensitive memory.
+    BIG_256_56_zero(r);
+
+    return 0;
+}
+
+int issuer_schnorr_verify(BIG_256_56 c,
+                          BIG_256_56 s,
+                          ECP_BN254 *B,
+                          ECP_BN254 *member_public_key,
+                          ECP_BN254 *D)
+{
+    int ret = 0;
+
+    // 1) Set generator
+    ECP_BN254 generator;
+    set_to_basepoint(&generator);
+
+    // 2) Multiply generator by s (R1 = s*P)
+    ECP_BN254 R1;
+    ECP_BN254_copy(&R1, &generator);
+    ECP_BN254_mul(&R1, s);
+
+    // 3) Multiply B by c (B_c = c*B)
+    ECP_BN254 B_c;
+    ECP_BN254_copy(&B_c, B);
+    ECP_BN254_mul(&B_c, c);
+
+    // 4) Compute difference of R1 and c*B, and save to R1 (R1 = s*P - c*B)
+    ECP_BN254_sub(&R1, &B_c);
+    // Nb. No need to call ECP_BN254_affine here,
+    // as R1 gets passed to ECP_BN254_toOctet in a minute (which implicitly converts to affine)
+
+    // 5) Multiply member_public_key by s (R2 = s*member_public_key)
+    ECP_BN254 R2;
+    ECP_BN254_copy(&R2, member_public_key);
+    ECP_BN254_mul(&R2, s);
+
+    // 6) Multiply D by c (D_c = c*D)
+    ECP_BN254 D_c;
+    ECP_BN254_copy(&D_c, D);
+    ECP_BN254_mul(&D_c, c);
+
+    // 7) Compute difference of R2 and c*D, and save to R2 (R2 = s*member_public_key - c*D)
+    ECP_BN254_sub(&R2, &D_c);
+    // Nb. No need to call ECP_BN254_affine here,
+    // as R1 gets passed to ECP_BN254_toOctet in a minute (which implicitly converts to affine)
+
+    // 8) Compute c' = Hash( R1 | R2 | generator | B | member_public_key | D )
+    //      (modular-reduce c', too).
+    uint8_t hash_input[390];
+    assert(6*serialized_point_length == sizeof(hash_input));
+    octet R1_serialized = {.len = 0,
+                           .max = serialized_point_length,
+                           .val = (char*)hash_input};
+    octet R2_serialized = {.len = 0,
+                           .max = serialized_point_length,
+                           .val = (char*)hash_input + serialized_point_length};
+    octet generator_serialized = {.len = 0,
+                                  .max = serialized_point_length,
+                                  .val = (char*)hash_input + 2*serialized_point_length};
+    octet B_serialized = {.len = 0,
+                          .max = serialized_point_length,
+                          .val = (char*)hash_input + 3*serialized_point_length};
+    octet publickey_serialized = {.len = 0,
+                                  .max = serialized_point_length,
+                                  .val = (char*)hash_input + 4*serialized_point_length};
+    octet D_serialized = {.len = 0,
+                          .max = serialized_point_length,
+                          .val = (char*)hash_input + 5*serialized_point_length};
+    ECP_BN254_toOctet(&R1_serialized, &R1);   // Serialize R1 into buffer
+    ECP_BN254_toOctet(&R2_serialized, &R2);   // Serialize R2 into buffer
+    ECP_BN254_toOctet(&generator_serialized, &generator);   // Serialize generator into buffer
+    ECP_BN254_toOctet(&B_serialized, B);   // Serialize B into buffer
+    ECP_BN254_toOctet(&publickey_serialized, member_public_key);   // Serialize member_public_key into buffer
+    ECP_BN254_toOctet(&D_serialized, D);   // Serialize D into buffer
+
+    BIG_256_56 c_prime;
+    hash_into_mpi(&c_prime, hash_input, sizeof(hash_input));
     BIG_256_56 curve_order;
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
     BIG_256_56_mod(c_prime, curve_order);
