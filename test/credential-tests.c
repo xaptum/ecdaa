@@ -40,6 +40,7 @@ typedef struct credential_test_fixture {
 } credential_test_fixture;
 
 static void setup(credential_test_fixture* fixture);
+static void teardown(credential_test_fixture *fixture);
 
 static void cred_generate_then_validate();
 
@@ -65,6 +66,11 @@ static void setup(credential_test_fixture* fixture)
     ECP_BN254_mul(&fixture->pk.Q, fixture->sk.sk);
 }
 
+static void teardown(credential_test_fixture *fixture)
+{
+    destroy_test_rng(&fixture->rng);
+}
+
 static void cred_generate_then_validate()
 {
     printf("Starting join-tests::cred_generate_validate...\n");
@@ -77,6 +83,8 @@ static void cred_generate_then_validate()
     TEST_ASSERT(0 == ecdaa_generate_credential(&cred, &cred_sig, &fixture.isk, &fixture.pk, &fixture.rng));
 
     TEST_ASSERT(0 == ecdaa_validate_credential(&cred, &cred_sig, &fixture.pk, &fixture.ipk.gpk));
+
+    teardown(&fixture);
 
     printf("\tsuccess\n");
 }

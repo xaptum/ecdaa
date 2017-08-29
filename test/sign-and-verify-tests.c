@@ -52,6 +52,7 @@ typedef struct sign_and_verify_fixture {
 } sign_and_verify_fixture;
 
 static void setup(sign_and_verify_fixture* fixture);
+static void teardown(sign_and_verify_fixture* fixture);
 
 int main()
 {
@@ -87,6 +88,11 @@ static void setup(sign_and_verify_fixture* fixture)
     fixture->sk_rev_list.list=NULL;
 }
 
+static void teardown(sign_and_verify_fixture *fixture)
+{
+    destroy_test_rng(&fixture->rng);
+}
+
 static void sign_then_verify_good()
 {
     printf("Starting sign-and-verify::sign_then_verify_good...\n");
@@ -98,6 +104,8 @@ static void sign_then_verify_good()
     TEST_ASSERT(0 == ecdaa_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
 
     TEST_ASSERT(0 == ecdaa_verify(&sig, &fixture.ipk.gpk, &fixture.sk_rev_list, fixture.msg, fixture.msg_len));
+
+    teardown(&fixture);
 
     printf("\tsuccess\n");
 }
@@ -118,6 +126,8 @@ static void sign_then_verify_on_rev_list()
     TEST_ASSERT(0 == ecdaa_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
 
     TEST_ASSERT(0 != ecdaa_verify(&sig, &fixture.ipk.gpk, &sk_rev_list_bad, fixture.msg, fixture.msg_len));
+
+    teardown(&fixture);
 
     printf("\tsuccess\n");
 }
@@ -144,6 +154,8 @@ static void sign_benchmark()
     gettimeofday(&tv2, NULL);
     unsigned long long elapsed = (tv2.tv_usec + tv2.tv_sec * 1000000) -
         (tv1.tv_usec + tv1.tv_sec * 1000000);
+
+    teardown(&fixture);
 
     printf("%llu usec (%6llu signs/s)\n",
             elapsed,
@@ -174,6 +186,8 @@ static void verify_benchmark()
     gettimeofday(&tv2, NULL);
     unsigned long long elapsed = (tv2.tv_usec + tv2.tv_sec * 1000000) -
         (tv1.tv_usec + tv1.tv_sec * 1000000);
+
+    teardown(&fixture);
 
     printf("%llu usec (%6llu verifications/s)\n",
             elapsed,
