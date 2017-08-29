@@ -19,6 +19,7 @@
 #include <xaptum-ecdaa/issuer_keypair.h>
 
 #include "pairing_curve_utils.h"
+#include "schnorr.h"
 
 int ecdaa_generate_issuer_key_pair(ecdaa_issuer_public_key_t *pk,
                                    ecdaa_issuer_secret_key_t *sk,
@@ -37,8 +38,9 @@ int ecdaa_generate_issuer_key_pair(ecdaa_issuer_public_key_t *pk,
     ECP2_BN254_mul(&pk->gpk.Y, sk->y);
 
     // 2) and a Schnorr-type signature to prove our knowledge of those two random Bignums.
-    // HEADS-UP: toOctet adds 0x04, so need to do this manually? (to fit FIDO)
-    // TODO: Do a 'double-Schnorr'
+    int sign_ret = issuer_schnorr_sign(&pk->c, &pk->sx, &pk->sy, &pk->gpk.X, &pk->gpk.Y, sk->x, sk->y, rng);
+    if (0 != sign_ret)
+        return -1;
 
     return 0;
 }

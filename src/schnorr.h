@@ -26,6 +26,7 @@ extern "C" {
 
 #include <amcl/big_256_56.h>
 #include <amcl/ecp_BN254.h>
+#include <amcl/ecp2_BN254.h>
 #include <amcl/randapi.h>
 
 #include <stdint.h>
@@ -148,6 +149,51 @@ int credential_schnorr_verify(BIG_256_56 c,
                               ECP_BN254 *B,
                               ECP_BN254 *member_public_key,
                               ECP_BN254 *D);
+
+/*
+ * Perform an 'issuer-Schnorr' signature, used by an Issuer when creating its own key-pair.
+ *
+ * c_out = Hash ( rx*generator_2 | ry*generator_2 | generator_2 | X | Y ),
+ * sx_out = rx + c_out * private_key_x,
+ * sy_out = ry + c_out * private_key_y,
+ *  where rx = RAND(Z_p),
+ *  ry = RAND(Z_p),
+ *  X, Y is the issuer's public key,
+ *  private_key_x, private_key_y is the issuer's private key.
+ *
+ * c_out, sx_out, and sy_out will be reduced modulo the group order (and thus normalized) upon return
+ *
+ *  Returns:
+ *   0 on success
+ */
+int issuer_schnorr_sign(BIG_256_56 *c_out,
+                        BIG_256_56 *sx_out,
+                        BIG_256_56 *sy_out,
+                        ECP2_BN254 *X,
+                        ECP2_BN254 *Y,
+                        BIG_256_56 issuer_private_key_x,
+                        BIG_256_56 issuer_private_key_y,
+                        csprng *rng);
+
+/*
+ * Verify that (c, sx, sy) is a valid 'issuer-Schnorr' signature.
+ *
+ * Check c = Hash( sx*generator_2 - c*X | sy*generator_2 - c*Y | generator_2 | X | Y ),
+ *
+ * c and s must be reduced modulo group order (and thus normalized, too), first
+ *
+ * NOTE: Because this is used as part of a verification process,
+ * THE VALIDITY OF X, AND Y ARE NOT CHECKED.
+ *
+ * Returns:
+ *  0 on success
+ *  -1 if (c, s) is not a valid signature
+ */
+int issuer_schnorr_verify(BIG_256_56 c,
+                          BIG_256_56 sx,
+                          BIG_256_56 sy,
+                          ECP2_BN254 *X,
+                          ECP2_BN254 *Y);
 
 #ifdef __cplusplus
 }

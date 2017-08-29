@@ -288,3 +288,121 @@ int credential_schnorr_verify(BIG_256_56 c,
 
     return ret;
 }
+
+int issuer_schnorr_sign(BIG_256_56 *c_out,
+                        BIG_256_56 *sx_out,
+                        BIG_256_56 *sy_out,
+                        ECP2_BN254 *X,
+                        ECP2_BN254 *Y,
+                        BIG_256_56 issuer_private_key_x,
+                        BIG_256_56 issuer_private_key_y,
+                        csprng *rng)
+{
+    // 1) Set generator_2
+    ECP2_BN254 generator_2;
+    set_to_basepoint2(&generator_2);
+
+    // 2) Choose random rx, ry <- Z_n
+    BIG_256_56 rx, ry;
+    random_num_mod_order(&rx, rng);
+    random_num_mod_order(&ry, rng);
+
+    // 3) Multiply generator_2 by rx: Ux = rx*generator_2
+    ECP2_BN254 Ux;
+    ECP2_BN254_copy(&Ux, &generator_2);
+    ECP2_BN254_mul(&Ux, rx);
+
+    // 4) Multiply generator_2 by ry: Uy = ry*generator_2
+    ECP2_BN254 Uy;
+    ECP2_BN254_copy(&Uy, &generator_2);
+    ECP2_BN254_mul(&Uy, ry);
+
+    // 5) Compute c = Hash( Ux | Uy | generator_2 | X | Y )
+    uint8_t hash_input[645];
+    assert(5*serialized_point_length_2 == sizeof(hash_input));
+    serialize_point2(hash_input, &Ux);
+    serialize_point2(hash_input+serialized_point_length_2, &Uy);
+    serialize_point2(hash_input+2*serialized_point_length_2, &generator_2);
+    serialize_point2(hash_input+3*serialized_point_length_2, X);
+    serialize_point2(hash_input+4*serialized_point_length_2, Y);
+    hash_into_mpi(c_out, hash_input, sizeof(hash_input));
+
+    // 6) Compute sx = rx + c * private_key_x
+    BIG_256_56 curve_order;
+    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
+    mpi_mod_mul_and_add(sx_out, rx, *c_out, issuer_private_key_x, curve_order);    // normalizes and mod-reduces sx_out and c_out
+
+    // 7) Compute sy = ry + c * private_key_y
+    mpi_mod_mul_and_add(sy_out, ry, *c_out, issuer_private_key_y, curve_order);    // normalizes and mod-reduces sy_out and c_out
+
+    // Clear intermediate, sensitive memory.
+    explicit_bzero(&rx, sizeof(BIG_256_56));
+    explicit_bzero(&ry, sizeof(BIG_256_56));
+
+    return 0;
+}
+
+int issuer_schnorr_verify(BIG_256_56 c,
+                          BIG_256_56 sx,
+                          BIG_256_56 sy,
+                          ECP2_BN254 *X,
+                          ECP2_BN254 *Y)
+{
+    int ret = 0;
+
+    // 1) Set generator_2
+    ECP2_BN254 generator_2;
+    set_to_basepoint2(&generator_2);
+
+    // 2) Multiply generator_2 by sx (R1 = sx*P2)
+    ECP2_BN254 R1;
+    ECP2_BN254_copy(&R1, &generator_2);
+    ECP2_BN254_mul(&R1, sx);
+
+    // 3) Multiply X by c (X_c = c*X)
+    ECP2_BN254 X_c;
+    ECP2_BN254_copy(&X_c, X);
+    ECP2_BN254_mul(&X_c, c);
+
+    // 4) Compute difference of R1 and c*X, and save to R1 (R1 = sx*P2 - c*X)
+    ECP2_BN254_sub(&R1, &X_c);
+    // Nb. No need to call ECP2_BN254_affine here,
+    // as R1 gets passed to ECP2_BN254_toOctet in a minute (which implicitly converts to affine)
+
+    // 5) Multiply generator_2 by sy (R2 = sy*P2)
+    ECP2_BN254 R2;
+    ECP2_BN254_copy(&R2, &generator_2);
+    ECP2_BN254_mul(&R2, sy);
+
+    // 6) Multiply Y by c (Y_c = c*Y)
+    ECP2_BN254 Y_c;
+    ECP2_BN254_copy(&Y_c, Y);
+    ECP2_BN254_mul(&Y_c, c);
+
+    // 7) Compute difference of R2 and c*Y, and save to R2 (R2 = sy*P2 - c*Y)
+    ECP2_BN254_sub(&R2, &Y_c);
+    // Nb. No need to call ECP2_BN254_affine here,
+    // as R1 gets passed to ECP2_BN254_toOctet in a minute (which implicitly converts to affine)
+
+    // 8) Compute c' = Hash( R1 | R2 | generator_2 | X | Y )
+    //      (modular-reduce c', too).
+    uint8_t hash_input[645];
+    assert(5*serialized_point_length_2 == sizeof(hash_input));
+    serialize_point2(hash_input, &R1);
+    serialize_point2(hash_input+serialized_point_length_2, &R2);
+    serialize_point2(hash_input+2*serialized_point_length_2, &generator_2);
+    serialize_point2(hash_input+3*serialized_point_length_2, X);
+    serialize_point2(hash_input+4*serialized_point_length_2, Y);
+    BIG_256_56 c_prime;
+    hash_into_mpi(&c_prime, hash_input, sizeof(hash_input));
+    BIG_256_56 curve_order;
+    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
+    BIG_256_56_mod(c_prime, curve_order);
+
+    // 6) Compare c' and c
+    if (0 != BIG_256_56_comp(c_prime, c)) {
+        ret = -1;
+    }
+
+    return ret;
+}

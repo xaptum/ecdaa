@@ -44,6 +44,8 @@ static void schnorr_sign_integration();
 static void schnorr_sign_integration_other_basepoint();
 static void schnorr_credential_sign_sane();
 static void schnorr_credential_sign_integration();
+static void schnorr_issuer_sign_sane();
+static void schnorr_issuer_sign_integration();
 
 static void schnorr_sign_benchmark();
 
@@ -59,6 +61,8 @@ int main()
     schnorr_sign_integration_other_basepoint();
     schnorr_credential_sign_sane();
     schnorr_credential_sign_integration();
+    schnorr_issuer_sign_sane();
+    schnorr_issuer_sign_integration();
     schnorr_sign_benchmark();
 }
 
@@ -353,6 +357,66 @@ void schnorr_credential_sign_integration()
     TEST_ASSERT(0 == credential_schnorr_verify(c, s, &B, &member_public, &D));
 
     destroy_test_rng(&rng);
+
+    printf("\tsuccess\n");
+}
+
+void schnorr_issuer_sign_sane()
+{
+    printf("Starting schnorr::schnorr_issuer_sign_sane...\n");
+
+    BIG_256_56 issuer_private_x;
+    BIG_256_56 issuer_private_y;
+    ECP2_BN254 issuer_public_X;
+    ECP2_BN254 issuer_public_Y;
+    ECP2_BN254_mul(&issuer_public_X, issuer_private_x);
+    ECP2_BN254_mul(&issuer_public_Y, issuer_private_y);
+
+    BIG_256_56 c, sx, sy;
+
+    csprng rng;
+    create_test_rng(&rng);
+
+    TEST_ASSERT(0 == issuer_schnorr_sign(&c, &sx, &sy, &issuer_public_X, &issuer_public_Y, issuer_private_x, issuer_private_y, &rng));
+
+    destroy_test_rng(&rng);
+
+    TEST_ASSERT(0 == BIG_256_56_iszilch(c));
+    TEST_ASSERT(0 == BIG_256_56_iszilch(sx));
+    TEST_ASSERT(0 == BIG_256_56_iszilch(sy));
+    TEST_ASSERT(0 == BIG_256_56_isunity(c));
+    TEST_ASSERT(0 == BIG_256_56_isunity(sx));
+    TEST_ASSERT(0 == BIG_256_56_isunity(sy));
+
+    printf("\tsuccess\n");
+}
+
+void schnorr_issuer_sign_integration()
+{
+    printf("Starting schnorr::schnorr_issuer_sign_integration...\n");
+
+    csprng rng;
+    create_test_rng(&rng);
+
+    BIG_256_56 issuer_private_x;
+    random_num_mod_order(&issuer_private_x, &rng);
+    ECP2_BN254 issuer_public_X;
+    set_to_basepoint2(&issuer_public_X);
+    ECP2_BN254_mul(&issuer_public_X, issuer_private_x);
+
+    BIG_256_56 issuer_private_y;
+    random_num_mod_order(&issuer_private_y, &rng);
+    ECP2_BN254 issuer_public_Y;
+    set_to_basepoint2(&issuer_public_Y);
+    ECP2_BN254_mul(&issuer_public_Y, issuer_private_y);
+
+    BIG_256_56 c, sx, sy;
+
+    TEST_ASSERT(0 == issuer_schnorr_sign(&c, &sx, &sy, &issuer_public_X, &issuer_public_Y, issuer_private_x, issuer_private_y, &rng));
+
+    destroy_test_rng(&rng);
+
+    TEST_ASSERT(0 == issuer_schnorr_verify(c, sx, sy, &issuer_public_X, &issuer_public_Y));
 
     printf("\tsuccess\n");
 }
