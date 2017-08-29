@@ -63,7 +63,13 @@ static void sign_then_verify()
     ecdaa_signature_t sig;
     TEST_ASSERT(0 == sign(&sig, &sk, &cred, msg, msg_len, &rng));
 
-    TEST_ASSERT(0 == verify(&sig, &ipk, msg, msg_len));
+    sk_revocation_list_t sk_rev_list = {.length=0, .list=NULL};
+    TEST_ASSERT(0 == verify(&sig, &ipk, &sk_rev_list, msg, msg_len));
+
+    member_join_secret_key_t sk_rev_list_bad_raw[1];
+    BIG_256_56_copy(sk_rev_list_bad_raw[0].sk, sk.sk);
+    sk_revocation_list_t sk_rev_list_bad = {.length=1, .list=sk_rev_list_bad_raw};
+    TEST_ASSERT(0 != verify(&sig, &ipk, &sk_rev_list_bad, msg, msg_len));
 
     printf("\tsuccess\n");
 }

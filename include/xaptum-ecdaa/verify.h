@@ -29,6 +29,7 @@ extern "C" {
 
 int verify(ecdaa_signature_t *signature,
            issuer_public_key_t *issuer_pk,
+           sk_revocation_list_t *sk_rev_list,
            uint8_t* message,
            uint32_t message_len);
 

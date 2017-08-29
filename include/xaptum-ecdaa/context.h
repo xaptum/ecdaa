@@ -58,6 +58,11 @@ typedef struct {
     BIG_256_56 s;
 } member_join_public_key_t;
 
+typedef struct {
+    size_t length;
+    member_join_secret_key_t *list;
+} sk_revocation_list_t;
+
 int generate_member_join_key_pair(member_join_public_key_t *pk,
                                   member_join_secret_key_t *sk,
                                   nonce_t nonce,

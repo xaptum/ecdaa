@@ -27,6 +27,7 @@
 
 int verify(ecdaa_signature_t *signature,
            issuer_public_key_t *issuer_pk,
+           sk_revocation_list_t *sk_rev_list,
            uint8_t* message,
            uint32_t message_len)
 {
@@ -76,6 +77,15 @@ int verify(ecdaa_signature_t *signature,
     compute_pairing(&pairing_two_prime, &RW, &issuer_pk->X);
     if (!FP12_BN254_equals(&pairing_two, &pairing_two_prime))
         ret = -1;
+
+    // 6) Check W against sk_revocation_list
+    ECP_BN254 Wcheck;
+    for (size_t i = 0; i < sk_rev_list->length; ++i) {
+        ECP_BN254_copy(&Wcheck, &signature->S);
+        ECP_BN254_mul(&Wcheck, sk_rev_list->list[i].sk);
+        if (ECP_BN254_equals(&Wcheck, &signature->W))
+            ret = -1;
+    }
 
     return ret;
 }
