@@ -26,11 +26,17 @@
 
 #include <string.h>
 
+#include <sys/time.h>
+
 static void sign_then_verify();
+static void sign_benchmark();
+static void verify_benchmark();
 
 int main()
 {
     sign_then_verify();
+    sign_benchmark();
+    verify_benchmark();
 }
 
 static void sign_then_verify()
@@ -72,4 +78,103 @@ static void sign_then_verify()
     TEST_ASSERT(0 != verify(&sig, &ipk, &sk_rev_list_bad, msg, msg_len));
 
     printf("\tsuccess\n");
+}
+
+static void sign_benchmark()
+{
+    unsigned rounds = 250;
+
+    printf("Starting integration::sign_benchmark (%d iterations)...\n", rounds);
+
+    csprng rng;
+#define SEED_LEN 256
+    char seed_as_bytes[SEED_LEN];
+    randombytes_buf(seed_as_bytes, SEED_LEN);
+    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
+    CREATE_CSPRNG(&rng, &seed);
+
+    issuer_public_key_t ipk;
+    issuer_secret_key_t isk;
+    nonce_t nonce = {{0}};
+    generate_issuer_key_pair(&ipk, &isk, &rng);
+
+    member_join_public_key_t pk;
+    member_join_secret_key_t sk;
+    generate_member_join_key_pair(&pk, &sk, nonce, &rng);
+
+    credential_t cred;
+    BIG_256_56 c_ignore, s_ignore;
+    generate_credential(&cred, &c_ignore, &s_ignore, &isk, &pk, &rng);
+
+    uint8_t *msg = (uint8_t*) "Test message";
+    uint32_t msg_len = strlen((char*)msg);
+
+    ecdaa_signature_t sig;
+
+    struct timeval tv1;
+    gettimeofday(&tv1, NULL);
+
+    for (unsigned i = 0; i < rounds; i++) {
+        TEST_ASSERT(0 == sign(&sig, &sk, &cred, msg, msg_len, &rng));
+    }
+
+    struct timeval tv2;
+    gettimeofday(&tv2, NULL);
+    unsigned long long elapsed = (tv2.tv_usec + tv2.tv_sec * 1000000) -
+        (tv1.tv_usec + tv1.tv_sec * 1000000);
+
+    printf("%llu usec (%6llu signs/s)\n",
+            elapsed,
+            rounds * 1000000ULL / elapsed);
+}
+
+static void verify_benchmark()
+{
+    unsigned rounds = 250;
+
+    printf("Starting integration::verify_benchmark (%d iterations)...\n", rounds);
+
+    csprng rng;
+#define SEED_LEN 256
+    char seed_as_bytes[SEED_LEN];
+    randombytes_buf(seed_as_bytes, SEED_LEN);
+    octet seed = {.len=SEED_LEN, .max=SEED_LEN, .val=seed_as_bytes};
+    CREATE_CSPRNG(&rng, &seed);
+
+    issuer_public_key_t ipk;
+    issuer_secret_key_t isk;
+    nonce_t nonce = {{0}};
+    generate_issuer_key_pair(&ipk, &isk, &rng);
+
+    member_join_public_key_t pk;
+    member_join_secret_key_t sk;
+    generate_member_join_key_pair(&pk, &sk, nonce, &rng);
+
+    credential_t cred;
+    BIG_256_56 c_ignore, s_ignore;
+    generate_credential(&cred, &c_ignore, &s_ignore, &isk, &pk, &rng);
+
+    uint8_t *msg = (uint8_t*) "Test message";
+    uint32_t msg_len = strlen((char*)msg);
+
+    ecdaa_signature_t sig;
+    TEST_ASSERT(0 == sign(&sig, &sk, &cred, msg, msg_len, &rng));
+
+    sk_revocation_list_t sk_rev_list = {.length=0, .list=NULL};
+
+    struct timeval tv1;
+    gettimeofday(&tv1, NULL);
+
+    for (unsigned i = 0; i < rounds; i++) {
+        TEST_ASSERT(0 == verify(&sig, &ipk, &sk_rev_list, msg, msg_len));
+    }
+
+    struct timeval tv2;
+    gettimeofday(&tv2, NULL);
+    unsigned long long elapsed = (tv2.tv_usec + tv2.tv_sec * 1000000) -
+        (tv1.tv_usec + tv1.tv_sec * 1000000);
+
+    printf("%llu usec (%6llu verifications/s)\n",
+            elapsed,
+            rounds * 1000000ULL / elapsed);
 }
