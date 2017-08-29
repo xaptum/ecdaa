@@ -30,6 +30,8 @@ int verify(ecdaa_signature_t *signature,
            uint8_t* message,
            uint32_t message_len)
 {
+    int ret = 0;
+
     // 1) Check Schnorr-type signature
     int schnorr_ret = schnorr_verify(signature->c,
                                      signature->s,
@@ -38,7 +40,7 @@ int verify(ecdaa_signature_t *signature,
                                      &signature->S,
                                      &signature->W);
     if (0 != schnorr_ret)
-        return -1;
+        ret = -1;
 
     ECP2_BN254 basepoint2;
     set_to_basepoint2(&basepoint2);
@@ -49,7 +51,7 @@ int verify(ecdaa_signature_t *signature,
     compute_pairing(&pairing_one, &signature->R, &issuer_pk->Y);
     compute_pairing(&pairing_one_prime, &signature->S, &basepoint2);
     if (!FP12_BN254_equals(&pairing_one, &pairing_one_prime))
-        return -1;
+        ret = -1;
 
     // 3) Compute R+W
     ECP_BN254 RW;
@@ -62,7 +64,7 @@ int verify(ecdaa_signature_t *signature,
     compute_pairing(&pairing_two, &signature->T, &basepoint2);
     compute_pairing(&pairing_two_prime, &RW, &issuer_pk->X);
     if (!FP12_BN254_equals(&pairing_two, &pairing_two_prime))
-        return -1;
+        ret = -1;
 
-    return 0;
+    return ret;
 }
