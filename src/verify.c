@@ -30,9 +30,20 @@ int verify(ecdaa_signature_t *signature,
            uint8_t* message,
            uint32_t message_len)
 {
+    // NOTE: Assumes issuer_pk has already been checked for validity
+
     int ret = 0;
 
-    // 1) Check Schnorr-type signature
+    // 1) Check R,S,T,W for membership in group, and R and S for !=inf
+    if (0 != check_point_membership(&signature->R)
+            || 0 != check_point_membership(&signature->S)
+            || 0 != check_point_membership(&signature->T)
+            || 0 != check_point_membership(&signature->W))
+        ret = -1;
+    if (ECP_BN254_isinf(&signature->R) || ECP_BN254_isinf(&signature->S))
+        ret = -1;
+    
+    // 2) Check Schnorr-type signature
     int schnorr_ret = schnorr_verify(signature->c,
                                      signature->s,
                                      message,
@@ -45,7 +56,7 @@ int verify(ecdaa_signature_t *signature,
     ECP2_BN254 basepoint2;
     set_to_basepoint2(&basepoint2);
 
-    // 2) Check e(R, Y) == e(S, P_2)
+    // 3) Check e(R, Y) == e(S, P_2)
     FP12_BN254 pairing_one;
     FP12_BN254 pairing_one_prime;
     compute_pairing(&pairing_one, &signature->R, &issuer_pk->Y);
@@ -53,12 +64,12 @@ int verify(ecdaa_signature_t *signature,
     if (!FP12_BN254_equals(&pairing_one, &pairing_one_prime))
         ret = -1;
 
-    // 3) Compute R+W
+    // 4) Compute R+W
     ECP_BN254 RW;
     ECP_BN254_copy(&RW, &signature->R);
     ECP_BN254_add(&RW, &signature->W);
 
-    // 4) Check e(T, P_2) == e(R+W, X)
+    // 5) Check e(T, P_2) == e(R+W, X)
     FP12_BN254 pairing_two;
     FP12_BN254 pairing_two_prime;
     compute_pairing(&pairing_two, &signature->T, &basepoint2);
