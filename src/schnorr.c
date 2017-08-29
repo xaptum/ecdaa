@@ -63,11 +63,6 @@ int convert_schnorr_public_key_from_bytes(const octet *public_key_as_bytes, ECP_
 
         if (ECP_BN254_isinf(public_key))
             ret = -1;
-
-        if (0 == ret) {
-            if (0 != check_point_membership(public_key))
-                ret = -1;
-        }
     }
 
     return ret;
@@ -142,24 +137,28 @@ int schnorr_verify(BIG_256_56 c,
                    ECP_BN254 *basepoint,
                    ECP_BN254 *public_key)
 {
-    // NOTE: Assumes public_key has already been checked for validity.
+    int ret = 0;
 
-    // 1) Multiply basepoint by s (R = s*P)
+    // 1) Check public key for validity
+    if (0 != check_point_membership(public_key))
+        ret = -1;
+
+    // 2) Multiply basepoint by s (R = s*P)
     ECP_BN254 R;
     ECP_BN254_copy(&R, basepoint);
     ECP_BN254_mul(&R, s);
 
-    // 2) Multiply public_key by c (Q_c = c *public_key)
+    // 3) Multiply public_key by c (Q_c = c *public_key)
     ECP_BN254 Q_c;
     ECP_BN254_copy(&Q_c, public_key);
     ECP_BN254_mul(&Q_c, c);
 
-    // 3) Compute difference of R and c*Q, and save to R (R = s*P - c*public_key)
+    // 4) Compute difference of R and c*Q, and save to R (R = s*P - c*public_key)
     ECP_BN254_sub(&R, &Q_c);
     // Nb. No need to call ECP_BN254_affine here,
     // as R gets passed to ECP_BN254_toOctet in a minute (which implicitly converts to affine)
 
-    // 4) Compute c' = Hash( R | basepoint | msg_in )
+    // 5) Compute c' = Hash( R | basepoint | msg_in )
     //      (modular-reduce c', too).
     uint8_t hash_input_begin[195];
     size_t serialized_point_length = 2*MODBYTES_256_56 + 1;
@@ -182,10 +181,10 @@ int schnorr_verify(BIG_256_56 c,
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
     BIG_256_56_mod(c_prime, curve_order);
 
-    // 5) Compare c' and c
+    // 6) Compare c' and c
     if (0 != BIG_256_56_comp(c_prime, c)) {
-        return -1;
+        ret = -1;
     }
 
-    return 0;
+    return ret;
 }

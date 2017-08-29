@@ -41,7 +41,7 @@ void schnorr_keygen(ECP_BN254 *public_out,
                     csprng *rng);
 
 /*
- * De-serialize a Schnorr public key, and check it for validity.
+ * De-serialize a Schnorr public key.
  *
  * Serialized format is expected to be
  *  [0x4 | x-coord | y-coord]
@@ -89,7 +89,6 @@ int schnorr_sign(BIG_256_56 *c_out,
  * Verify that (c, s) is a valid Schnorr signature of msg_in, allowing for a non-standard basepoint.
  *
  * Check c = Hash( s*basepoint - c*public_key | basepoint | public_key | msg_in )
- * NOTE: Assumes public key has already been checked for validity!
  *
  * c and s must be reduced modulo group order (and thus normalized, too), first
  *
