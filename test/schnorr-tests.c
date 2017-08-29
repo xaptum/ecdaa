@@ -139,7 +139,7 @@ void schnorr_sign_sane()
     TEST_ASSERT(0 == BIG_256_56_isunity(c));
     TEST_ASSERT(0 == BIG_256_56_isunity(s));
 
-    KILL_CSPRNG(&rng);
+    destroy_test_rng(&rng);
 
     printf("\tsuccess\n");
 }
@@ -310,7 +310,7 @@ void schnorr_credential_sign_sane()
 
     TEST_ASSERT(0 == credential_schnorr_sign(&c, &s, &B, &member_public, &D, issuer_private, credential_random, &rng));
 
-    KILL_CSPRNG(&rng);
+    destroy_test_rng(&rng);
 
     TEST_ASSERT(0 == BIG_256_56_iszilch(c));
     TEST_ASSERT(0 == BIG_256_56_iszilch(s));
