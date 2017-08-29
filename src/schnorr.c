@@ -269,31 +269,12 @@ int credential_schnorr_verify(BIG_256_56 c,
     //      (modular-reduce c', too).
     uint8_t hash_input[390];
     assert(6*serialized_point_length == sizeof(hash_input));
-    octet R1_serialized = {.len = 0,
-                           .max = serialized_point_length,
-                           .val = (char*)hash_input};
-    octet R2_serialized = {.len = 0,
-                           .max = serialized_point_length,
-                           .val = (char*)hash_input + serialized_point_length};
-    octet generator_serialized = {.len = 0,
-                                  .max = serialized_point_length,
-                                  .val = (char*)hash_input + 2*serialized_point_length};
-    octet B_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input + 3*serialized_point_length};
-    octet publickey_serialized = {.len = 0,
-                                  .max = serialized_point_length,
-                                  .val = (char*)hash_input + 4*serialized_point_length};
-    octet D_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input + 5*serialized_point_length};
-    ECP_BN254_toOctet(&R1_serialized, &R1);   // Serialize R1 into buffer
-    ECP_BN254_toOctet(&R2_serialized, &R2);   // Serialize R2 into buffer
-    ECP_BN254_toOctet(&generator_serialized, &generator);   // Serialize generator into buffer
-    ECP_BN254_toOctet(&B_serialized, B);   // Serialize B into buffer
-    ECP_BN254_toOctet(&publickey_serialized, member_public_key);   // Serialize member_public_key into buffer
-    ECP_BN254_toOctet(&D_serialized, D);   // Serialize D into buffer
-
+    serialize_point(hash_input, &R1);
+    serialize_point(hash_input+serialized_point_length, &R2);
+    serialize_point(hash_input+2*serialized_point_length, &generator);
+    serialize_point(hash_input+3*serialized_point_length, B);
+    serialize_point(hash_input+4*serialized_point_length, member_public_key);
+    serialize_point(hash_input+5*serialized_point_length, D);
     BIG_256_56 c_prime;
     hash_into_mpi(&c_prime, hash_input, sizeof(hash_input));
     BIG_256_56 curve_order;
