@@ -29,6 +29,27 @@ extern "C" {
 #include <amcl/ecp2_BN254.h>
 #include <amcl/fp12_BN254.h>
 
+#include <stddef.h>
+
+extern const size_t serialized_point_length;
+extern const size_t serialized_point_length_2;
+
+/*
+ * Serialize a G1 point.
+ *
+ * Format: ( 0x04 | x-coordinate | y-coordinate )
+ */
+void serialize_point(uint8_t *buffer,
+                     ECP_BN254 *point);
+
+/*
+ * Serialize a G2 point.
+ *
+ * Format: ( 0x04 | x-coordinate-real-part | x-coordinate-imaginary-part | y-coordinate-real-part | y-coordinate-imaginary-part )
+ */
+void serialize_point2(uint8_t *buffer,
+                      ECP2_BN254 *point);
+
 /*
  * Generate a uniformly-distributed pseudo-random number,
  * between [0, n], where n is the order of the EC group.

@@ -22,6 +22,31 @@
 #include <amcl/fp2_BN254.h>
 #include <amcl/pair_BN254.h>
 
+const size_t serialized_point_length = 2*MODBYTES_256_56 + 1;
+const size_t serialized_point_length_2 = 4*MODBYTES_256_56 + 1;
+
+void serialize_point(uint8_t *buffer,
+                     ECP_BN254 *point)
+{
+    octet as_oct = {.len = 0,
+                    .max = serialized_point_length,
+                    .val = (char*)buffer};
+
+    ECP_BN254_toOctet(&as_oct, point);
+}
+
+void serialize_point2(uint8_t *buffer,
+                      ECP2_BN254 *point)
+{
+    buffer[0] = 0x04;
+
+    octet as_oct = {.len = 0,
+                    .max = serialized_point_length,
+                    .val = (char*)buffer + 1};
+
+    ECP2_BN254_toOctet(&as_oct, point);
+}
+
 void random_num_mod_order(BIG_256_56 *num_out, csprng *rng)
 {
     BIG_256_56 curve_order;

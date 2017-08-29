@@ -27,8 +27,6 @@
 
 #include <assert.h>
 
-static const size_t serialized_point_length = 2*MODBYTES_256_56 + 1;
-
 void schnorr_keygen(ECP_BN254 *public_out,
                     BIG_256_56 *private_out,
                     csprng *rng)
@@ -107,18 +105,9 @@ int schnorr_sign(BIG_256_56 *c_out,
     // 4) (Sign 1) Compute c = Hash( R | basepoint | public_key | msg_in )
     uint8_t hash_input_begin[195];
     assert(3*serialized_point_length == sizeof(hash_input_begin));
-    octet R_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input_begin};
-    octet basepoint_serialized = {.len = 0,
-                                  .max = serialized_point_length,
-                                  .val = (char*)hash_input_begin + serialized_point_length};
-    octet publickey_serialized = {.len = 0,
-                                  .max = serialized_point_length,
-                                  .val = (char*)hash_input_begin + 2*serialized_point_length};
-    ECP_BN254_toOctet(&R_serialized, &R);   // Serialize R into buffer
-    ECP_BN254_toOctet(&basepoint_serialized, basepoint);   // Serialize basepoint into buffer
-    ECP_BN254_toOctet(&publickey_serialized, public_key);   // Serialize public_key into buffer
+    serialize_point(hash_input_begin, &R);
+    serialize_point(hash_input_begin+serialized_point_length, basepoint);
+    serialize_point(hash_input_begin+2*serialized_point_length, public_key);
     hash_into_mpi_two(c_out, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
 
     // 5) (Sign 2) Compute s = k + c * private_key
@@ -164,18 +153,9 @@ int schnorr_verify(BIG_256_56 c,
     //      (modular-reduce c', too).
     uint8_t hash_input_begin[195];
     assert(3*serialized_point_length == sizeof(hash_input_begin));
-    octet R_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input_begin};
-    octet basepoint_serialized = {.len = 0,
-                                  .max = serialized_point_length,
-                                  .val = (char*)hash_input_begin + serialized_point_length};
-    octet publickey_serialized = {.len = 0,
-                                  .max = serialized_point_length,
-                                  .val = (char*)hash_input_begin + 2*serialized_point_length};
-    ECP_BN254_toOctet(&R_serialized, &R);   // Serialize R into buffer
-    ECP_BN254_toOctet(&basepoint_serialized, basepoint);   // Serialize basepoint into buffer
-    ECP_BN254_toOctet(&publickey_serialized, public_key);   // Serialize public_key into buffer
+    serialize_point(hash_input_begin, &R);
+    serialize_point(hash_input_begin+serialized_point_length, basepoint);
+    serialize_point(hash_input_begin+2*serialized_point_length, public_key);
     BIG_256_56 c_prime;
     hash_into_mpi_two(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
     BIG_256_56 curve_order;
@@ -220,30 +200,12 @@ int credential_schnorr_sign(BIG_256_56 *c_out,
     // 5) Compute c = Hash( U | V | generator | B | member_public_key | D )
     uint8_t hash_input[390];
     assert(6*serialized_point_length == sizeof(hash_input));
-    octet U_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input};
-    octet V_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input + serialized_point_length};
-    octet generator_serialized = {.len = 0,
-                                  .max = serialized_point_length,
-                                  .val = (char*)hash_input + 2*serialized_point_length};
-    octet B_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input + 3*serialized_point_length};
-    octet publickey_serialized = {.len = 0,
-                                  .max = serialized_point_length,
-                                  .val = (char*)hash_input + 4*serialized_point_length};
-    octet D_serialized = {.len = 0,
-                          .max = serialized_point_length,
-                          .val = (char*)hash_input + 5*serialized_point_length};
-    ECP_BN254_toOctet(&U_serialized, &U);   // Serialize U into buffer
-    ECP_BN254_toOctet(&V_serialized, &V);   // Serialize V into buffer
-    ECP_BN254_toOctet(&generator_serialized, &generator);   // Serialize generator into buffer
-    ECP_BN254_toOctet(&B_serialized, B);   // Serialize B into buffer
-    ECP_BN254_toOctet(&publickey_serialized, member_public_key);   // Serialize member_public_key into buffer
-    ECP_BN254_toOctet(&D_serialized, D);   // Serialize D into buffer
+    serialize_point(hash_input, &U);
+    serialize_point(hash_input+serialized_point_length, &V);
+    serialize_point(hash_input+2*serialized_point_length, &generator);
+    serialize_point(hash_input+3*serialized_point_length, B);
+    serialize_point(hash_input+4*serialized_point_length, member_public_key);
+    serialize_point(hash_input+5*serialized_point_length, D);
     hash_into_mpi(c_out, hash_input, sizeof(hash_input));
 
     // 6) Compute ly = (credential_random x issuer_private_key_y) mod curve_order
