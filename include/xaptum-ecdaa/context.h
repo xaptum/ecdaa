@@ -65,7 +65,7 @@ typedef struct {
 
 int generate_member_join_key_pair(member_join_public_key_t *pk,
                                   member_join_secret_key_t *sk,
-                                  nonce_t nonce,
+                                  nonce_t *nonce,
                                   csprng *rng);
 
 typedef struct {

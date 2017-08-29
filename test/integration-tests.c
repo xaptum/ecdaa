@@ -57,7 +57,7 @@ static void sign_then_verify()
 
     member_join_public_key_t pk;
     member_join_secret_key_t sk;
-    generate_member_join_key_pair(&pk, &sk, nonce, &rng);
+    generate_member_join_key_pair(&pk, &sk, &nonce, &rng);
 
     credential_t cred;
     BIG_256_56 c_ignore, s_ignore;
@@ -100,7 +100,7 @@ static void sign_benchmark()
 
     member_join_public_key_t pk;
     member_join_secret_key_t sk;
-    generate_member_join_key_pair(&pk, &sk, nonce, &rng);
+    generate_member_join_key_pair(&pk, &sk, &nonce, &rng);
 
     credential_t cred;
     BIG_256_56 c_ignore, s_ignore;
@@ -148,7 +148,7 @@ static void verify_benchmark()
 
     member_join_public_key_t pk;
     member_join_secret_key_t sk;
-    generate_member_join_key_pair(&pk, &sk, nonce, &rng);
+    generate_member_join_key_pair(&pk, &sk, &nonce, &rng);
 
     credential_t cred;
     BIG_256_56 c_ignore, s_ignore;

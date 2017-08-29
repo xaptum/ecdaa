@@ -54,7 +54,7 @@ int generate_issuer_key_pair(issuer_public_key_t *pk,
 
 int generate_member_join_key_pair(member_join_public_key_t *pk,
                                   member_join_secret_key_t *sk,
-                                  nonce_t nonce,
+                                  nonce_t *nonce,
                                   csprng *rng)
 {
     // 1) Generate Schnorr-type keypair,
@@ -65,8 +65,8 @@ int generate_member_join_key_pair(member_join_public_key_t *pk,
     set_to_basepoint(&basepoint);
     int sign_ret = schnorr_sign(&pk->c,
                                 &pk->s,
-                                nonce.data,
-                                sizeof(nonce),
+                                nonce->data,
+                                sizeof(nonce_t),
                                 &basepoint,
                                 &pk->Q,
                                 sk->sk,
