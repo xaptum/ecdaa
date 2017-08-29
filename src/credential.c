@@ -21,16 +21,17 @@
 #include "schnorr.h"
 #include "explicit_bzero.h"
 
-#include <xaptum-ecdaa/issuer.h>
-#include <xaptum-ecdaa/member.h>
 #include <xaptum-ecdaa/member_keypair.h>
+#include <xaptum-ecdaa/issuer_keypair.h>
+#include <xaptum-ecdaa/group_public_key.h>
 
 #include "pairing_curve_utils.h"
 
 int ecdaa_generate_credential(ecdaa_credential_t *cred,
                               ecdaa_credential_signature_t *cred_sig_out,
-                              struct ecdaa_issuer_t *issuer,
-                              struct ecdaa_member_public_key_t *member_pk)
+                              struct ecdaa_issuer_secret_key_t *isk,
+                              struct ecdaa_member_public_key_t *member_pk,
+                              csprng *rng)
 {
     int ret = 0;
 
@@ -39,7 +40,7 @@ int ecdaa_generate_credential(ecdaa_credential_t *cred,
 
     // 1) Choose random l <- Z_p
     BIG_256_56 l;
-    random_num_mod_order(&l, &issuer->rng);
+    random_num_mod_order(&l, rng);
 
     // 2) Multiply generator by l and save to cred->A (A = l*P)
     set_to_basepoint(&cred->A);
@@ -47,11 +48,11 @@ int ecdaa_generate_credential(ecdaa_credential_t *cred,
 
     // 3) Multiply A by my secret y and save to cred->B (B = y*A)
     ECP_BN254_copy(&cred->B, &cred->A);
-    ECP_BN254_mul(&cred->B, issuer->sk.y);
+    ECP_BN254_mul(&cred->B, isk->y);
 
     // 4) Mod-multiply l and y
     BIG_256_56 ly;
-    BIG_256_56_modmul(ly, l, issuer->sk.y, curve_order);
+    BIG_256_56_modmul(ly, l, isk->y, curve_order);
 
     // 5) Multiply member's public_key by ly and save to cred->D (D = ly*Q)
     ECP_BN254_copy(&cred->D, &member_pk->Q);
@@ -59,11 +60,11 @@ int ecdaa_generate_credential(ecdaa_credential_t *cred,
 
     // 6) Multiply A by my secret x (store in cred->C temporarily)
     ECP_BN254_copy(&cred->C, &cred->A);
-    ECP_BN254_mul(&cred->C, issuer->sk.x);
+    ECP_BN254_mul(&cred->C, isk->x);
 
     // 7) Mod-multiply ly (see step 4) by my secret x
     BIG_256_56 xyl;
-    BIG_256_56_modmul(xyl, ly, issuer->sk.x, curve_order);
+    BIG_256_56_modmul(xyl, ly, isk->x, curve_order);
 
     // 8) Multiply member's public_key by xyl
     ECP_BN254 Qxyl;
@@ -82,9 +83,9 @@ int ecdaa_generate_credential(ecdaa_credential_t *cred,
                                           &cred->B,
                                           &member_pk->Q,
                                           &cred->D,
-                                          issuer->sk.y,
+                                          isk->y,
                                           l,
-                                          &issuer->rng);
+                                          rng);
     if (0 != schnorr_ret)
         ret = -1;
 
@@ -96,7 +97,8 @@ int ecdaa_generate_credential(ecdaa_credential_t *cred,
 
 int ecdaa_validate_credential(struct ecdaa_credential_t *credential,
                               struct ecdaa_credential_signature_t *credential_signature,
-                              struct ecdaa_member_t *member)
+                              struct ecdaa_member_public_key_t *member_pk,
+                              struct ecdaa_group_public_key_t *gpk)
 {
     int ret = 0;
 
@@ -113,7 +115,7 @@ int ecdaa_validate_credential(struct ecdaa_credential_t *credential,
     int schnorr_ret = credential_schnorr_verify(credential_signature->c,
                                             credential_signature->s,
                                             &credential->B,
-                                            &member->pk.Q,
+                                            &member_pk->Q,
                                             &credential->D);
     if (0 != schnorr_ret)
         ret = -1;
@@ -124,7 +126,7 @@ int ecdaa_validate_credential(struct ecdaa_credential_t *credential,
     // 3) Check e(A, Y) == e(B, P_2)
     FP12_BN254 pairing_one;
     FP12_BN254 pairing_one_prime;
-    compute_pairing(&pairing_one, &credential->A, &member->gpk.Y);
+    compute_pairing(&pairing_one, &credential->A, &gpk->Y);
     compute_pairing(&pairing_one_prime, &credential->B, &basepoint2);
     if (!FP12_BN254_equals(&pairing_one, &pairing_one_prime))
         ret = -1;
@@ -138,7 +140,7 @@ int ecdaa_validate_credential(struct ecdaa_credential_t *credential,
     FP12_BN254 pairing_two;
     FP12_BN254 pairing_two_prime;
     compute_pairing(&pairing_two, &credential->C, &basepoint2);
-    compute_pairing(&pairing_two_prime, &AD, &member->gpk.X);
+    compute_pairing(&pairing_two_prime, &AD, &gpk->X);
     if (!FP12_BN254_equals(&pairing_two, &pairing_two_prime))
         ret = -1;
 

@@ -22,11 +22,10 @@
 
 #include "xaptum-ecdaa/credential.h"
 #include "xaptum-ecdaa/group_public_key.h"
-#include "xaptum-ecdaa/issuer.h"
 #include "xaptum-ecdaa/issuer_keypair.h"
 #include "xaptum-ecdaa/issuer_nonce.h"
-#include "xaptum-ecdaa/member.h"
 #include "xaptum-ecdaa/member_keypair.h"
+#include "xaptum-ecdaa/sign.h"
 #include "xaptum-ecdaa/signature.h"
 #include "xaptum-ecdaa/sk_revocation_list.h"
 #include "xaptum-ecdaa/verify.h"

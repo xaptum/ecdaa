@@ -16,11 +16,11 @@
  *
  *****************************************************************************/
 
-#include <xaptum-ecdaa/member.h>
+#include <xaptum-ecdaa/sign.h>
 
 #include <xaptum-ecdaa/signature.h>
 #include <xaptum-ecdaa/member_keypair.h>
-#include <xaptum-ecdaa/group_public_key.h>
+#include <xaptum-ecdaa/credential.h>
 
 #include "schnorr.h"
 #include "pairing_curve_utils.h"
@@ -28,29 +28,31 @@
 int ecdaa_sign(struct ecdaa_signature_t *signature_out,
                const uint8_t* message,
                uint32_t message_len,
-               ecdaa_member_t *member)
+               struct ecdaa_member_secret_key_t *sk,
+               struct ecdaa_credential_t *cred,
+               csprng *rng)
 {
     // 1) Choose random l <- Z_p
     BIG_256_56 l;
-    random_num_mod_order(&l, &member->rng);
+    random_num_mod_order(&l, rng);
 
     // 2) Multiply the four points in the credential by l,
     //  and save to the four points in the signature
 
     // 2i) Multiply cred->A by l and save to sig->R (R = l*A)
-    ECP_BN254_copy(&signature_out->R, &member->cred.A);
+    ECP_BN254_copy(&signature_out->R, &cred->A);
     ECP_BN254_mul(&signature_out->R, l);
 
     // 2ii) Multiply cred->B by l and save to sig->S (S = l*B)
-    ECP_BN254_copy(&signature_out->S, &member->cred.B);
+    ECP_BN254_copy(&signature_out->S, &cred->B);
     ECP_BN254_mul(&signature_out->S, l);
 
     // 2iii) Multiply cred->C by l and save to sig->T (T = l*C)
-    ECP_BN254_copy(&signature_out->T, &member->cred.C);
+    ECP_BN254_copy(&signature_out->T, &cred->C);
     ECP_BN254_mul(&signature_out->T, l);
 
     // 2iv) Multiply cred->D by l and save to sig->W (W = l*D)
-    ECP_BN254_copy(&signature_out->W, &member->cred.D);
+    ECP_BN254_copy(&signature_out->W, &cred->D);
     ECP_BN254_mul(&signature_out->W, l);
 
     // 3) Create a Schnorr-like signature on W concatenated with the message,
@@ -61,8 +63,8 @@ int ecdaa_sign(struct ecdaa_signature_t *signature_out,
                                 message_len,
                                 &signature_out->S,
                                 &signature_out->W,
-                                member->sk.sk,
-                                &member->rng);
+                                sk->sk,
+                                rng);
     
     // Clear sensitive intermediate memory.
     BIG_256_56_zero(l);

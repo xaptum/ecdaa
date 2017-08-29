@@ -19,8 +19,8 @@
 #include "xaptum-test-utils.h"
 
 #include <xaptum-ecdaa/credential.h>
-#include <xaptum-ecdaa/member.h>
-#include <xaptum-ecdaa/issuer.h>
+#include <xaptum-ecdaa/member_keypair.h>
+#include <xaptum-ecdaa/issuer_keypair.h>
 
 #include "../src/pairing_curve_utils.h"
 
@@ -30,8 +30,13 @@
 #include <string.h>
 
 typedef struct credential_test_fixture {
-    ecdaa_member_t member;
-    ecdaa_issuer_t issuer;
+    csprng rng;
+
+    ecdaa_member_public_key_t pk;
+    ecdaa_member_secret_key_t sk;
+
+    ecdaa_issuer_public_key_t ipk;
+    ecdaa_issuer_secret_key_t isk;
 } credential_test_fixture;
 
 static void setup(credential_test_fixture* fixture);
@@ -43,39 +48,35 @@ int main()
     cred_generate_then_validate();
 }
 
-credential_test_fixture fixture_s;
-
 static void setup(credential_test_fixture* fixture)
 {
-    create_test_rng(&fixture->issuer.rng);
-    random_num_mod_order(&fixture->issuer.sk.x, &fixture->issuer.rng);
-    set_to_basepoint2(&fixture->issuer.pk.gpk.X);
-    ECP2_BN254_mul(&fixture->issuer.pk.gpk.X, fixture->issuer.sk.x);
-    random_num_mod_order(&fixture->issuer.sk.y, &fixture->issuer.rng);
-    set_to_basepoint2(&fixture->issuer.pk.gpk.Y);
-    ECP2_BN254_mul(&fixture->issuer.pk.gpk.Y, fixture->issuer.sk.y);
+    create_test_rng(&fixture->rng);
 
-    create_test_rng(&fixture->member.rng);
+    random_num_mod_order(&fixture->isk.x, &fixture->rng);
+    set_to_basepoint2(&fixture->ipk.gpk.X);
+    ECP2_BN254_mul(&fixture->ipk.gpk.X, fixture->isk.x);
 
-    set_to_basepoint(&fixture->member.pk.Q);
-    random_num_mod_order(&fixture->member.sk.sk, &fixture->member.rng);
-    ECP_BN254_mul(&fixture->member.pk.Q, fixture->member.sk.sk);
+    random_num_mod_order(&fixture->isk.y, &fixture->rng);
+    set_to_basepoint2(&fixture->ipk.gpk.Y);
+    ECP2_BN254_mul(&fixture->ipk.gpk.Y, fixture->isk.y);
 
-    memcpy(&fixture->member.gpk, &fixture->issuer.pk.gpk, sizeof(ecdaa_group_public_key_t));
+    set_to_basepoint(&fixture->pk.Q);
+    random_num_mod_order(&fixture->sk.sk, &fixture->rng);
+    ECP_BN254_mul(&fixture->pk.Q, fixture->sk.sk);
 }
 
 static void cred_generate_then_validate()
 {
     printf("Starting join-tests::cred_generate_validate...\n");
 
-    // credential_test_fixture fixture;
-    setup(&fixture_s);
+    credential_test_fixture fixture;
+    setup(&fixture);
 
     ecdaa_credential_t cred;
     ecdaa_credential_signature_t cred_sig;
-    TEST_ASSERT(0 == ecdaa_generate_credential(&cred, &cred_sig, &fixture_s.issuer, &fixture_s.member.pk));
+    TEST_ASSERT(0 == ecdaa_generate_credential(&cred, &cred_sig, &fixture.isk, &fixture.pk, &fixture.rng));
 
-    TEST_ASSERT(0 == ecdaa_validate_credential(&cred, &cred_sig, &fixture_s.member));
+    TEST_ASSERT(0 == ecdaa_validate_credential(&cred, &cred_sig, &fixture.pk, &fixture.ipk.gpk));
 
     printf("\tsuccess\n");
 }

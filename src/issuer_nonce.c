@@ -16,38 +16,13 @@
  *
  *****************************************************************************/
 
-#include <xaptum-ecdaa/issuer.h>
-
 #include <xaptum-ecdaa/issuer_nonce.h>
 
 #include <amcl/amcl.h>
 
-int ecdaa_construct_issuer(ecdaa_issuer_t *issuer_out,
-                           uint8_t *seed,
-                           uint32_t seed_length)
-{
-    // TODO
-    if (NULL == issuer_out || NULL == seed || 0 == seed_length)
-        return -1;
-
-    return 0;
-}
-
-int ecdaa_process_join_request(struct ecdaa_credential_t *credential_out,
-                               struct ecdaa_credential_signature_t *credential_signature_out,
-                               struct ecdaa_member_public_key_t *member_pk,
-                               ecdaa_issuer_t *issuer)
-{
-    // TODO
-    if (NULL == credential_out || NULL == credential_signature_out || NULL == member_pk || NULL == issuer)
-        return -1;
-
-    return 0;
-}
-
 void ecdaa_generate_issuer_nonce(ecdaa_issuer_nonce_t *nonce_out,
-                                 ecdaa_issuer_t *issuer)
+                                 csprng *rng)
 {
     for (size_t i = 0; i < sizeof(ecdaa_issuer_nonce_t); ++i)
-        nonce_out->data[i] = RAND_byte(&issuer->rng);
+        nonce_out->data[i] = RAND_byte(rng);
 }

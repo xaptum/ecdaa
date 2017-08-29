@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+#include <amcl/randapi.h>
+
 #include <stdint.h>
 
 /*
@@ -32,6 +34,12 @@ extern "C" {
 typedef struct ecdaa_issuer_nonce_t {
     uint8_t data[32];
 } ecdaa_issuer_nonce_t;
+
+/*
+ * Generate a signing nonce to be used by a Member requesting to Join.
+ */
+void ecdaa_generate_issuer_nonce(struct ecdaa_issuer_nonce_t *nonce_out,
+                                 csprng *rng);
 
 #ifdef __cplusplus
 }
