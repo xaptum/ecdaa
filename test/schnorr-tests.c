@@ -208,7 +208,7 @@ void schnorr_verify_bad_sig()
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
 
-    BIG_256_56 c, s;
+    BIG_256_56 c={314,0}, s={2718,0};   // Just set these to random values
 
     ECP_BN254 basepoint;
     set_to_basepoint(&basepoint);
