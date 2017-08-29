@@ -77,7 +77,7 @@ static void setup(sign_and_verify_fixture* fixture)
 
 static void sign_then_verify_good()
 {
-    printf("Starting integration::sign_then_verify_good...\n");
+    printf("Starting sign-and-verify::sign_then_verify_good...\n");
 
     sign_and_verify_fixture fixture;
     setup(&fixture);
@@ -92,7 +92,7 @@ static void sign_then_verify_good()
 
 static void sign_then_verify_on_rev_list()
 {
-    printf("Starting integration::sign_then_verify_on_rev_list...\n");
+    printf("Starting sign-and-verify::sign_then_verify_on_rev_list...\n");
 
     sign_and_verify_fixture fixture;
     setup(&fixture);
@@ -114,7 +114,7 @@ static void sign_benchmark()
 {
     unsigned rounds = 250;
 
-    printf("Starting integration::sign_benchmark (%d iterations)...\n", rounds);
+    printf("Starting sign-and-verify::sign_benchmark (%d iterations)...\n", rounds);
 
     sign_and_verify_fixture fixture;
     setup(&fixture);
@@ -142,7 +142,7 @@ static void verify_benchmark()
 {
     unsigned rounds = 250;
 
-    printf("Starting integration::verify_benchmark (%d iterations)...\n", rounds);
+    printf("Starting sign-and-verify::verify_benchmark (%d iterations)...\n", rounds);
 
     sign_and_verify_fixture fixture;
     setup(&fixture);
