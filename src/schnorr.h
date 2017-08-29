@@ -119,7 +119,6 @@ int schnorr_verify(BIG_256_56 c,
  *
  *  Returns:
  *   0 on success
- *   -1 if basepoint is not valid
  */
 int credential_schnorr_sign(BIG_256_56 *c_out,
                             BIG_256_56 *s_out,
