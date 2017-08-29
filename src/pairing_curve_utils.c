@@ -54,6 +54,35 @@ void set_to_basepoint2(ECP2_BN254 *point)
     ECP2_BN254_set(point, &x, &y);
 }
 
+int check_point_membership(ECP_BN254 *point)
+{
+    ECP_BN254 point_copy;
+    ECP_BN254_copy(&point_copy, point);
+
+    BIG_256_56 curve_order;
+    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
+
+    /* Check point is not in wrong group */
+    int nb = BIG_256_56_nbits(curve_order);
+    BIG_256_56 k;
+    BIG_256_56_one(k);
+    BIG_256_56_shl(k, (nb+4)/2);
+    BIG_256_56_add(k, curve_order, k);
+    BIG_256_56_sdiv(k, curve_order); /* get co-factor */
+
+    while (BIG_256_56_parity(k) == 0) {
+        ECP_BN254_dbl(&point_copy);
+        BIG_256_56_fshr(k,1);
+    }
+
+    if (!BIG_256_56_isunity(k))
+        ECP_BN254_mul(&point_copy,k);
+    if (ECP_BN254_isinf(&point_copy))
+        return -1;
+
+    return 0;
+}
+
 void compute_pairing(FP12_BN254 *pairing_out,
                      ECP_BN254 *g1_point,
                      ECP2_BN254 *g2_point)

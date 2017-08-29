@@ -42,6 +42,15 @@ void set_to_basepoint(ECP_BN254 *point);
 
 void set_to_basepoint2(ECP2_BN254 *point);
 
+/*
+ * Check if the given EC point is a member of the group.
+ *
+ * Returns:
+ * 0 on success
+ * -1 if the point is _not_ in the group
+ */
+int check_point_membership(ECP_BN254 *point);
+
 void compute_pairing(FP12_BN254 *pairing_out,
                      ECP_BN254 *g1_point,
                      ECP2_BN254 *g2_point);

@@ -17,6 +17,7 @@
  *****************************************************************************/
 
 #include "../src/schnorr.h"
+#include "../src/pairing_curve_utils.h"
 
 #include "xaptum_test.h"
 

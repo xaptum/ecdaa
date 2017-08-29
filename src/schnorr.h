@@ -41,15 +41,6 @@ void schnorr_keygen(ECP_BN254 *public_out,
                     csprng *rng);
 
 /*
- * Check if the given EC point is a member of the group.
- *
- * Returns:
- * 0 on success
- * -1 if the point is _not_ in the group
- */
-int check_point_membership(ECP_BN254 *point);
-
-/*
  * De-serialize a Schnorr public key, and check it for validity.
  *
  * Serialized format is expected to be
