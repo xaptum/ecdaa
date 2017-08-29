@@ -18,6 +18,9 @@
 
 #include <xaptum-ecdaa/credential.h>
 
+#include "schnorr.h"
+#include "explicit_bzero.h"
+
 #include <xaptum-ecdaa/issuer_keypair.h>
 #include <xaptum-ecdaa/member_keypair.h>
 
@@ -29,8 +32,7 @@ int ecdaa_generate_credential(ecdaa_credential_t *cred,
                               struct ecdaa_member_public_key_t *member_pk,
                               csprng *rng)
 {
-    if (NULL == cred_sig_out)
-        return -1;  // Currently, just to use these parameters and make compiler happy.
+    int ret = 0;
 
     BIG_256_56 curve_order;
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
@@ -73,11 +75,23 @@ int ecdaa_generate_credential(ecdaa_credential_t *cred,
     // Nb. No need to call ECP_BN254_affine here,
     // as C always gets multiplied during signing (which implicitly converts to affine)
 
-    // TODO: Do a 'single-random-double-Schnorr signature, save into cred_sig_out.
+    // 10) Perform a Schnorr-like signature,
+    //  to prove the credential was properly constructed by someone with knowledge of y.
+    int schnorr_ret = issuer_schnorr_sign(&cred_sig_out->c,
+                                          &cred_sig_out->s,
+                                          &cred->B,
+                                          &member_pk->Q,
+                                          &cred->D,
+                                          issuer_sk->y,
+                                          l,
+                                          rng);
+    if (0 != schnorr_ret)
+        ret = -1;
 
-    // TODO: Clear sensitive memory?
+    // Clear sensitive intermediate memory
+    explicit_bzero(&l, sizeof(BIG_256_56));
 
-    return 0;
+    return ret;
 }
 
 void ecdaa_serialize_credential(uint8_t *buffer_out,
