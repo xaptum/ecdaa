@@ -70,13 +70,22 @@ void set_to_basepoint(ECP_BN254 *point);
 void set_to_basepoint2(ECP2_BN254 *point);
 
 /*
- * Check if the given EC point is a member of the group.
+ * Check if the given EC point is a member of G1.
  *
  * Returns:
  * 0 on success
- * -1 if the point is _not_ in the group
+ * -1 if the point is _not_ in G1
  */
 int check_point_membership(ECP_BN254 *point);
+
+/*
+ * Check if the given EC point is a member of G2.
+ *
+ * Returns:
+ * 0 on success
+ * -1 if the point is _not_ in G2
+ */
+int check_point_membership2(ECP2_BN254 *point);
 
 /*
  * Compute the optimal Ate pairing.

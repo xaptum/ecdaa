@@ -81,6 +81,7 @@ void set_to_basepoint2(ECP2_BN254 *point)
 
 int check_point_membership(ECP_BN254 *point)
 {
+    // TODO: Check if this is correct!
     ECP_BN254 point_copy;
     ECP_BN254_copy(&point_copy, point);
 
@@ -103,6 +104,36 @@ int check_point_membership(ECP_BN254 *point)
     if (!BIG_256_56_isunity(k))
         ECP_BN254_mul(&point_copy,k);
     if (ECP_BN254_isinf(&point_copy))
+        return -1;
+
+    return 0;
+}
+
+int check_point_membership2(ECP2_BN254 *point)
+{
+    // TODO: Check if this is correct!
+    ECP2_BN254 point_copy;
+    ECP2_BN254_copy(&point_copy, point);
+
+    BIG_256_56 curve_order;
+    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
+
+    /* Check point is not in wrong group */
+    int nb = BIG_256_56_nbits(curve_order);
+    BIG_256_56 k;
+    BIG_256_56_one(k);
+    BIG_256_56_shl(k, (nb+4)/2);
+    BIG_256_56_add(k, curve_order, k);
+    BIG_256_56_sdiv(k, curve_order); /* get co-factor */
+
+    while (BIG_256_56_parity(k) == 0) {
+        ECP2_BN254_dbl(&point_copy);
+        BIG_256_56_fshr(k,1);
+    }
+
+    if (!BIG_256_56_isunity(k))
+        ECP2_BN254_mul(&point_copy,k);
+    if (ECP2_BN254_isinf(&point_copy))
         return -1;
 
     return 0;
