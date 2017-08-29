@@ -20,6 +20,7 @@
 
 #include <amcl/randapi.h>
 #include <amcl/fp2_BN254.h>
+#include <amcl/pair_BN254.h>
 
 void random_num_mod_order(BIG_256_56 *num_out, csprng *rng)
 {
@@ -51,4 +52,18 @@ void set_to_basepoint2(ECP2_BN254 *point)
     FP2_BN254_from_BIGs(&y, ya, yb);
 
     ECP2_BN254_set(point, &x, &y);
+}
+
+void compute_pairing(FP12_BN254 *pairing_out,
+                     ECP_BN254 *g1_point,
+                     ECP2_BN254 *g2_point)
+{
+    // TODO: Why is this necessary?
+    // (it looks like only _add and _sub don't convert to affine)
+    // (but, why is affine necessary for ate computation?)
+    ECP_BN254_affine(g1_point);
+    ECP2_BN254_affine(g2_point);
+
+    PAIR_BN254_ate(pairing_out, g2_point, g1_point);
+    PAIR_BN254_fexp(pairing_out);
 }

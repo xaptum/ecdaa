@@ -156,6 +156,8 @@ int schnorr_verify(BIG_256_56 c,
 
     // 3) Compute difference of R and c*Q, and save to R (R = s*P - c*public_key)
     ECP_BN254_sub(&R, &Q_c);
+    // Nb. No need to call ECP_BN254_affine here,
+    // as R gets passed to ECP_BN254_toOctet in a minute (which implicitly converts to affine)
 
     // 4) Compute c' = Hash( R | basepoint | msg_in )
     //      (modular-reduce c', too).

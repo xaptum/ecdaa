@@ -23,6 +23,7 @@
 #include <amcl/ecp_BN254.h>
 #include <amcl/big_256_56.h>
 #include <amcl/ecp2_BN254.h>
+#include <amcl/fp12_BN254.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,6 +41,10 @@ void random_num_mod_order(BIG_256_56 *num_out,
 void set_to_basepoint(ECP_BN254 *point);
 
 void set_to_basepoint2(ECP2_BN254 *point);
+
+void compute_pairing(FP12_BN254 *pairing_out,
+                     ECP_BN254 *g1_point,
+                     ECP2_BN254 *g2_point);
 
 #ifdef __cplusplus
 }

@@ -123,6 +123,8 @@ int generate_credential(credential_t *cred,
 
     // 9) Add Ax and xyl*Q and save to cred->C (C = x*A + xyl*Q)
     ECP_BN254_add(&cred->C, &Qxyl);
+    // Nb. No need to call ECP_BN254_affine here,
+    // as C always gets multiplied during signing (which implicitly converts to affine)
 
     // TODO: Do a 'single-random-double-Schnorr signature, save into c_out, s_out
 
