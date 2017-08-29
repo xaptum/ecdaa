@@ -20,30 +20,10 @@
 
 #include <xaptum-ecdaa/signature.h>
 #include <xaptum-ecdaa/member_keypair.h>
+#include <xaptum-ecdaa/group_public_key.h>
 
 #include "schnorr.h"
 #include "pairing_curve_utils.h"
-
-int ecdaa_construct_member(ecdaa_member_t *member_out,
-                           uint8_t *seed,
-                           uint32_t seed_length)
-{
-    // TODO
-    if (NULL == member_out || NULL == seed || 0 == seed_length)
-        return -1;
-
-    return 0;
-}
-
-int ecdaa_process_join_response(struct ecdaa_credential_t *credential,
-                                struct ecdaa_credential_signature_t *credential_signature,
-                                ecdaa_member_t *member)
-{
-    if (NULL == credential || NULL == credential_signature || NULL == member)
-        return -1;
-
-    return 0;
-}
 
 int ecdaa_sign(struct ecdaa_signature_t *signature_out,
                const uint8_t* message,

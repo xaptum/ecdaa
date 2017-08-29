@@ -24,7 +24,8 @@
 extern "C" {
 #endif
 
-struct ecdaa_issuer_secret_key_t;
+struct ecdaa_issuer_t;
+struct ecdaa_member_t;
 struct ecdaa_member_public_key_t;
 
 #include <amcl/ecp_BN254.h>
@@ -56,9 +57,19 @@ typedef struct ecdaa_credential_signature_t {
  */
 int ecdaa_generate_credential(ecdaa_credential_t *cred,
                               ecdaa_credential_signature_t *cred_sig_out,
-                              struct ecdaa_issuer_secret_key_t *issuer_sk,
-                              struct ecdaa_member_public_key_t *member_pk,
-                              csprng *rng);
+                              struct ecdaa_issuer_t *issuer,
+                              struct ecdaa_member_public_key_t *member_pk);
+
+/*
+ * Validate a credential and its signature.
+ *
+ * Returns:
+ * 0 on success
+ * -1 if Join response is invalid
+ */
+int ecdaa_validate_credential(struct ecdaa_credential_t *credential,
+                              struct ecdaa_credential_signature_t *credential_signature,
+                              struct ecdaa_member_t *member);
 
 /*
  * Serialize an `ecdaa_credential_t`

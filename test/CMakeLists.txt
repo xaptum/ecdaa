@@ -21,6 +21,7 @@ set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/testBin/)
 set(TEST_SRCS
         sign-and-verify-tests.c
         issuer_keypair-tests.c
+        credential-tests.c
         member_keypair-tests.c
         mpi_utils-tests.c
         pairing_curve_utils-tests.c

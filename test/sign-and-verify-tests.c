@@ -20,6 +20,7 @@
 
 #include <xaptum-ecdaa/member.h>
 #include <xaptum-ecdaa/verify.h>
+#include <xaptum-ecdaa/issuer.h>
 #include <xaptum-ecdaa/issuer_nonce.h>
 #include <xaptum-ecdaa/issuer_keypair.h>
 #include <xaptum-ecdaa/signature.h>
@@ -36,11 +37,11 @@ static void sign_benchmark();
 static void verify_benchmark();
 
 typedef struct sign_and_verify_fixture {
-    ecdaa_group_public_key_t gpk;
     uint8_t *msg;
     uint32_t msg_len;
     ecdaa_member_t member;
     ecdaa_sk_revocation_list_t sk_rev_list;
+    ecdaa_issuer_t issuer;
 } sign_and_verify_fixture;
 
 static void setup(sign_and_verify_fixture* fixture);
@@ -56,17 +57,15 @@ int main()
 static void setup(sign_and_verify_fixture* fixture)
 {
     create_test_rng(&fixture->member.rng);
+    create_test_rng(&fixture->issuer.rng);
 
-    ecdaa_issuer_public_key_t ipk;
-    ecdaa_issuer_secret_key_t isk;
-    ecdaa_generate_issuer_key_pair(&ipk, &isk, &fixture->member.rng);
-    memcpy(&fixture->gpk, &ipk.gpk, sizeof(ecdaa_group_public_key_t));
+    ecdaa_generate_issuer_key_pair(&fixture->issuer.pk, &fixture->issuer.sk, &fixture->member.rng);
 
     ecdaa_issuer_nonce_t nonce = {{0}};
     ecdaa_generate_member_key_pair(&fixture->member.pk, &fixture->member.sk, &nonce, &fixture->member.rng);
 
     ecdaa_credential_signature_t cred_sig;
-    ecdaa_generate_credential(&fixture->member.cred, &cred_sig, &isk, &fixture->member.pk, &fixture->member.rng);
+    ecdaa_generate_credential(&fixture->member.cred, &cred_sig, &fixture->issuer, &fixture->member.pk);
 
     fixture->msg = (uint8_t*) "Test message";
     fixture->msg_len = strlen((char*)fixture->msg);
@@ -85,7 +84,7 @@ static void sign_then_verify_good()
     ecdaa_signature_t sig;
     TEST_ASSERT(0 == ecdaa_sign(&sig, fixture.msg, fixture.msg_len, &fixture.member));
 
-    TEST_ASSERT(0 == ecdaa_verify(&sig, &fixture.gpk, &fixture.sk_rev_list, fixture.msg, fixture.msg_len));
+    TEST_ASSERT(0 == ecdaa_verify(&sig, &fixture.issuer.pk.gpk, &fixture.sk_rev_list, fixture.msg, fixture.msg_len));
 
     printf("\tsuccess\n");
 }
@@ -105,7 +104,7 @@ static void sign_then_verify_on_rev_list()
     ecdaa_signature_t sig;
     TEST_ASSERT(0 == ecdaa_sign(&sig, fixture.msg, fixture.msg_len, &fixture.member));
 
-    TEST_ASSERT(0 != ecdaa_verify(&sig, &fixture.gpk, &sk_rev_list_bad, fixture.msg, fixture.msg_len));
+    TEST_ASSERT(0 != ecdaa_verify(&sig, &fixture.issuer.pk.gpk, &sk_rev_list_bad, fixture.msg, fixture.msg_len));
 
     printf("\tsuccess\n");
 }
@@ -155,7 +154,7 @@ static void verify_benchmark()
     gettimeofday(&tv1, NULL);
 
     for (unsigned i = 0; i < rounds; i++) {
-        TEST_ASSERT(0 == ecdaa_verify(&sig, &fixture.gpk, &fixture.sk_rev_list, fixture.msg, fixture.msg_len));
+        TEST_ASSERT(0 == ecdaa_verify(&sig, &fixture.issuer.pk.gpk, &fixture.sk_rev_list, fixture.msg, fixture.msg_len));
     }
 
     struct timeval tv2;

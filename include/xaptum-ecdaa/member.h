@@ -26,20 +26,19 @@ extern "C" {
 
 #include <xaptum-ecdaa/member_keypair.h>
 #include <xaptum-ecdaa/credential.h>
+#include <xaptum-ecdaa/group_public_key.h>
 
 #include <amcl/randapi.h>
 
 #include <stdint.h>
 
 struct ecdaa_signature_t;
-struct ecdaa_member_secret_key_t;
-struct ecdaa_credential_t;
-struct ecdaa_credential_signature_t;
 
 /*
  * Context for a Member.
  */
 typedef struct ecdaa_member_t {
+    ecdaa_group_public_key_t gpk;
     ecdaa_member_public_key_t pk;
     ecdaa_member_secret_key_t sk;
     ecdaa_credential_t cred;
@@ -52,17 +51,6 @@ typedef struct ecdaa_member_t {
 int ecdaa_construct_member(ecdaa_member_t *member_out,
                            uint8_t *seed,
                            uint32_t seed_length);
-
-/*
- * Respond to a Join response from an Issuer.
- *
- * Returns:
- * 0 on success
- * -1 if Join response is invalid
- */
-int ecdaa_process_join_response(struct ecdaa_credential_t *credential,
-                                struct ecdaa_credential_signature_t *credential_signature,
-                                ecdaa_member_t *member);
 
 /*
  * Create an ECDAA signature.
