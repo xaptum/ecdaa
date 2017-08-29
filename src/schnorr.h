@@ -20,15 +20,15 @@
 #define XAPTUM_ECDAA_SCHNORR_H
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <amcl/big_256_56.h>
 #include <amcl/ecp_BN254.h>
 #include <amcl/randapi.h>
 
 #include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
  * Generate a Schnorr public/private keypair.
@@ -51,7 +51,7 @@ void schnorr_keygen(ECP_BN254 *public_out,
  * 0 on success
  * -1 if public_key is not valid
  */
-int convert_schnorr_public_key_from_bytes(octet *public_key_as_bytes, ECP_BN254 *public_key);
+int convert_schnorr_public_key_from_bytes(const octet *public_key_as_bytes, ECP_BN254 *public_key);
 
 /*
  * Serialize a Schnorr public key.
@@ -78,7 +78,7 @@ void convert_schnorr_public_key_to_bytes(octet *public_key_as_bytes, ECP_BN254 *
  */
 int schnorr_sign(BIG_256_56 *c_out,
                  BIG_256_56 *s_out,
-                 uint8_t *msg_in,
+                 const uint8_t *msg_in,
                  uint32_t msg_len,
                  ECP_BN254 *basepoint,
                  ECP_BN254 *public_key,
@@ -101,7 +101,7 @@ int schnorr_sign(BIG_256_56 *c_out,
  */
 int schnorr_verify(BIG_256_56 c,
                    BIG_256_56 s,
-                   uint8_t *msg_in,
+                   const uint8_t *msg_in,
                    uint32_t msg_len,
                    ECP_BN254 *basepoint,
                    ECP_BN254 *public_key);

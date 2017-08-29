@@ -16,24 +16,23 @@
  *
  *****************************************************************************/
 
-#include "xaptum_test.h"
+#ifndef XAPTUM_ECDAA_EXPLICIT_BZERO_H
+#define XAPTUM_ECDAA_EXPLICIT_BZERO_H
+#pragma once
 
-#include <xaptum-ecdaa/join_member.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <stdio.h>
+#include <stddef.h>
 
-static void basic_test();
+/*
+ * Set memory to 0's, in a way that _shouldn't_ get removed by a compiler
+ */
+void explicit_bzero(void *const pnt, const size_t len);
 
-int main()
-{
-    basic_test();
-
-    return 0;
+#ifdef __cplusplus
 }
+#endif
 
-void basic_test()
-{
-    printf("Starting join_member::basic_test...\n");
-
-    printf("\tsuccess\n");
-}
+#endif

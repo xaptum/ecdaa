@@ -16,73 +16,20 @@
  *
  *****************************************************************************/
 
-#include <xaptum-ecdaa/context.h>
+#include <xaptum-ecdaa/credential.h>
 
-#include "pairing_curve_utils.h" 
-#include "schnorr.h" 
+#include <xaptum-ecdaa/issuer_keypair.h>
+#include <xaptum-ecdaa/member_keypair.h>
 
-#include <amcl/amcl.h>
+#include "pairing_curve_utils.h"
 
-#include <string.h>
-#include <assert.h>
-
-#define SERIALIZED_POINT_SIZE2 128 // (32 + 32 + 32 + 32)
-#define ISSUER_HASH_INPUT_LENGTH 641 // 1 + 5 * SERIALIZED_POINT_SIZE2 (extra 1 for 0x04, to match FIDO)
-
-int generate_issuer_key_pair(issuer_public_key_t *pk,
-                             issuer_secret_key_t *sk,
-                             csprng *rng)
+int ecdaa_generate_credential(ecdaa_credential_t *cred,
+                              ecdaa_credential_signature_t *cred_sig_out,
+                              struct ecdaa_issuer_secret_key_t *issuer_sk,
+                              struct ecdaa_member_public_key_t *member_pk,
+                              csprng *rng)
 {
-    // Secret key is
-    // two random Bignums.
-    random_num_mod_order(&sk->x, rng);
-    random_num_mod_order(&sk->y, rng);
-
-    // Public key is
-    // 1) G2 generator raised to the two private key random Bignums...
-    set_to_basepoint2(&pk->X);
-    set_to_basepoint2(&pk->Y);
-    ECP2_BN254_mul(&pk->X, sk->x);
-    ECP2_BN254_mul(&pk->Y, sk->y);
-
-    // 2) and a Schnorr-type signature to prove our knowledge of those two random Bignums.
-    // HEADS-UP: toOctet adds 0x04, so need to do this manually? (to fit FIDO)
-    // TODO: Do a 'double-Schnorr'
-
-    return 0;
-}
-
-int generate_member_join_key_pair(member_join_public_key_t *pk,
-                                  member_join_secret_key_t *sk,
-                                  nonce_t *nonce,
-                                  csprng *rng)
-{
-    // 1) Generate Schnorr-type keypair,
-    schnorr_keygen(&pk->Q, &sk->sk, rng);
-
-    // 2) and a Schnorr-type signature on the Schnorr-type public_key itself concatenated with the nonce.
-    ECP_BN254 basepoint;
-    set_to_basepoint(&basepoint);
-    int sign_ret = schnorr_sign(&pk->c,
-                                &pk->s,
-                                nonce->data,
-                                sizeof(nonce_t),
-                                &basepoint,
-                                &pk->Q,
-                                sk->sk,
-                                rng);
-
-    return sign_ret;
-}
-
-int generate_credential(credential_t *cred,
-                        BIG_256_56 *c_out,
-                        BIG_256_56 *s_out,
-                        issuer_secret_key_t *issuer_sk,
-                        member_join_public_key_t *member_pk,
-                        csprng *rng)
-{
-    if (NULL == c_out || NULL == s_out)
+    if (NULL == cred_sig_out)
         return -1;  // Currently, just to use these parameters and make compiler happy.
 
     BIG_256_56 curve_order;
@@ -126,9 +73,27 @@ int generate_credential(credential_t *cred,
     // Nb. No need to call ECP_BN254_affine here,
     // as C always gets multiplied during signing (which implicitly converts to affine)
 
-    // TODO: Do a 'single-random-double-Schnorr signature, save into c_out, s_out
+    // TODO: Do a 'single-random-double-Schnorr signature, save into cred_sig_out.
 
     // TODO: Clear sensitive memory?
 
     return 0;
+}
+
+void ecdaa_serialize_credential(uint8_t *buffer_out,
+                                uint32_t *out_length,
+                                ecdaa_credential_t *credential)
+{
+    // TODO
+    if (NULL == buffer_out || NULL == out_length || NULL == credential)
+        return;
+}
+
+void ecdaa_deserialize_credential(ecdaa_credential_t *credential_out,
+                                  uint8_t *buffer_in,
+                                  uint32_t *in_length)
+{
+    // TODO
+    if (NULL == buffer_in || NULL == in_length || NULL == credential_out)
+        return;
 }

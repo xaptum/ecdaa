@@ -16,39 +16,26 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_SIGN_H
-#define XAPTUM_ECDAA_SIGN_H
+#ifndef XAPTUM_ECDAA_ISSUER_NONCE_H
+#define XAPTUM_ECDAA_ISSUER_NONCE_H
 #pragma once
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <context.h>
-
-#include <amcl/randapi.h>
-#include <amcl/big_256_56.h>
-
 #include <stdint.h>
 
-typedef struct {
-    BIG_256_56 c;
-    BIG_256_56 s;
-    ECP_BN254 R;
-    ECP_BN254 S;
-    ECP_BN254 T;
-    ECP_BN254 W;
-} ecdaa_signature_t;
-
-int sign(ecdaa_signature_t *signature,
-         member_join_secret_key_t *sk,
-         credential_t *credential,
-         uint8_t* message,
-         uint32_t message_len,
-         csprng *rng);
+/*
+ * Signing nonce provided by Issuer to Member, at the begining of the Join process.
+ */
+typedef struct ecdaa_issuer_nonce_t {
+    uint8_t data[32];
+} ecdaa_issuer_nonce_t;
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+

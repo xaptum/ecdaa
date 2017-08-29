@@ -25,12 +25,18 @@ add_compile_options(-Werror -Wall -Wextra -std=c99)
 
 set(XAPTUM_ECDAA_SRC_DIR src)
 set(XAPTUM_ECDAA_SRCS
+        ${XAPTUM_ECDAA_SRC_DIR}/credential.c
+        ${XAPTUM_ECDAA_SRC_DIR}/explicit_bzero.c
+        ${XAPTUM_ECDAA_SRC_DIR}/group_public_key.c
+        ${XAPTUM_ECDAA_SRC_DIR}/issuer.c
+        ${XAPTUM_ECDAA_SRC_DIR}/issuer_keypair.c
+        ${XAPTUM_ECDAA_SRC_DIR}/member.c
+        ${XAPTUM_ECDAA_SRC_DIR}/member_keypair.c
         ${XAPTUM_ECDAA_SRC_DIR}/mpi_utils.c
+        ${XAPTUM_ECDAA_SRC_DIR}/pairing_curve_utils.c
         ${XAPTUM_ECDAA_SRC_DIR}/schnorr.c
-        ${XAPTUM_ECDAA_SRC_DIR}/context.c
-        ${XAPTUM_ECDAA_SRC_DIR}/sign.c
-        ${XAPTUM_ECDAA_SRC_DIR}/verify.c
-        ${XAPTUM_ECDAA_SRC_DIR}/pairing_curve_utils.c)
+        ${XAPTUM_ECDAA_SRC_DIR}/signature.c
+        ${XAPTUM_ECDAA_SRC_DIR}/verify.c)
 
 add_library(xecdaa ${XAPTUM_ECDAA_SRCS})
 
@@ -38,7 +44,6 @@ add_dependencies(xecdaa AMCL)
 
 target_include_directories(xecdaa
         PUBLIC include
-        PUBLIC include/xaptum-ecdaa
         PUBLIC ${AMCL_INCLUDE_DIRS})
 
 target_link_libraries(xecdaa

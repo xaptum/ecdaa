@@ -67,15 +67,15 @@ static void sign_then_verify()
     uint32_t msg_len = strlen((char*)msg);
 
     ecdaa_signature_t sig;
-    TEST_ASSERT(0 == sign(&sig, &sk, &cred, msg, msg_len, &rng));
+    TEST_ASSERT(0 == ecdaa_sign(&sig, &sk, &cred, msg, msg_len, &rng));
 
     sk_revocation_list_t sk_rev_list = {.length=0, .list=NULL};
-    TEST_ASSERT(0 == verify(&sig, &ipk, &sk_rev_list, msg, msg_len));
+    TEST_ASSERT(0 == ecdaa_verify(&sig, &ipk, &sk_rev_list, msg, msg_len));
 
     member_join_secret_key_t sk_rev_list_bad_raw[1];
     BIG_256_56_copy(sk_rev_list_bad_raw[0].sk, sk.sk);
     sk_revocation_list_t sk_rev_list_bad = {.length=1, .list=sk_rev_list_bad_raw};
-    TEST_ASSERT(0 != verify(&sig, &ipk, &sk_rev_list_bad, msg, msg_len));
+    TEST_ASSERT(0 != ecdaa_verify(&sig, &ipk, &sk_rev_list_bad, msg, msg_len));
 
     printf("\tsuccess\n");
 }
@@ -115,7 +115,7 @@ static void sign_benchmark()
     gettimeofday(&tv1, NULL);
 
     for (unsigned i = 0; i < rounds; i++) {
-        TEST_ASSERT(0 == sign(&sig, &sk, &cred, msg, msg_len, &rng));
+        TEST_ASSERT(0 == ecdaa_sign(&sig, &sk, &cred, msg, msg_len, &rng));
     }
 
     struct timeval tv2;
@@ -158,7 +158,7 @@ static void verify_benchmark()
     uint32_t msg_len = strlen((char*)msg);
 
     ecdaa_signature_t sig;
-    TEST_ASSERT(0 == sign(&sig, &sk, &cred, msg, msg_len, &rng));
+    TEST_ASSERT(0 == ecdaa_sign(&sig, &sk, &cred, msg, msg_len, &rng));
 
     sk_revocation_list_t sk_rev_list = {.length=0, .list=NULL};
 
@@ -166,7 +166,7 @@ static void verify_benchmark()
     gettimeofday(&tv1, NULL);
 
     for (unsigned i = 0; i < rounds; i++) {
-        TEST_ASSERT(0 == verify(&sig, &ipk, &sk_rev_list, msg, msg_len));
+        TEST_ASSERT(0 == ecdaa_verify(&sig, &ipk, &sk_rev_list, msg, msg_len));
     }
 
     struct timeval tv2;

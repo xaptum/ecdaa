@@ -17,14 +17,13 @@
  *****************************************************************************/
 
 #include "mpi_utils.h"
+#include "explicit_bzero.h"
 
 #include <assert.h>
 
-static void explicit_bzero(void *const pnt, const size_t len);
-
 static void convert_hash_to_mpi(BIG_256_56 *mpi_out, hash256 *hash);
 
-void hash_into_mpi(BIG_256_56 *mpi_out, uint8_t *msg_in, uint32_t msg_len)
+void hash_into_mpi(BIG_256_56 *mpi_out, const uint8_t *msg_in, uint32_t msg_len)
 {
     hash256 hash;
     HASH256_init(&hash);
@@ -38,9 +37,9 @@ void hash_into_mpi(BIG_256_56 *mpi_out, uint8_t *msg_in, uint32_t msg_len)
 }
 
 void hash_into_mpi_two(BIG_256_56 *mpi_out,
-                       uint8_t *msg1_in,
+                       const uint8_t *msg1_in,
                        uint32_t msg1_len,
-                       uint8_t *msg2_in,
+                       const uint8_t *msg2_in,
                        uint32_t msg2_len)
 {
     hash256 hash;
@@ -78,18 +77,6 @@ void mpi_mod_mul_and_add(BIG_256_56 *mpi_out,
 
     // Output, of course, normalized.
     BIG_256_56_mod(*mpi_out, modulus);
-}
-
-static void explicit_bzero(void *const pnt, const size_t len)
-{
-    // TODO: Figure out how well this works, and portable solutions.
-    volatile unsigned char *volatile pnt_ =
-        (volatile unsigned char *volatile) pnt;
-
-    size_t i = (size_t) 0U;
-    while (i < len) {
-        pnt_[i++] = 0U;
-    }
 }
 
 static void convert_hash_to_mpi(BIG_256_56 *mpi_out, hash256 *hash)

@@ -16,32 +16,44 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_VERIFY_H
-#define XAPTUM_ECDAA_VERIFY_H
+#ifndef XAPTUM_ECDAA_SIGNATURE_H
+#define XAPTUM_ECDAA_SIGNATURE_H
 #pragma once
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct ecdaa_signature_t;
-struct ecdaa_group_public_key_t;
-struct ecdaa_sk_revocation_list_t;
-
-#include <stdint.h>
+#include <amcl/big_256_56.h>
+#include <amcl/ecp_BN254.h>
 
 /*
- * Verify an ECDAA signature.
- *
- * Returns:
- * 0 on success
- * -1 if signature is invalid
+ * ECDAA signature.
  */
-int ecdaa_verify(struct ecdaa_signature_t *signature,
-                 struct ecdaa_group_public_key_t *gpk,
-                 struct ecdaa_sk_revocation_list_t *sk_rev_list,
-                 uint8_t* message,
-                 uint32_t message_len);
+typedef struct ecdaa_signature_t {
+    BIG_256_56 c;
+    BIG_256_56 s;
+    ECP_BN254 R;
+    ECP_BN254 S;
+    ECP_BN254 T;
+    ECP_BN254 W;
+} ecdaa_signature_t;
+
+/*
+ * Serialize an `ecdaa_signature_t`
+ *
+ * The provided buffer is assumed to be large enough.
+ */
+void ecdaa_serialize_signature(uint8_t *buffer_out,
+                               uint32_t *out_length,
+                               ecdaa_signature_t *signature);
+
+/*
+ * De-serialize an `ecdaa_signature_t`
+ */
+void ecdaa_deserialize_signature(ecdaa_signature_t *signature_out,
+                                 uint8_t *buffer_in,
+                                 uint32_t *in_length);
 
 #ifdef __cplusplus
 }

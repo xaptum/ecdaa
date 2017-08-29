@@ -16,19 +16,26 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_XAPTUM_ECDAA_H
-#define XAPTUM_ECDAA_XAPTUM_ECDAA_H
-#pragma once
+#include <xaptum-ecdaa/signature.h>
 
-#include "xaptum-ecdaa/credential.h"
-#include "xaptum-ecdaa/group_public_key.h"
-#include "xaptum-ecdaa/issuer.h"
-#include "xaptum-ecdaa/issuer_keypair.h"
-#include "xaptum-ecdaa/issuer_nonce.h"
-#include "xaptum-ecdaa/member.h"
-#include "xaptum-ecdaa/member_keypair.h"
-#include "xaptum-ecdaa/signature.h"
-#include "xaptum-ecdaa/sk_revocation_list.h"
-#include "xaptum-ecdaa/verify.h"
-
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+void ecdaa_serialize_signature(uint8_t *buffer_out,
+                               uint32_t *out_length,
+                               ecdaa_signature_t *signature)
+{
+    // TODO
+    if (NULL == buffer_out || NULL == out_length || NULL == signature)
+        return;
+}
+
+void ecdaa_deserialize_signature(ecdaa_signature_t *signature_out,
+                                 uint8_t *buffer_in,
+                                 uint32_t *in_length)
+{
+    // TODO
+    if (NULL == buffer_in || NULL == in_length || NULL == signature_out)
+        return;
+}

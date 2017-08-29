@@ -20,15 +20,15 @@
 #define XAPTUM_ECDAA_MPI_UTILS_H
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <amcl/big_256_56.h>
 #include <amcl/amcl.h>
 #include <amcl/randapi.h>
 
 #include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
  * Hash the supplied message and convert to a MPI.
@@ -38,16 +38,16 @@ extern "C" {
  * Intermediate memory is cleared.
  */
 void hash_into_mpi(BIG_256_56 *mpi_out,
-                   uint8_t *msg_in,
+                   const uint8_t *msg_in,
                    uint32_t msg_len);
 
 /*
  * Same as hash_into_mpi, but with two input messages.
  */
 void hash_into_mpi_two(BIG_256_56 *mpi_out,
-                       uint8_t *msg1_in,
+                       const uint8_t *msg1_in,
                        uint32_t msg1_len,
-                       uint8_t *msg2_in,
+                       const uint8_t *msg2_in,
                        uint32_t msg2_len);
 
 /*

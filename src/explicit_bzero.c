@@ -16,19 +16,16 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_XAPTUM_ECDAA_H
-#define XAPTUM_ECDAA_XAPTUM_ECDAA_H
-#pragma once
+#include "explicit_bzero.h"
 
-#include "xaptum-ecdaa/credential.h"
-#include "xaptum-ecdaa/group_public_key.h"
-#include "xaptum-ecdaa/issuer.h"
-#include "xaptum-ecdaa/issuer_keypair.h"
-#include "xaptum-ecdaa/issuer_nonce.h"
-#include "xaptum-ecdaa/member.h"
-#include "xaptum-ecdaa/member_keypair.h"
-#include "xaptum-ecdaa/signature.h"
-#include "xaptum-ecdaa/sk_revocation_list.h"
-#include "xaptum-ecdaa/verify.h"
+void explicit_bzero(void *const pnt, const size_t len)
+{
+    // TODO: Figure out how well this works, and portable solutions.
+    volatile unsigned char *volatile pnt_ =
+        (volatile unsigned char *volatile) pnt;
 
-#endif
+    size_t i = (size_t) 0U;
+    while (i < len) {
+        pnt_[i++] = 0U;
+    }
+}

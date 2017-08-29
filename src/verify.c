@@ -16,23 +16,25 @@
  *
  *****************************************************************************/
 
+#include <xaptum-ecdaa/verify.h>
+#include <xaptum-ecdaa/signature.h>
+#include <xaptum-ecdaa/group_public_key.h>
+#include <xaptum-ecdaa/issuer_keypair.h>
+#include <xaptum-ecdaa/sk_revocation_list.h>
+#include <xaptum-ecdaa/member_keypair.h>
+
 #include "schnorr.h"
-
 #include "pairing_curve_utils.h"
-
-#include <verify.h>
 
 #include <amcl/pair_BN254.h>
 #include <amcl/fp12_BN254.h>
 
-int verify(ecdaa_signature_t *signature,
-           issuer_public_key_t *issuer_pk,
-           sk_revocation_list_t *sk_rev_list,
-           uint8_t* message,
-           uint32_t message_len)
+int ecdaa_verify(struct ecdaa_signature_t *signature,
+                 struct ecdaa_group_public_key_t *gpk,
+                 struct ecdaa_sk_revocation_list_t *sk_rev_list,
+                 uint8_t* message,
+                 uint32_t message_len)
 {
-    // NOTE: Assumes issuer_pk has already been checked for validity
-
     int ret = 0;
 
     // 1) Check R,S,T,W for membership in group, and R and S for !=inf
@@ -60,7 +62,7 @@ int verify(ecdaa_signature_t *signature,
     // 3) Check e(R, Y) == e(S, P_2)
     FP12_BN254 pairing_one;
     FP12_BN254 pairing_one_prime;
-    compute_pairing(&pairing_one, &signature->R, &issuer_pk->Y);
+    compute_pairing(&pairing_one, &signature->R, &gpk->Y);
     compute_pairing(&pairing_one_prime, &signature->S, &basepoint2);
     if (!FP12_BN254_equals(&pairing_one, &pairing_one_prime))
         ret = -1;
@@ -74,7 +76,7 @@ int verify(ecdaa_signature_t *signature,
     FP12_BN254 pairing_two;
     FP12_BN254 pairing_two_prime;
     compute_pairing(&pairing_two, &signature->T, &basepoint2);
-    compute_pairing(&pairing_two_prime, &RW, &issuer_pk->X);
+    compute_pairing(&pairing_two_prime, &RW, &gpk->X);
     if (!FP12_BN254_equals(&pairing_two, &pairing_two_prime))
         ret = -1;
 

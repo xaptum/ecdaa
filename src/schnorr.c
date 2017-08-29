@@ -37,7 +37,7 @@ void schnorr_keygen(ECP_BN254 *public_out,
     ECP_BN254_mul(public_out, *private_out);
 }
 
-int convert_schnorr_public_key_from_bytes(octet *public_key_as_bytes, ECP_BN254 *public_key)
+int convert_schnorr_public_key_from_bytes(const octet *public_key_as_bytes, ECP_BN254 *public_key)
 {
     // Avoid returning early, to mitigate timing attacks.
     int ret = 0;
@@ -86,7 +86,7 @@ void convert_schnorr_public_key_to_bytes(octet *public_key_as_bytes, ECP_BN254 *
 
 int schnorr_sign(BIG_256_56 *c_out,
                  BIG_256_56 *s_out,
-                 uint8_t *msg_in,
+                 const uint8_t *msg_in,
                  uint32_t msg_len,
                  ECP_BN254 *basepoint,
                  ECP_BN254 *public_key,
@@ -137,7 +137,7 @@ int schnorr_sign(BIG_256_56 *c_out,
 
 int schnorr_verify(BIG_256_56 c,
                    BIG_256_56 s,
-                   uint8_t *msg_in,
+                   const uint8_t *msg_in,
                    uint32_t msg_len,
                    ECP_BN254 *basepoint,
                    ECP_BN254 *public_key)

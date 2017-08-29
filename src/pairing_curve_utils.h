@@ -20,14 +20,14 @@
 #define XAPTUM_ECDAA_PAIRING_CURVE_UTILS_H
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <amcl/ecp_BN254.h>
 #include <amcl/big_256_56.h>
 #include <amcl/ecp2_BN254.h>
 #include <amcl/fp12_BN254.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
  * Generate a uniformly-distributed pseudo-random number,
@@ -38,8 +38,14 @@ extern "C" {
 void random_num_mod_order(BIG_256_56 *num_out,
                           csprng *rng);
 
+/*
+ * Initialize G1 point to G1 generator.
+ */
 void set_to_basepoint(ECP_BN254 *point);
 
+/*
+ * Initialize G2 point to G2 generator.
+ */
 void set_to_basepoint2(ECP2_BN254 *point);
 
 /*
@@ -51,6 +57,9 @@ void set_to_basepoint2(ECP2_BN254 *point);
  */
 int check_point_membership(ECP_BN254 *point);
 
+/*
+ * Compute the optimal Ate pairing.
+ */
 void compute_pairing(FP12_BN254 *pairing_out,
                      ECP_BN254 *g1_point,
                      ECP2_BN254 *g2_point);

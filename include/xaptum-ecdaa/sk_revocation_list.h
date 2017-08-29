@@ -16,16 +16,31 @@
  *
  *****************************************************************************/
 
-#include <xaptum-ecdaa/join_member.h>
+#ifndef XAPTUM_ECDAA_SK_REVOCATION_LIST_H
+#define XAPTUM_ECDAA_SK_REVOCATION_LIST_H
+#pragma once
 
-#include <assert.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-int create_first_join_message(uint8_t *out_buffer,
-                              uint32_t out_length,
-                              join_member_context_t *ctx)
-{
-    assert(out_buffer);
-    assert(out_length);
-    assert(ctx);
-    return 0;
+struct ecdaa_member_secret_key_t;
+
+#include <stddef.h>
+
+/*
+ * Secret-key revocation list.
+ *
+ * `list` is an array of `member_join_secret_key_t`s.
+ * `length` is the size of `list`.
+ */
+typedef struct ecdaa_sk_revocation_list_t {
+    size_t length;
+    struct ecdaa_member_secret_key_t *list;
+} ecdaa_sk_revocation_list_t;
+
+#ifdef __cplusplus
 }
+#endif
+
+#endif

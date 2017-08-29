@@ -16,22 +16,39 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_JOIN_MEMBER_H
-#define XAPTUM_ECDAA_JOIN_MEMBER_H
+#ifndef XAPTUM_ECDAA_GROUP_PUBLIC_KEY_H
+#define XAPTUM_ECDAA_GROUP_PUBLIC_KEY_H
 #pragma once
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include <amcl/ecp2_BN254.h>
 
-#include <xaptum-ecdaa/context.h>
+/*
+ * Public key for the DAA group.
+ */
+typedef struct ecdaa_group_public_key_t {
+    ECP2_BN254 X;
+    ECP2_BN254 Y;
+} ecdaa_group_public_key_t;
 
-int create_first_join_message(uint8_t *out_buffer,
-                              uint32_t out_length,
-                              member_join_public_key_t *pk,
-                              member_join_secret_key_t *sk);
+/*
+ * Serialize an `ecdaa_group_public_key_t`
+ *
+ * The provided buffer is assumed to be large enough.
+ */
+void ecdaa_serialize_group_public_key(uint8_t *buffer_out,
+                                      uint32_t *out_length,
+                                      ecdaa_group_public_key_t *gpk);
+
+/*
+ * De-serialize an `ecdaa_group_public_key_t`
+ */
+void ecdaa_deserialize_group_public_key(ecdaa_group_public_key_t *gpk_out,
+                                        uint8_t *buffer_in,
+                                        uint32_t *in_length);
 
 #ifdef __cplusplus
 }
