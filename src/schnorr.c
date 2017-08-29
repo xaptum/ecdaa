@@ -190,14 +190,14 @@ int schnorr_verify(BIG_256_56 c,
     return ret;
 }
 
-int issuer_schnorr_sign(BIG_256_56 *c_out,
-                        BIG_256_56 *s_out,
-                        ECP_BN254 *B,
-                        ECP_BN254 *member_public_key,
-                        ECP_BN254 *D,
-                        BIG_256_56 issuer_private_key_y,
-                        BIG_256_56 credential_random,
-                        csprng *rng)
+int credential_schnorr_sign(BIG_256_56 *c_out,
+                            BIG_256_56 *s_out,
+                            ECP_BN254 *B,
+                            ECP_BN254 *member_public_key,
+                            ECP_BN254 *D,
+                            BIG_256_56 issuer_private_key_y,
+                            BIG_256_56 credential_random,
+                            csprng *rng)
 {
     // 1) Set generator
     ECP_BN254 generator;
@@ -261,11 +261,11 @@ int issuer_schnorr_sign(BIG_256_56 *c_out,
     return 0;
 }
 
-int issuer_schnorr_verify(BIG_256_56 c,
-                          BIG_256_56 s,
-                          ECP_BN254 *B,
-                          ECP_BN254 *member_public_key,
-                          ECP_BN254 *D)
+int credential_schnorr_verify(BIG_256_56 c,
+                              BIG_256_56 s,
+                              ECP_BN254 *B,
+                              ECP_BN254 *member_public_key,
+                              ECP_BN254 *D)
 {
     int ret = 0;
 

@@ -42,8 +42,8 @@ static void schnorr_verify_wrong_msg();
 static void schnorr_verify_bad_sig();
 static void schnorr_sign_integration();
 static void schnorr_sign_integration_other_basepoint();
-static void schnorr_issuer_sign_sane();
-static void schnorr_issuer_sign_integration();
+static void schnorr_credential_sign_sane();
+static void schnorr_credential_sign_integration();
 
 static void schnorr_sign_benchmark();
 
@@ -57,8 +57,8 @@ int main()
     schnorr_verify_bad_sig();
     schnorr_sign_integration();
     schnorr_sign_integration_other_basepoint();
-    schnorr_issuer_sign_sane();
-    schnorr_issuer_sign_integration();
+    schnorr_credential_sign_sane();
+    schnorr_credential_sign_integration();
     schnorr_sign_benchmark();
 }
 
@@ -290,9 +290,9 @@ void schnorr_sign_integration_other_basepoint()
     printf("\tsuccess\n");
 }
 
-void schnorr_issuer_sign_sane()
+void schnorr_credential_sign_sane()
 {
-    printf("Starting schnorr::schnorr_issuer_sign_sane...\n");
+    printf("Starting schnorr::schnorr_credential_sign_sane...\n");
 
     ECP_BN254 member_public;
     BIG_256_56 member_private;
@@ -308,7 +308,7 @@ void schnorr_issuer_sign_sane()
     csprng rng;
     create_test_rng(&rng);
 
-    TEST_ASSERT(0 == issuer_schnorr_sign(&c, &s, &B, &member_public, &D, issuer_private, credential_random, &rng));
+    TEST_ASSERT(0 == credential_schnorr_sign(&c, &s, &B, &member_public, &D, issuer_private, credential_random, &rng));
 
     KILL_CSPRNG(&rng);
 
@@ -320,9 +320,9 @@ void schnorr_issuer_sign_sane()
     printf("\tsuccess\n");
 }
 
-void schnorr_issuer_sign_integration()
+void schnorr_credential_sign_integration()
 {
-    printf("Starting schnorr::schnorr_issuer_sign_integration...\n");
+    printf("Starting schnorr::schnorr_credential_sign_integration...\n");
 
     csprng rng;
     create_test_rng(&rng);
@@ -348,9 +348,9 @@ void schnorr_issuer_sign_integration()
 
     BIG_256_56 c, s;
 
-    TEST_ASSERT(0 == issuer_schnorr_sign(&c, &s, &B, &member_public, &D, issuer_private_key_y, credential_random, &rng));
+    TEST_ASSERT(0 == credential_schnorr_sign(&c, &s, &B, &member_public, &D, issuer_private_key_y, credential_random, &rng));
 
-    TEST_ASSERT(0 == issuer_schnorr_verify(c, s, &B, &member_public, &D));
+    TEST_ASSERT(0 == credential_schnorr_verify(c, s, &B, &member_public, &D));
 
     destroy_test_rng(&rng);
 

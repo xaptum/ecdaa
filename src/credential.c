@@ -77,7 +77,7 @@ int ecdaa_generate_credential(ecdaa_credential_t *cred,
 
     // 10) Perform a Schnorr-like signature,
     //  to prove the credential was properly constructed by someone with knowledge of y.
-    int schnorr_ret = issuer_schnorr_sign(&cred_sig_out->c,
+    int schnorr_ret = credential_schnorr_sign(&cred_sig_out->c,
                                           &cred_sig_out->s,
                                           &cred->B,
                                           &member_pk->Q,
@@ -110,7 +110,7 @@ int ecdaa_validate_credential(struct ecdaa_credential_t *credential,
         ret = -1;
     
     // 2) Verify schnorr-like signature
-    int schnorr_ret = issuer_schnorr_verify(credential_signature->c,
+    int schnorr_ret = credential_schnorr_verify(credential_signature->c,
                                             credential_signature->s,
                                             &credential->B,
                                             &member->pk.Q,

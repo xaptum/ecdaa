@@ -106,7 +106,7 @@ int schnorr_verify(BIG_256_56 c,
                    ECP_BN254 *public_key);
 
 /*
- * Perform an 'issuer-Schnorr' signature, used by an Issuer when signing credentials.
+ * Perform an 'credential-Schnorr' signature, used by an Issuer when signing credentials.
  *
  * c_out = Hash ( r*generator | r*member_public_key | generator | B | member_public_key | D ),
  * s_out = s = r + c_out * private_key,
@@ -120,17 +120,17 @@ int schnorr_verify(BIG_256_56 c,
  *   0 on success
  *   -1 if basepoint is not valid
  */
-int issuer_schnorr_sign(BIG_256_56 *c_out,
-                        BIG_256_56 *s_out,
-                        ECP_BN254 *B,
-                        ECP_BN254 *member_public_key,
-                        ECP_BN254 *D,
-                        BIG_256_56 issuer_private_key_y,
-                        BIG_256_56 credential_random,
-                        csprng *rng);
+int credential_schnorr_sign(BIG_256_56 *c_out,
+                            BIG_256_56 *s_out,
+                            ECP_BN254 *B,
+                            ECP_BN254 *member_public_key,
+                            ECP_BN254 *D,
+                            BIG_256_56 issuer_private_key_y,
+                            BIG_256_56 credential_random,
+                            csprng *rng);
 
 /*
- * Verify that (c, s) is a valid 'issuer-Schnorr' signature.
+ * Verify that (c, s) is a valid 'credential-Schnorr' signature.
  *
  * Check c = Hash( s*generator - c*B | s*public_key - c*D | generator | B | member_public_key | D ),
  *
@@ -143,11 +143,11 @@ int issuer_schnorr_sign(BIG_256_56 *c_out,
  *  0 on success
  *  -1 if (c, s) is not a valid signature
  */
-int issuer_schnorr_verify(BIG_256_56 c,
-                          BIG_256_56 s,
-                          ECP_BN254 *B,
-                          ECP_BN254 *member_public_key,
-                          ECP_BN254 *D);
+int credential_schnorr_verify(BIG_256_56 c,
+                              BIG_256_56 s,
+                              ECP_BN254 *B,
+                              ECP_BN254 *member_public_key,
+                              ECP_BN254 *D);
 
 #ifdef __cplusplus
 }
