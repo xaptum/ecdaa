@@ -24,6 +24,7 @@ Xaptum, Inc.'s implementation of elliptic-curve-based Direct Anonymous Attestati
 # Running the tests
 
 `cd build`
+
 `ctest -V`
 
 ## License
