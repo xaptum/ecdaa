@@ -20,12 +20,23 @@
 
 #include "schnorr.h"
 #include "explicit_bzero.h"
+#include "pairing_curve_utils.h"
 
 #include <ecdaa/member_keypair.h>
 #include <ecdaa/issuer_keypair.h>
 #include <ecdaa/group_public_key.h>
 
 #include "pairing_curve_utils.h"
+
+size_t serialized_credential_length()
+{
+    return SERIALIZED_CREDENTIAL_LENGTH;
+}
+
+size_t serialized_credential_signature_length()
+{
+    return SERIALIZED_CREDENTIAL_SIGNATURE_LENGTH;
+}
 
 int ecdaa_generate_credential(ecdaa_credential_t *cred,
                               ecdaa_credential_signature_t *cred_sig_out,
@@ -148,19 +159,61 @@ int ecdaa_validate_credential(struct ecdaa_credential_t *credential,
 }
 
 void ecdaa_serialize_credential(uint8_t *buffer_out,
-                                uint32_t *out_length,
                                 ecdaa_credential_t *credential)
 {
-    // TODO
-    if (NULL == buffer_out || NULL == out_length || NULL == credential)
-        return;
+    serialize_point(buffer_out, &credential->A);
+    serialize_point(buffer_out + serialized_point_length(), &credential->B);
+    serialize_point(buffer_out + 2*serialized_point_length(), &credential->C);
+    serialize_point(buffer_out + 3*serialized_point_length(), &credential->D);
 }
 
-void ecdaa_deserialize_credential(ecdaa_credential_t *credential_out,
-                                  uint8_t *buffer_in,
-                                  uint32_t *in_length)
+void ecdaa_serialize_credential_signature(uint8_t *buffer_out,
+                                          ecdaa_credential_signature_t *cred_sig)
 {
-    // TODO
-    if (NULL == buffer_in || NULL == in_length || NULL == credential_out)
-        return;
+    BIG_256_56_toBytes((char*)buffer_out, cred_sig->c);
+    BIG_256_56_toBytes((char*)(buffer_out + MODBYTES_256_56), cred_sig->s);
+}
+
+int ecdaa_deserialize_credential_with_signature(ecdaa_credential_t *credential_out,
+                                                struct ecdaa_member_public_key_t *member_pk,
+                                                struct ecdaa_group_public_key_t *gpk,
+                                                uint8_t *buffer_in)
+{
+    int ret = 0;
+
+    // 1) De-serialize the credential
+    ret = ecdaa_deserialize_credential(credential_out, buffer_in);
+
+    // 2) De-serialize the credential signature
+    ecdaa_credential_signature_t cred_sig;
+    BIG_256_56_fromBytes(cred_sig.c, (char*)(buffer_in + 4*serialized_point_length()));
+    BIG_256_56_fromBytes(cred_sig.c, (char*)(buffer_in + 4*serialized_point_length() + MODBYTES_256_56));
+
+    if (0 == ret) {
+        int valid_ret = ecdaa_validate_credential(credential_out, &cred_sig, member_pk, gpk);
+        if (0 != valid_ret)
+            ret = -2;
+    }
+
+    return ret;
+}
+
+int ecdaa_deserialize_credential(ecdaa_credential_t *credential_out,
+                                 uint8_t *buffer_in)
+{
+    int ret = 0;
+
+    if (0 != deserialize_point(&credential_out->A, buffer_in))
+        ret = -1;
+
+    if (0 != deserialize_point(&credential_out->B, buffer_in + serialized_point_length()))
+        ret = -1;
+
+    if (0 != deserialize_point(&credential_out->C, buffer_in + 2*serialized_point_length()))
+        ret = -1;
+
+    if (0 != deserialize_point(&credential_out->D, buffer_in + 3*serialized_point_length()))
+        ret = -1;
+
+    return ret;
 }

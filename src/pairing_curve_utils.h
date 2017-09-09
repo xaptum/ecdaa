@@ -31,8 +31,11 @@ extern "C" {
 
 #include <stddef.h>
 
-extern const size_t serialized_point_length;
-extern const size_t serialized_point_length_2;
+#define SERIALIZED_POINT_LENGTH (2*MODBYTES_256_56 + 1)
+size_t serialized_point_length();
+
+#define SERIALIZED_POINT_LENGTH_2 (4*MODBYTES_256_56 + 1)
+size_t serialized_point_length_2();
 
 /*
  * Serialize a G1 point.
@@ -43,12 +46,36 @@ void serialize_point(uint8_t *buffer,
                      ECP_BN254 *point);
 
 /*
+ * De-serialize a G1 point.
+ *
+ * Format: ( 0x04 | x-coordinate | y-coordinate )
+ *
+ * Returns:
+ * 0 on success
+ * -1 if the point is not on the curve
+ */
+int deserialize_point(ECP_BN254 *point,
+                      const uint8_t *buffer);
+
+/*
  * Serialize a G2 point.
  *
  * Format: ( 0x04 | x-coordinate-real-part | x-coordinate-imaginary-part | y-coordinate-real-part | y-coordinate-imaginary-part )
  */
 void serialize_point2(uint8_t *buffer,
                       ECP2_BN254 *point);
+/*
+ * De-serialize a G2 point.
+ *
+ * Format: ( 0x04 | x-coordinate-real-part | x-coordinate-imaginary-part | y-coordinate-real-part | y-coordinate-imaginary-part )
+ *
+ * Returns:
+ * 0 on success
+ * -1 if the point is not on the curve
+ */
+int deserialize_point2(ECP2_BN254 *point,
+                       const uint8_t *buffer);
+
 
 /*
  * Generate a uniformly-distributed pseudo-random number,

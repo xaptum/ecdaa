@@ -18,20 +18,44 @@
 
 #include <ecdaa/group_public_key.h>
 
-void ecdaa_serialize_group_public_key(uint8_t *buffer_out,
-                                      uint32_t *out_length,
-                                      ecdaa_group_public_key_t *gpk)
+#include "pairing_curve_utils.h"
+
+size_t serialized_group_public_key_length(void)
 {
-    // TODO
-    if (NULL == buffer_out || NULL == out_length || NULL == gpk)
-        return;
+    return SERIALIZED_GROUP_PUBLIC_KEY_LENGTH;
 }
 
-void ecdaa_deserialize_group_public_key(ecdaa_group_public_key_t *gpk_out,
-                                        uint8_t *buffer_in,
-                                        uint32_t *in_length)
+void ecdaa_serialize_group_public_key(uint8_t *buffer_out,
+                                      ecdaa_group_public_key_t *gpk)
 {
-    // TODO
-    if (NULL == buffer_in || NULL == in_length || NULL == gpk_out)
-        return;
+    serialize_point2(buffer_out, &gpk->X);
+    serialize_point2(buffer_out + serialized_point_length_2(), &gpk->Y);
+}
+
+int ecdaa_deserialize_group_public_key(ecdaa_group_public_key_t *gpk_out,
+                                       uint8_t *buffer_in)
+{
+    int ret = 0;
+
+    int deserial_ret_x = deserialize_point2(&gpk_out->X, buffer_in);
+    if (0 != deserial_ret_x)
+        ret = -1;
+
+    if (0 == deserial_ret_x) {
+        int member_ret_x = check_point_membership2(&gpk_out->X);
+        if (0 != member_ret_x)
+            ret = -2;
+    }
+
+    int deserial_ret_y = deserialize_point2(&gpk_out->Y, buffer_in + serialized_point_length_2());
+    if (0 != deserial_ret_y)
+        ret = -1;
+
+    if (0 == deserial_ret_y) {
+        int member_ret_y = check_point_membership2(&gpk_out->Y);
+        if (0 != member_ret_y)
+            ret = -2;
+    }
+
+    return ret;
 }

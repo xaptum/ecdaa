@@ -18,24 +18,48 @@
 
 #include <ecdaa/signature.h>
 
+#include "pairing_curve_utils.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void ecdaa_serialize_signature(uint8_t *buffer_out,
-                               uint32_t *out_length,
-                               ecdaa_signature_t *signature)
+size_t serialized_signature_length()
 {
-    // TODO
-    if (NULL == buffer_out || NULL == out_length || NULL == signature)
-        return;
+    return SERIALIZED_SIGNATURE_LENGTH;
 }
 
-void ecdaa_deserialize_signature(ecdaa_signature_t *signature_out,
-                                 uint8_t *buffer_in,
-                                 uint32_t *in_length)
+void ecdaa_serialize_signature(uint8_t *buffer_out,
+                               ecdaa_signature_t *signature)
 {
-    // TODO
-    if (NULL == buffer_in || NULL == in_length || NULL == signature_out)
-        return;
+    BIG_256_56_toBytes((char*)buffer_out, signature->c);
+    BIG_256_56_toBytes((char*)(buffer_out + MODBYTES_256_56), signature->s);
+
+    serialize_point(buffer_out + 2*MODBYTES_256_56, &signature->R);
+    serialize_point(buffer_out + 2*MODBYTES_256_56 + serialized_point_length(), &signature->S);
+    serialize_point(buffer_out + 2*MODBYTES_256_56 + 2*serialized_point_length(), &signature->T);
+    serialize_point(buffer_out + 2*MODBYTES_256_56 + 3*serialized_point_length(), &signature->W);
+}
+
+int ecdaa_deserialize_signature(ecdaa_signature_t *signature_out,
+                                uint8_t *buffer_in)
+{
+    int ret = 0;
+
+    BIG_256_56_fromBytes(signature_out->c, (char*)buffer_in);
+    BIG_256_56_fromBytes(signature_out->s, (char*)(buffer_in + MODBYTES_256_56));
+
+    if (0 != deserialize_point(&signature_out->R, buffer_in + MODBYTES_256_56))
+        ret = -1;
+
+    if (0 != deserialize_point(&signature_out->S, buffer_in + MODBYTES_256_56 + serialized_point_length()))
+        ret = -1;
+
+    if (0 != deserialize_point(&signature_out->T, buffer_in + MODBYTES_256_56 + 2*serialized_point_length()))
+        ret = -1;
+
+    if (0 != deserialize_point(&signature_out->W, buffer_in + MODBYTES_256_56 + 3*serialized_point_length()))
+        ret = -1;
+
+    return ret;
 }

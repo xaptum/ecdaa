@@ -39,21 +39,43 @@ typedef struct ecdaa_signature_t {
     ECP_BN254 W;
 } ecdaa_signature_t;
 
+#define SERIALIZED_SIGNATURE_LENGTH (2*MODBYTES_256_56 + 4*(2*MODBYTES_256_56 + 1))
+size_t serialized_signature_length();
+
 /*
  * Serialize an `ecdaa_signature_t`
+ *
+ * The serialized format is:
+ *  ( c | s |
+ *    0x04 | R.x-coord | R.y-coord |
+ *    0x04 | S.x-coord | S.y-coord |
+ *    0x04 | T.x-coord | T.y-coord |
+ *    0x04 | W.x-coord | W.y-coord )
  *
  * The provided buffer is assumed to be large enough.
  */
 void ecdaa_serialize_signature(uint8_t *buffer_out,
-                               uint32_t *out_length,
                                ecdaa_signature_t *signature);
 
 /*
  * De-serialize an `ecdaa_signature_t`
+ *
+ * The serialized format is:
+ *  ( c | s |
+ *    0x04 | R.x-coord | R.y-coord |
+ *    0x04 | S.x-coord | S.y-coord |
+ *    0x04 | T.x-coord | T.y-coord |
+ *    0x04 | W.x-coord | W.y-coord )
+ *
+ *  NOTE: The four G1 points are checked as being on the curve,
+ *      but not for membership in the group.
+ *
+ * Returns:
+ * 0 on success
+ * -1 if signature is mal-formed
  */
-void ecdaa_deserialize_signature(ecdaa_signature_t *signature_out,
-                                 uint8_t *buffer_in,
-                                 uint32_t *in_length);
+int ecdaa_deserialize_signature(ecdaa_signature_t *signature_out,
+                                uint8_t *buffer_in);
 
 #ifdef __cplusplus
 }

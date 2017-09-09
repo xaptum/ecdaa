@@ -38,37 +38,6 @@ void schnorr_keygen(ECP_BN254 *public_out,
     ECP_BN254_mul(public_out, *private_out);
 }
 
-int convert_schnorr_public_key_from_bytes(const octet *public_key_as_bytes, ECP_BN254 *public_key)
-{
-    // Avoid returning early, to mitigate timing attacks.
-    int ret = 0;
-
-    BIG_256_56 curve_order;
-    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
-
-    BIG_256_56 Q_x, Q_y;
-    assert(public_key_as_bytes->val[0] == 0x04);
-    BIG_256_56_fromBytes(Q_x, &(public_key_as_bytes->val[1]));
-    BIG_256_56_fromBytes(Q_y, &(public_key_as_bytes->val[MODBYTES_256_56+1]));
-
-    // Check that coordinates aren't too large.
-    if (BIG_256_56_comp(Q_x, curve_order) >= 0)
-        ret = -1;
-    if (BIG_256_56_comp(Q_y, curve_order) >= 0)
-        ret = -1;
-
-    if (0 == ret) {
-        // Copy putative group key into output
-        if (1 != ECP_BN254_set(public_key, Q_x, Q_y))
-            ret = -1;
-
-        if (ECP_BN254_isinf(public_key))
-            ret = -1;
-    }
-
-    return ret;
-}
-
 void convert_schnorr_public_key_to_bytes(octet *public_key_as_bytes, ECP_BN254 *public_key)
 {
     BIG_256_56 Q_x, Q_y;
@@ -104,10 +73,10 @@ int schnorr_sign(BIG_256_56 *c_out,
 
     // 4) (Sign 1) Compute c = Hash( R | basepoint | public_key | msg_in )
     uint8_t hash_input_begin[195];
-    assert(3*serialized_point_length == sizeof(hash_input_begin));
+    assert(3*serialized_point_length() == sizeof(hash_input_begin));
     serialize_point(hash_input_begin, &R);
-    serialize_point(hash_input_begin+serialized_point_length, basepoint);
-    serialize_point(hash_input_begin+2*serialized_point_length, public_key);
+    serialize_point(hash_input_begin+serialized_point_length(), basepoint);
+    serialize_point(hash_input_begin+2*serialized_point_length(), public_key);
     hash_into_mpi_two(c_out, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
 
     // 5) (Sign 2) Compute s = k + c * private_key
@@ -152,10 +121,10 @@ int schnorr_verify(BIG_256_56 c,
     // 5) Compute c' = Hash( R | basepoint | msg_in )
     //      (modular-reduce c', too).
     uint8_t hash_input_begin[195];
-    assert(3*serialized_point_length == sizeof(hash_input_begin));
+    assert(3*serialized_point_length() == sizeof(hash_input_begin));
     serialize_point(hash_input_begin, &R);
-    serialize_point(hash_input_begin+serialized_point_length, basepoint);
-    serialize_point(hash_input_begin+2*serialized_point_length, public_key);
+    serialize_point(hash_input_begin+serialized_point_length(), basepoint);
+    serialize_point(hash_input_begin+2*serialized_point_length(), public_key);
     BIG_256_56 c_prime;
     hash_into_mpi_two(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
     BIG_256_56 curve_order;
@@ -199,13 +168,13 @@ int credential_schnorr_sign(BIG_256_56 *c_out,
 
     // 5) Compute c = Hash( U | V | generator | B | member_public_key | D )
     uint8_t hash_input[390];
-    assert(6*serialized_point_length == sizeof(hash_input));
+    assert(6*serialized_point_length() == sizeof(hash_input));
     serialize_point(hash_input, &U);
-    serialize_point(hash_input+serialized_point_length, &V);
-    serialize_point(hash_input+2*serialized_point_length, &generator);
-    serialize_point(hash_input+3*serialized_point_length, B);
-    serialize_point(hash_input+4*serialized_point_length, member_public_key);
-    serialize_point(hash_input+5*serialized_point_length, D);
+    serialize_point(hash_input+serialized_point_length(), &V);
+    serialize_point(hash_input+2*serialized_point_length(), &generator);
+    serialize_point(hash_input+3*serialized_point_length(), B);
+    serialize_point(hash_input+4*serialized_point_length(), member_public_key);
+    serialize_point(hash_input+5*serialized_point_length(), D);
     hash_into_mpi(c_out, hash_input, sizeof(hash_input));
 
     // 6) Compute ly = (credential_random x issuer_private_key_y) mod curve_order
@@ -268,13 +237,13 @@ int credential_schnorr_verify(BIG_256_56 c,
     // 8) Compute c' = Hash( R1 | R2 | generator | B | member_public_key | D )
     //      (modular-reduce c', too).
     uint8_t hash_input[390];
-    assert(6*serialized_point_length == sizeof(hash_input));
+    assert(6*serialized_point_length() == sizeof(hash_input));
     serialize_point(hash_input, &R1);
-    serialize_point(hash_input+serialized_point_length, &R2);
-    serialize_point(hash_input+2*serialized_point_length, &generator);
-    serialize_point(hash_input+3*serialized_point_length, B);
-    serialize_point(hash_input+4*serialized_point_length, member_public_key);
-    serialize_point(hash_input+5*serialized_point_length, D);
+    serialize_point(hash_input+serialized_point_length(), &R2);
+    serialize_point(hash_input+2*serialized_point_length(), &generator);
+    serialize_point(hash_input+3*serialized_point_length(), B);
+    serialize_point(hash_input+4*serialized_point_length(), member_public_key);
+    serialize_point(hash_input+5*serialized_point_length(), D);
     BIG_256_56 c_prime;
     hash_into_mpi(&c_prime, hash_input, sizeof(hash_input));
     BIG_256_56 curve_order;
@@ -319,12 +288,12 @@ int issuer_schnorr_sign(BIG_256_56 *c_out,
 
     // 5) Compute c = Hash( Ux | Uy | generator_2 | X | Y )
     uint8_t hash_input[645];
-    assert(5*serialized_point_length_2 == sizeof(hash_input));
+    assert(5*serialized_point_length_2() == sizeof(hash_input));
     serialize_point2(hash_input, &Ux);
-    serialize_point2(hash_input+serialized_point_length_2, &Uy);
-    serialize_point2(hash_input+2*serialized_point_length_2, &generator_2);
-    serialize_point2(hash_input+3*serialized_point_length_2, X);
-    serialize_point2(hash_input+4*serialized_point_length_2, Y);
+    serialize_point2(hash_input+serialized_point_length_2(), &Uy);
+    serialize_point2(hash_input+2*serialized_point_length_2(), &generator_2);
+    serialize_point2(hash_input+3*serialized_point_length_2(), X);
+    serialize_point2(hash_input+4*serialized_point_length_2(), Y);
     hash_into_mpi(c_out, hash_input, sizeof(hash_input));
 
     // 6) Compute sx = rx + c * private_key_x
@@ -387,12 +356,12 @@ int issuer_schnorr_verify(BIG_256_56 c,
     // 8) Compute c' = Hash( R1 | R2 | generator_2 | X | Y )
     //      (modular-reduce c', too).
     uint8_t hash_input[645];
-    assert(5*serialized_point_length_2 == sizeof(hash_input));
+    assert(5*serialized_point_length_2() == sizeof(hash_input));
     serialize_point2(hash_input, &R1);
-    serialize_point2(hash_input+serialized_point_length_2, &R2);
-    serialize_point2(hash_input+2*serialized_point_length_2, &generator_2);
-    serialize_point2(hash_input+3*serialized_point_length_2, X);
-    serialize_point2(hash_input+4*serialized_point_length_2, Y);
+    serialize_point2(hash_input+serialized_point_length_2(), &R2);
+    serialize_point2(hash_input+2*serialized_point_length_2(), &generator_2);
+    serialize_point2(hash_input+3*serialized_point_length_2(), X);
+    serialize_point2(hash_input+4*serialized_point_length_2(), Y);
     BIG_256_56 c_prime;
     hash_into_mpi(&c_prime, hash_input, sizeof(hash_input));
     BIG_256_56 curve_order;

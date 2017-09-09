@@ -21,6 +21,16 @@
 #include "pairing_curve_utils.h"
 #include "schnorr.h"
 
+#include <ecdaa/group_public_key.h>
+
+size_t serialized_issuer_public_key_length(void) {
+    return SERIALIZED_ISSUER_PUBLIC_KEY_LENGTH;
+}
+
+size_t serialized_issuer_secret_key_length() {
+    return SERIALIZED_ISSUER_SECRET_KEY_LENGTH;
+}
+
 int ecdaa_generate_issuer_key_pair(ecdaa_issuer_public_key_t *pk,
                                    ecdaa_issuer_secret_key_t *sk,
                                    csprng *rng)
@@ -45,38 +55,63 @@ int ecdaa_generate_issuer_key_pair(ecdaa_issuer_public_key_t *pk,
     return 0;
 }
 
-void ecdaa_serialize_issuer_public_key(uint8_t *buffer_out,
-                                       uint32_t *out_length,
-                                       ecdaa_issuer_public_key_t *ipk)
+int ecdaa_validate_issuer_public_key(ecdaa_issuer_public_key_t *ipk)
 {
-    // TODO
-    if (NULL == buffer_out || NULL == out_length || NULL == ipk)
-        return;
+    int ret = 0;
+
+    int schnorr_ret = issuer_schnorr_verify(ipk->c, ipk->sx, ipk->sy, &ipk->gpk.X, &ipk->gpk.Y);
+    if (0 != schnorr_ret)
+        ret = -1;
+
+    return ret;
 }
 
-void ecdaa_deserialize_issuer_public_key(ecdaa_issuer_public_key_t *ipk_out,
-                                         uint8_t *buffer_in,
-                                         uint32_t *in_length)
+void ecdaa_serialize_issuer_public_key(uint8_t *buffer_out,
+                                       ecdaa_issuer_public_key_t *ipk)
 {
-    // TODO
-    if (NULL == buffer_in || NULL == in_length || NULL == ipk_out)
-        return;
+    ecdaa_serialize_group_public_key(buffer_out, &ipk->gpk);
+
+    BIG_256_56_toBytes((char*)(buffer_out + serialized_group_public_key_length()), ipk->c);
+    BIG_256_56_toBytes((char*)(buffer_out + serialized_group_public_key_length() + MODBYTES_256_56), ipk->sx);
+    BIG_256_56_toBytes((char*)(buffer_out + serialized_group_public_key_length() + 2*MODBYTES_256_56), ipk->sy);
+}
+
+int ecdaa_deserialize_issuer_public_key(ecdaa_issuer_public_key_t *ipk_out,
+                                        uint8_t *buffer_in)
+{
+    int ret = 0;
+
+    // 1) Deserialize the gpk
+    //  (This also checks gpk.X and gpk.Y for membership in G2)
+    int deserial_ret = ecdaa_deserialize_group_public_key(&ipk_out->gpk, buffer_in);
+    if (0 != deserial_ret)
+        ret = -1;
+
+    // 2) Deserialize the issuer_schnorr signature
+    BIG_256_56_fromBytes(ipk_out->c, (char*)(buffer_in + serialized_group_public_key_length()));
+    BIG_256_56_fromBytes(ipk_out->sx, (char*)(buffer_in + serialized_group_public_key_length() + MODBYTES_256_56));
+    BIG_256_56_fromBytes(ipk_out->sy, (char*)(buffer_in + serialized_group_public_key_length() + 2*MODBYTES_256_56));
+
+    // 3) Check the signature
+    int sign_ret = ecdaa_validate_issuer_public_key(ipk_out);
+    if (0 != sign_ret)
+        ret = -2;
+
+    return ret;
 }
 
 void ecdaa_serialize_issuer_secret_key(uint8_t *buffer_out,
-                                       uint32_t *out_length,
                                        ecdaa_issuer_secret_key_t *isk)
 {
-    // TODO
-    if (NULL == buffer_out || NULL == out_length || NULL == isk)
-        return;
+    BIG_256_56_toBytes((char*)buffer_out, isk->x);
+    BIG_256_56_toBytes((char*)(buffer_out + MODBYTES_256_56), isk->y);
 }
 
-void ecdaa_deserialize_issuer_secret_key(ecdaa_issuer_secret_key_t *isk_out,
-                                         uint8_t *buffer_in,
-                                         uint32_t *in_length)
+int ecdaa_deserialize_issuer_secret_key(ecdaa_issuer_secret_key_t *isk_out,
+                                        uint8_t *buffer_in)
 {
-    // TODO
-    if (NULL == buffer_in || NULL == in_length || NULL == isk_out)
-        return;
+    BIG_256_56_fromBytes(isk_out->x, (char*)buffer_in);
+    BIG_256_56_fromBytes(isk_out->y, (char*)(buffer_in + MODBYTES_256_56));
+
+    return 0;
 }

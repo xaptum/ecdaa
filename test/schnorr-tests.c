@@ -35,7 +35,6 @@
 #include <string.h>
 
 static void schnorr_keygen_sane();
-static void schnorr_keygen_integration();
 static void schnorr_sign_sane();
 static void schnorr_verify_wrong_key();
 static void schnorr_verify_wrong_msg();
@@ -52,7 +51,6 @@ static void schnorr_sign_benchmark();
 int main()
 {
     schnorr_keygen_sane();
-    schnorr_keygen_integration();
     schnorr_sign_sane();
     schnorr_verify_wrong_key();
     schnorr_verify_wrong_msg();
@@ -84,33 +82,6 @@ void schnorr_keygen_sane()
 
     TEST_ASSERT(!public_one.inf);
     TEST_ASSERT(!public_two.inf);
-
-    destroy_test_rng(&rng);
-
-    printf("\tsuccess\n");
-}
-
-void schnorr_keygen_integration()
-{
-    printf("Starting schnorr::schnorr_keygen_integration...\n");
-
-    ECP_BN254 public;
-    BIG_256_56 private;
-
-    csprng rng;
-    create_test_rng(&rng);
-
-    schnorr_keygen(&public, &private, &rng);
-
-    char as_bytes[32];
-    octet serialized = {.len = 0, .max = sizeof(as_bytes), .val = as_bytes};
-
-    convert_schnorr_public_key_to_bytes(&serialized, &public);
-
-    ECP_BN254 de_serialized;
-    TEST_ASSERT(0 == convert_schnorr_public_key_from_bytes(&serialized, &de_serialized));
-
-    TEST_ASSERT(1 == ECP_BN254_equals(&de_serialized, &public));
 
     destroy_test_rng(&rng);
 

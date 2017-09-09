@@ -18,13 +18,26 @@
 
 #include <ecdaa/member_keypair.h>
 
+#include "pairing_curve_utils.h"
+#include "schnorr.h"
+
+#include <ecdaa/member_keypair.h>
 #include <ecdaa/issuer_nonce.h>
 
-#include "schnorr.h"
-#include "pairing_curve_utils.h"
+#include <assert.h>
 
-int ecdaa_generate_member_key_pair(ecdaa_member_public_key_t *pk,
-                                   ecdaa_member_secret_key_t *sk,
+size_t serialized_member_public_key_length()
+{
+   return SERIALIZED_MEMBER_PUBLIC_KEY_LENGTH;
+}
+
+size_t serialized_member_secret_key_length()
+{
+    return SERIALIZED_MEMBER_SECRET_KEY_LENGTH;
+}
+
+int ecdaa_generate_member_key_pair(struct ecdaa_member_public_key_t *pk,
+                                   struct ecdaa_member_secret_key_t *sk,
                                    struct ecdaa_issuer_nonce_t *nonce,
                                    csprng *rng)
 {
@@ -46,3 +59,69 @@ int ecdaa_generate_member_key_pair(ecdaa_member_public_key_t *pk,
     return sign_ret;
 }
 
+int ecdaa_validate_member_public_key(ecdaa_member_public_key_t *pk,
+                                     struct ecdaa_issuer_nonce_t *nonce_in)
+{
+    int ret = 0;
+    
+    ECP_BN254 basepoint;
+    set_to_basepoint(&basepoint);
+    int sign_ret = schnorr_verify(pk->c,
+                                  pk->s,
+                                  nonce_in->data,
+                                  sizeof(ecdaa_issuer_nonce_t),
+                                  &basepoint,
+                                  &pk->Q);
+    if (0 != sign_ret)
+        ret = -1;
+
+    return ret;
+}
+
+void ecdaa_serialize_member_public_key(uint8_t *buffer_out,
+                                       ecdaa_member_public_key_t *pk)
+{
+    serialize_point(buffer_out, &pk->Q);
+    BIG_256_56_toBytes((char*)(buffer_out + serialized_point_length()), pk->c);
+    BIG_256_56_toBytes((char*)(buffer_out + serialized_point_length() + MODBYTES_256_56), pk->s);
+}
+
+int ecdaa_deserialize_member_public_key(ecdaa_member_public_key_t *pk_out,
+                                        uint8_t *buffer_in,
+                                        struct ecdaa_issuer_nonce_t *nonce_in)
+{
+    int ret = 0;
+
+    // 1) Deserialize schnorr public key Q.
+    int deserial_ret = deserialize_point(&pk_out->Q, buffer_in);
+    if (0 != deserial_ret)
+        ret = -1;
+
+    // 2) Deserialize the schnorr signature
+    BIG_256_56_fromBytes(pk_out->c, (char*)(buffer_in + serialized_point_length()));
+    BIG_256_56_fromBytes(pk_out->s, (char*)(buffer_in + serialized_point_length() + MODBYTES_256_56));
+
+    if (0 == deserial_ret) {
+        // 3) Verify the schnorr signature.
+        //  (This also verifies that the public key is valid).
+        int schnorr_ret = ecdaa_validate_member_public_key(pk_out, nonce_in);
+        if (0 != schnorr_ret)
+            ret = -2;
+    }
+
+    return ret;
+}
+
+void ecdaa_serialize_member_secret_key(uint8_t *buffer_out,
+                                       ecdaa_member_secret_key_t *sk)
+{
+    BIG_256_56_toBytes((char*)buffer_out, sk->sk);
+}
+
+int ecdaa_deserialize_member_secret_key(ecdaa_member_secret_key_t *sk_out,
+                                        uint8_t *buffer_in)
+{
+    BIG_256_56_fromBytes(sk_out->sk, (char*)buffer_in);
+
+    return 0;
+}

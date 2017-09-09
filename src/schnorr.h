@@ -42,28 +42,6 @@ void schnorr_keygen(ECP_BN254 *public_out,
                     csprng *rng);
 
 /*
- * De-serialize a Schnorr public key.
- *
- * Serialized format is expected to be
- *  [0x4 | x-coord | y-coord]
- *  where coordinates are in big-endian byte-order.
- *
- * Returns:
- * 0 on success
- * -1 if public_key is not valid
- */
-int convert_schnorr_public_key_from_bytes(const octet *public_key_as_bytes, ECP_BN254 *public_key);
-
-/*
- * Serialize a Schnorr public key.
- *
- * Serialized format is
- *  [0x4 | x-coord | y-coord]
- *  where coordinates are in big-endian byte-order.
- */
-void convert_schnorr_public_key_to_bytes(octet *public_key_as_bytes, ECP_BN254 *public_key);
-
-/*
  * Perform Schnorr signature of msg_in, allowing for a non-standard basepoint.
  *
  * c_out = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | msg_in )
