@@ -39,7 +39,7 @@ size_t serialized_signature_length()
 }
 
 void ecdaa_serialize_signature(uint8_t *buffer_out,
-                               ecdaa_signature_t *signature)
+                               struct ecdaa_signature *signature)
 {
     BIG_256_56_toBytes((char*)buffer_out, signature->c);
     BIG_256_56_toBytes((char*)(buffer_out + MODBYTES_256_56), signature->s);
@@ -50,7 +50,7 @@ void ecdaa_serialize_signature(uint8_t *buffer_out,
     serialize_point(buffer_out + 2*MODBYTES_256_56 + 3*serialized_point_length(), &signature->W);
 }
 
-int ecdaa_deserialize_signature(ecdaa_signature_t *signature_out,
+int ecdaa_deserialize_signature(struct ecdaa_signature *signature_out,
                                 uint8_t *buffer_in)
 {
     int ret = 0;
@@ -73,11 +73,11 @@ int ecdaa_deserialize_signature(ecdaa_signature_t *signature_out,
     return ret;
 }
 
-int ecdaa_sign(struct ecdaa_signature_t *signature_out,
+int ecdaa_sign(struct ecdaa_signature *signature_out,
                const uint8_t* message,
                uint32_t message_len,
-               struct ecdaa_member_secret_key_t *sk,
-               struct ecdaa_credential_t *cred,
+               struct ecdaa_member_secret_key *sk,
+               struct ecdaa_credential *cred,
                csprng *rng)
 {
     // 1) Choose random l <- Z_p
@@ -120,9 +120,9 @@ int ecdaa_sign(struct ecdaa_signature_t *signature_out,
     return sign_ret;
 }
 
-int ecdaa_verify(struct ecdaa_signature_t *signature,
-                 struct ecdaa_group_public_key_t *gpk,
-                 struct ecdaa_sk_revocation_list_t *sk_rev_list,
+int ecdaa_verify(struct ecdaa_signature *signature,
+                 struct ecdaa_group_public_key *gpk,
+                 struct ecdaa_sk_revocation_list *sk_rev_list,
                  uint8_t* message,
                  uint32_t message_len)
 {

@@ -24,9 +24,9 @@
 extern "C" {
 #endif
 
-struct ecdaa_member_public_key_t;
-struct ecdaa_issuer_secret_key_t;
-struct ecdaa_group_public_key_t;
+struct ecdaa_member_public_key;
+struct ecdaa_issuer_secret_key;
+struct ecdaa_group_public_key;
 
 #include <amcl/ecp_BN254.h>
 #include <amcl/big_256_56.h>
@@ -37,36 +37,36 @@ struct ecdaa_group_public_key_t;
 /*
  * Credential (provided to Member by Issuer, after successful Join).
  */
-typedef struct ecdaa_credential_t {
+struct ecdaa_credential {
     ECP_BN254 A;
     ECP_BN254 B;
     ECP_BN254 C;
     ECP_BN254 D;
-} ecdaa_credential_t;
+};
 
 #define SERIALIZED_CREDENTIAL_LENGTH (4*(2*MODBYTES_256_56 + 1))
 size_t serialized_credential_length(void);
 
 /*
- * Signature over `ecdaa_credential_t` provided by an Issuer.
+ * Signature over `ecdaa_credential` provided by an Issuer.
  */
-typedef struct ecdaa_credential_signature_t {
+struct ecdaa_credential_signature {
     BIG_256_56 c;
     BIG_256_56 s;
-} ecdaa_credential_signature_t;
+};
 
 #define SERIALIZED_CREDENTIAL_SIGNATURE_LENGTH (2*MODBYTES_256_56)
 size_t serialized_credential_signature_length(void);
 
 /*
- * Generate a new `ecdaa_credential_t`.
+ * Generate a new `ecdaa_credential`.
  *
  * Used by an Issuer, at the end of a successful Join process.
  */
-int ecdaa_generate_credential(ecdaa_credential_t *cred,
-                              ecdaa_credential_signature_t *cred_sig_out,
-                              struct ecdaa_issuer_secret_key_t *isk,
-                              struct ecdaa_member_public_key_t *member_pk,
+int ecdaa_generate_credential(struct ecdaa_credential *cred,
+                              struct ecdaa_credential_signature *cred_sig_out,
+                              struct ecdaa_issuer_secret_key *isk,
+                              struct ecdaa_member_public_key *member_pk,
                               csprng *rng);
 
 /*
@@ -76,13 +76,13 @@ int ecdaa_generate_credential(ecdaa_credential_t *cred,
  * 0 on success
  * -1 if Join response is invalid
  */
-int ecdaa_validate_credential(struct ecdaa_credential_t *credential,
-                              struct ecdaa_credential_signature_t *credential_signature,
-                              struct ecdaa_member_public_key_t *member_pk,
-                              struct ecdaa_group_public_key_t *gpk);
+int ecdaa_validate_credential(struct ecdaa_credential *credential,
+                              struct ecdaa_credential_signature *credential_signature,
+                              struct ecdaa_member_public_key *member_pk,
+                              struct ecdaa_group_public_key *gpk);
 
 /*
- * Serialize an `ecdaa_credential_t`
+ * Serialize an `ecdaa_credential`
  *
  * Serialized format is;
  *  ( 0x04 | A.x-coord | A.y-coord |
@@ -94,16 +94,16 @@ int ecdaa_validate_credential(struct ecdaa_credential_t *credential,
  * The provided buffer is assumed to be large enough.
  */
 void ecdaa_serialize_credential(uint8_t *buffer_out,
-                                ecdaa_credential_t *credential);
+                                struct ecdaa_credential *credential);
 
 /*
- * Serialize an `ecdaa_credential_signature_t`
+ * Serialize an `ecdaa_credential_signature`
  */
 void ecdaa_serialize_credential_signature(uint8_t *buffer_out,
-                                          ecdaa_credential_signature_t *cred_sig);
+                                          struct ecdaa_credential_signature *cred_sig);
 
 /*
- * De-serialize an `ecdaa_credential_t` and check its validity (signature check not performed).
+ * De-serialize an `ecdaa_credential` and check its validity (signature check not performed).
  *
  * Expected serialized format is;
  *  ( 0x04 | A.x-coord | A.y-coord |
@@ -117,13 +117,13 @@ void ecdaa_serialize_credential_signature(uint8_t *buffer_out,
  *  -1 if credential is mal-formed
  *  -2 if signature is invalid
  */
-int ecdaa_deserialize_credential_with_signature(ecdaa_credential_t *credential_out,
-                                                struct ecdaa_member_public_key_t *member_pk,
-                                                struct ecdaa_group_public_key_t *gpk,
+int ecdaa_deserialize_credential_with_signature(struct ecdaa_credential *credential_out,
+                                                struct ecdaa_member_public_key *member_pk,
+                                                struct ecdaa_group_public_key *gpk,
                                                 uint8_t *buffer_in);
 
 /*
- * De-serialize an `ecdaa_credential_t` and `ecdaa_signature_t`, check its validity _and_ signature
+ * De-serialize an `ecdaa_credential` and `ecdaa_signature`, check its validity _and_ signature
  *
  * Expected serialized format is;
  *  ( 0x04 | A.x-coord | A.y-coord |
@@ -134,7 +134,7 @@ int ecdaa_deserialize_credential_with_signature(ecdaa_credential_t *credential_o
  *      s )
  *  where all numbers are zero-padded big-endian.
  */
-int ecdaa_deserialize_credential(ecdaa_credential_t *credential_out,
+int ecdaa_deserialize_credential(struct ecdaa_credential *credential_out,
                                  uint8_t *buffer_in);
 
 #ifdef __cplusplus

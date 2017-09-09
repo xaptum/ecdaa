@@ -32,11 +32,11 @@
 typedef struct credential_test_fixture {
     csprng rng;
 
-    ecdaa_member_public_key_t pk;
-    ecdaa_member_secret_key_t sk;
+    struct ecdaa_member_public_key pk;
+    struct ecdaa_member_secret_key sk;
 
-    ecdaa_issuer_public_key_t ipk;
-    ecdaa_issuer_secret_key_t isk;
+    struct ecdaa_issuer_public_key ipk;
+    struct ecdaa_issuer_secret_key isk;
 } credential_test_fixture;
 
 static void setup(credential_test_fixture* fixture);
@@ -78,8 +78,8 @@ static void cred_generate_then_validate()
     credential_test_fixture fixture;
     setup(&fixture);
 
-    ecdaa_credential_t cred;
-    ecdaa_credential_signature_t cred_sig;
+    struct ecdaa_credential cred;
+    struct ecdaa_credential_signature cred_sig;
     TEST_ASSERT(0 == ecdaa_generate_credential(&cred, &cred_sig, &fixture.isk, &fixture.pk, &fixture.rng));
 
     TEST_ASSERT(0 == ecdaa_validate_credential(&cred, &cred_sig, &fixture.pk, &fixture.ipk.gpk));

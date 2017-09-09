@@ -40,8 +40,8 @@ void member_secret_is_valid()
 {
     printf("Starting context::member_secret_is_valid...\n");
 
-    ecdaa_member_secret_key_t sk1;
-    ecdaa_member_public_key_t pk1;
+    struct ecdaa_member_secret_key sk1;
+    struct ecdaa_member_public_key pk1;
     ecdaa_issuer_nonce_t nonce = {{0}};
 
     csprng rng;
@@ -53,8 +53,8 @@ void member_secret_is_valid()
 
     TEST_ASSERT(!pk1.Q.inf);
 
-    ecdaa_member_secret_key_t sk2;
-    ecdaa_member_public_key_t pk2;
+    struct ecdaa_member_secret_key sk2;
+    struct ecdaa_member_public_key pk2;
     ecdaa_generate_member_key_pair(&pk2, &sk2, &nonce, &rng);
 
     TEST_ASSERT(BIG_256_56_comp(sk1.sk, sk2.sk) != 0);
@@ -69,8 +69,8 @@ void member_public_is_valid()
     csprng rng;
     create_test_rng(&rng);
 
-    ecdaa_member_secret_key_t sk;
-    ecdaa_member_public_key_t pk;
+    struct ecdaa_member_secret_key sk;
+    struct ecdaa_member_public_key pk;
     ecdaa_issuer_nonce_t nonce = {{0}};
     ecdaa_generate_member_key_pair(&pk, &sk, &nonce, &rng);
 

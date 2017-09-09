@@ -31,8 +31,8 @@ size_t serialized_issuer_secret_key_length() {
     return SERIALIZED_ISSUER_SECRET_KEY_LENGTH;
 }
 
-int ecdaa_generate_issuer_key_pair(ecdaa_issuer_public_key_t *pk,
-                                   ecdaa_issuer_secret_key_t *sk,
+int ecdaa_generate_issuer_key_pair(struct ecdaa_issuer_public_key *pk,
+                                   struct ecdaa_issuer_secret_key *sk,
                                    csprng *rng)
 {
     // Secret key is
@@ -55,7 +55,7 @@ int ecdaa_generate_issuer_key_pair(ecdaa_issuer_public_key_t *pk,
     return 0;
 }
 
-int ecdaa_validate_issuer_public_key(ecdaa_issuer_public_key_t *ipk)
+int ecdaa_validate_issuer_public_key(struct ecdaa_issuer_public_key *ipk)
 {
     int ret = 0;
 
@@ -67,7 +67,7 @@ int ecdaa_validate_issuer_public_key(ecdaa_issuer_public_key_t *ipk)
 }
 
 void ecdaa_serialize_issuer_public_key(uint8_t *buffer_out,
-                                       ecdaa_issuer_public_key_t *ipk)
+                                       struct ecdaa_issuer_public_key *ipk)
 {
     ecdaa_serialize_group_public_key(buffer_out, &ipk->gpk);
 
@@ -76,7 +76,7 @@ void ecdaa_serialize_issuer_public_key(uint8_t *buffer_out,
     BIG_256_56_toBytes((char*)(buffer_out + serialized_group_public_key_length() + 2*MODBYTES_256_56), ipk->sy);
 }
 
-int ecdaa_deserialize_issuer_public_key(ecdaa_issuer_public_key_t *ipk_out,
+int ecdaa_deserialize_issuer_public_key(struct ecdaa_issuer_public_key *ipk_out,
                                         uint8_t *buffer_in)
 {
     int ret = 0;
@@ -101,13 +101,13 @@ int ecdaa_deserialize_issuer_public_key(ecdaa_issuer_public_key_t *ipk_out,
 }
 
 void ecdaa_serialize_issuer_secret_key(uint8_t *buffer_out,
-                                       ecdaa_issuer_secret_key_t *isk)
+                                       struct ecdaa_issuer_secret_key *isk)
 {
     BIG_256_56_toBytes((char*)buffer_out, isk->x);
     BIG_256_56_toBytes((char*)(buffer_out + MODBYTES_256_56), isk->y);
 }
 
-int ecdaa_deserialize_issuer_secret_key(ecdaa_issuer_secret_key_t *isk_out,
+int ecdaa_deserialize_issuer_secret_key(struct ecdaa_issuer_secret_key *isk_out,
                                         uint8_t *buffer_in)
 {
     BIG_256_56_fromBytes(isk_out->x, (char*)buffer_in);

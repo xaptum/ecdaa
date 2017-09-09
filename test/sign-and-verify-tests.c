@@ -41,12 +41,12 @@ typedef struct sign_and_verify_fixture {
     csprng rng;
     uint8_t *msg;
     uint32_t msg_len;
-    ecdaa_sk_revocation_list_t sk_rev_list;
-    ecdaa_member_public_key_t pk;
-    ecdaa_member_secret_key_t sk;
-    ecdaa_issuer_public_key_t ipk;
-    ecdaa_issuer_secret_key_t isk;
-    ecdaa_credential_t cred;
+    struct ecdaa_sk_revocation_list sk_rev_list;
+    struct ecdaa_member_public_key pk;
+    struct ecdaa_member_secret_key sk;
+    struct ecdaa_issuer_public_key ipk;
+    struct ecdaa_issuer_secret_key isk;
+    struct ecdaa_credential cred;
 } sign_and_verify_fixture;
 
 static void setup(sign_and_verify_fixture* fixture);
@@ -76,7 +76,7 @@ static void setup(sign_and_verify_fixture* fixture)
     random_num_mod_order(&fixture->sk.sk, &fixture->rng);
     ECP_BN254_mul(&fixture->pk.Q, fixture->sk.sk);
 
-    ecdaa_credential_signature_t cred_sig;
+    struct ecdaa_credential_signature cred_sig;
     ecdaa_generate_credential(&fixture->cred, &cred_sig, &fixture->isk, &fixture->pk, &fixture->rng);
 
     fixture->msg = (uint8_t*) "Test message";
@@ -98,7 +98,7 @@ static void sign_then_verify_good()
     sign_and_verify_fixture fixture;
     setup(&fixture);
 
-    ecdaa_signature_t sig;
+    struct ecdaa_signature sig;
     TEST_ASSERT(0 == ecdaa_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
 
     TEST_ASSERT(0 == ecdaa_verify(&sig, &fixture.ipk.gpk, &fixture.sk_rev_list, fixture.msg, fixture.msg_len));
@@ -116,11 +116,11 @@ static void sign_then_verify_on_rev_list()
     setup(&fixture);
 
     // Put self on a secret-key revocation list, to be used in verify.
-    ecdaa_member_secret_key_t sk_rev_list_bad_raw[1];
+    struct ecdaa_member_secret_key sk_rev_list_bad_raw[1];
     BIG_256_56_copy(sk_rev_list_bad_raw[0].sk, fixture.sk.sk);
-    ecdaa_sk_revocation_list_t sk_rev_list_bad = {.length=1, .list=sk_rev_list_bad_raw};
+    struct ecdaa_sk_revocation_list sk_rev_list_bad = {.length=1, .list=sk_rev_list_bad_raw};
 
-    ecdaa_signature_t sig;
+    struct ecdaa_signature sig;
     TEST_ASSERT(0 == ecdaa_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
 
     TEST_ASSERT(0 != ecdaa_verify(&sig, &fixture.ipk.gpk, &sk_rev_list_bad, fixture.msg, fixture.msg_len));
@@ -139,7 +139,7 @@ static void sign_benchmark()
     sign_and_verify_fixture fixture;
     setup(&fixture);
 
-    ecdaa_signature_t sig;
+    struct ecdaa_signature sig;
 
     struct timeval tv1;
     gettimeofday(&tv1, NULL);
@@ -169,7 +169,7 @@ static void verify_benchmark()
     sign_and_verify_fixture fixture;
     setup(&fixture);
 
-    ecdaa_signature_t sig;
+    struct ecdaa_signature sig;
 
     TEST_ASSERT(0 == ecdaa_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
 

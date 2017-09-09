@@ -26,13 +26,13 @@ size_t serialized_group_public_key_length(void)
 }
 
 void ecdaa_serialize_group_public_key(uint8_t *buffer_out,
-                                      ecdaa_group_public_key_t *gpk)
+                                      struct ecdaa_group_public_key *gpk)
 {
     serialize_point2(buffer_out, &gpk->X);
     serialize_point2(buffer_out + serialized_point_length_2(), &gpk->Y);
 }
 
-int ecdaa_deserialize_group_public_key(ecdaa_group_public_key_t *gpk_out,
+int ecdaa_deserialize_group_public_key(struct ecdaa_group_public_key *gpk_out,
                                        uint8_t *buffer_in)
 {
     int ret = 0;

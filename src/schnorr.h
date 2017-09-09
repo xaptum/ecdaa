@@ -90,7 +90,7 @@ int schnorr_verify(BIG_256_56 c,
  * c_out = Hash ( r*generator | r*member_public_key | generator | B | member_public_key | D ),
  * s_out = s = r + c_out * private_key,
  *  where r = RAND(Z_p),
- *  B and D are the corresponding values of an `ecdaa_credential_t`,
+ *  B and D are the corresponding values of an `ecdaa_credential`,
  *  public_key is the requesting Member's public key,
  *
  * c_out and s_out will be reduced modulo the group order (and thus normalized) upon return

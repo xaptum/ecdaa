@@ -24,20 +24,20 @@
 extern "C" {
 #endif
 
-struct ecdaa_member_secret_key_t;
+struct ecdaa_member_secret_key;
 
 #include <stddef.h>
 
 /*
  * Secret-key revocation list.
  *
- * `list` is an array of `member_join_secret_key_t`s.
+ * `list` is an array of `member_join_secret_key`s.
  * `length` is the size of `list`.
  */
-typedef struct ecdaa_sk_revocation_list_t {
+struct ecdaa_sk_revocation_list {
     size_t length;
-    struct ecdaa_member_secret_key_t *list;
-} ecdaa_sk_revocation_list_t;
+    struct ecdaa_member_secret_key *list;
+};
 
 #ifdef __cplusplus
 }

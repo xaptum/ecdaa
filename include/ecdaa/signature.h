@@ -27,28 +27,28 @@ extern "C" {
 #include <amcl/big_256_56.h>
 #include <amcl/ecp_BN254.h>
 
-struct ecdaa_credential_t;
-struct ecdaa_member_secret_key_t;
-struct ecdaa_sk_revocation_list_t;
-struct ecdaa_group_public_key_t;
+struct ecdaa_credential;
+struct ecdaa_member_secret_key;
+struct ecdaa_sk_revocation_list;
+struct ecdaa_group_public_key;
 
 /*
  * ECDAA signature.
  */
-typedef struct ecdaa_signature_t {
+struct ecdaa_signature {
     BIG_256_56 c;
     BIG_256_56 s;
     ECP_BN254 R;
     ECP_BN254 S;
     ECP_BN254 T;
     ECP_BN254 W;
-} ecdaa_signature_t;
+};
 
 #define SERIALIZED_SIGNATURE_LENGTH (2*MODBYTES_256_56 + 4*(2*MODBYTES_256_56 + 1))
 size_t serialized_signature_length();
 
 /*
- * Serialize an `ecdaa_signature_t`
+ * Serialize an `ecdaa_signature`
  *
  * The serialized format is:
  *  ( c | s |
@@ -60,10 +60,10 @@ size_t serialized_signature_length();
  * The provided buffer is assumed to be large enough.
  */
 void ecdaa_serialize_signature(uint8_t *buffer_out,
-                               ecdaa_signature_t *signature);
+                               struct ecdaa_signature *signature);
 
 /*
- * De-serialize an `ecdaa_signature_t`
+ * De-serialize an `ecdaa_signature`
  *
  * The serialized format is:
  *  ( c | s |
@@ -79,7 +79,7 @@ void ecdaa_serialize_signature(uint8_t *buffer_out,
  * 0 on success
  * -1 if signature is mal-formed
  */
-int ecdaa_deserialize_signature(ecdaa_signature_t *signature_out,
+int ecdaa_deserialize_signature(struct ecdaa_signature *signature_out,
                                 uint8_t *buffer_in);
 
 /*
@@ -89,11 +89,11 @@ int ecdaa_deserialize_signature(ecdaa_signature_t *signature_out,
  * 0 on success
  * -1 if unable to create signature
  */
-int ecdaa_sign(struct ecdaa_signature_t *signature_out,
+int ecdaa_sign(struct ecdaa_signature *signature_out,
                const uint8_t* message,
                uint32_t message_len,
-               struct ecdaa_member_secret_key_t *sk,
-               struct ecdaa_credential_t *cred,
+               struct ecdaa_member_secret_key *sk,
+               struct ecdaa_credential *cred,
                csprng *rng);
 
 /*
@@ -103,9 +103,9 @@ int ecdaa_sign(struct ecdaa_signature_t *signature_out,
  * 0 on success
  * -1 if signature is invalid
  */
-int ecdaa_verify(struct ecdaa_signature_t *signature,
-                 struct ecdaa_group_public_key_t *gpk,
-                 struct ecdaa_sk_revocation_list_t *sk_rev_list,
+int ecdaa_verify(struct ecdaa_signature *signature,
+                 struct ecdaa_group_public_key *gpk,
+                 struct ecdaa_sk_revocation_list *sk_rev_list,
                  uint8_t* message,
                  uint32_t message_len);
 

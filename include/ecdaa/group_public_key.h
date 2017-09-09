@@ -31,16 +31,16 @@ extern "C" {
 /*
  * Public key for the DAA group.
  */
-typedef struct ecdaa_group_public_key_t {
+struct ecdaa_group_public_key {
     ECP2_BN254 X;
     ECP2_BN254 Y;
-} ecdaa_group_public_key_t;
+};
 
 #define SERIALIZED_GROUP_PUBLIC_KEY_LENGTH (2*(4*MODBYTES_256_56 + 1))
 size_t serialized_group_public_key_length(void);
 
 /*
- * Serialize an `ecdaa_group_public_key_t`
+ * Serialize an `ecdaa_group_public_key`
  *
  * The serialized format is:
  *  ( 0x04 | X.x-coord-real | X.x-coord-imaginary | X.y-coord-real | X.y-coord-imaginary |
@@ -50,10 +50,10 @@ size_t serialized_group_public_key_length(void);
  * The provided buffer is assumed to be large enough.
  */
 void ecdaa_serialize_group_public_key(uint8_t *buffer_out,
-                                      ecdaa_group_public_key_t *gpk);
+                                      struct ecdaa_group_public_key *gpk);
 
 /*
- * De-serialize an `ecdaa_group_public_key_t` and check it for validity.
+ * De-serialize an `ecdaa_group_public_key` and check it for validity.
  *
  * The serialized format is expected to be:
  *  ( 0x04 | X.x-coord-real | X.x-coord-imaginary | X.y-coord-real | X.y-coord-imaginary |
@@ -65,7 +65,7 @@ void ecdaa_serialize_group_public_key(uint8_t *buffer_out,
  *  -1 if either X or Y aren't a point on the curve
  *  -2 if either X or Y aren't in G2
  */
-int ecdaa_deserialize_group_public_key(ecdaa_group_public_key_t *gpk_out,
+int ecdaa_deserialize_group_public_key(struct ecdaa_group_public_key *gpk_out,
                                        uint8_t *buffer_in);
 
 #ifdef __cplusplus
