@@ -35,9 +35,7 @@ set(XAPTUM_ECDAA_SRCS
         ${XAPTUM_ECDAA_SRC_DIR}/mpi_utils.c
         ${XAPTUM_ECDAA_SRC_DIR}/pairing_curve_utils.c
         ${XAPTUM_ECDAA_SRC_DIR}/schnorr.c
-        ${XAPTUM_ECDAA_SRC_DIR}/sign.c
         ${XAPTUM_ECDAA_SRC_DIR}/signature.c
-        ${XAPTUM_ECDAA_SRC_DIR}/verify.c
         ${XAPTUM_ECDAA_TEST_DIR}/xaptum-test-utils.c
         )
 

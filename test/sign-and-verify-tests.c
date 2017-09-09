@@ -20,8 +20,6 @@
 
 #include "../src/pairing_curve_utils.h"
 
-#include <ecdaa/verify.h>
-#include <ecdaa/sign.h>
 #include <ecdaa/member_keypair.h>
 #include <ecdaa/credential.h>
 #include <ecdaa/issuer_nonce.h>

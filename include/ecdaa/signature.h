@@ -27,6 +27,11 @@ extern "C" {
 #include <amcl/big_256_56.h>
 #include <amcl/ecp_BN254.h>
 
+struct ecdaa_credential_t;
+struct ecdaa_member_secret_key_t;
+struct ecdaa_sk_revocation_list_t;
+struct ecdaa_group_public_key_t;
+
 /*
  * ECDAA signature.
  */
@@ -76,6 +81,33 @@ void ecdaa_serialize_signature(uint8_t *buffer_out,
  */
 int ecdaa_deserialize_signature(ecdaa_signature_t *signature_out,
                                 uint8_t *buffer_in);
+
+/*
+ * Create an ECDAA signature.
+ *
+ * Returns:
+ * 0 on success
+ * -1 if unable to create signature
+ */
+int ecdaa_sign(struct ecdaa_signature_t *signature_out,
+               const uint8_t* message,
+               uint32_t message_len,
+               struct ecdaa_member_secret_key_t *sk,
+               struct ecdaa_credential_t *cred,
+               csprng *rng);
+
+/*
+ * Verify an ECDAA signature.
+ *
+ * Returns:
+ * 0 on success
+ * -1 if signature is invalid
+ */
+int ecdaa_verify(struct ecdaa_signature_t *signature,
+                 struct ecdaa_group_public_key_t *gpk,
+                 struct ecdaa_sk_revocation_list_t *sk_rev_list,
+                 uint8_t* message,
+                 uint32_t message_len);
 
 #ifdef __cplusplus
 }

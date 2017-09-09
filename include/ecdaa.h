@@ -25,9 +25,7 @@
 #include "ecdaa/issuer_keypair.h"
 #include "ecdaa/issuer_nonce.h"
 #include "ecdaa/member_keypair.h"
-#include "ecdaa/sign.h"
 #include "ecdaa/signature.h"
 #include "ecdaa/sk_revocation_list.h"
-#include "ecdaa/verify.h"
 
 #endif
