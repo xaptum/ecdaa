@@ -22,10 +22,10 @@
 
 #include "../src/pairing_curve_utils.h"
 
-#include <xaptum-ecdaa/credential.h>
-#include <xaptum-ecdaa/issuer_keypair.h>
-#include <xaptum-ecdaa/member_keypair.h>
-#include <xaptum-ecdaa/issuer_nonce.h>
+#include <ecdaa/credential.h>
+#include <ecdaa/issuer_keypair.h>
+#include <ecdaa/member_keypair.h>
+#include <ecdaa/issuer_nonce.h>
 
 #include <amcl/big_256_56.h>
 #include <amcl/ecp_BN254.h>

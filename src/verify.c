@@ -16,12 +16,12 @@
  *
  *****************************************************************************/
 
-#include <xaptum-ecdaa/verify.h>
-#include <xaptum-ecdaa/signature.h>
-#include <xaptum-ecdaa/group_public_key.h>
-#include <xaptum-ecdaa/issuer_keypair.h>
-#include <xaptum-ecdaa/sk_revocation_list.h>
-#include <xaptum-ecdaa/member_keypair.h>
+#include <ecdaa/verify.h>
+#include <ecdaa/signature.h>
+#include <ecdaa/group_public_key.h>
+#include <ecdaa/issuer_keypair.h>
+#include <ecdaa/sk_revocation_list.h>
+#include <ecdaa/member_keypair.h>
 
 #include "schnorr.h"
 #include "pairing_curve_utils.h"

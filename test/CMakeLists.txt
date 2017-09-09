@@ -36,7 +36,7 @@ foreach(case_file ${TEST_SRCS})
     PRIVATE xecdaa
     )
   target_include_directories(${case_name}
-          PRIVATE ${PROJECT_SOURCE_DIR}/include/xaptum-ecdaa/
+          PRIVATE ${PROJECT_SOURCE_DIR}/include/ecdaa/
           )
   set_target_properties(${case_name} PROPERTIES
           RUNTIME_OUTPUT_DIRECTORY ${CURRENT_TEST_BINARY_DIR}

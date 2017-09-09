@@ -16,14 +16,14 @@
  *
  *****************************************************************************/
 
-#include <xaptum-ecdaa/credential.h>
+#include <ecdaa/credential.h>
 
 #include "schnorr.h"
 #include "explicit_bzero.h"
 
-#include <xaptum-ecdaa/member_keypair.h>
-#include <xaptum-ecdaa/issuer_keypair.h>
-#include <xaptum-ecdaa/group_public_key.h>
+#include <ecdaa/member_keypair.h>
+#include <ecdaa/issuer_keypair.h>
+#include <ecdaa/group_public_key.h>
 
 #include "pairing_curve_utils.h"
 

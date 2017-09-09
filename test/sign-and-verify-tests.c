@@ -20,15 +20,15 @@
 
 #include "../src/pairing_curve_utils.h"
 
-#include <xaptum-ecdaa/verify.h>
-#include <xaptum-ecdaa/sign.h>
-#include <xaptum-ecdaa/member_keypair.h>
-#include <xaptum-ecdaa/credential.h>
-#include <xaptum-ecdaa/issuer_nonce.h>
-#include <xaptum-ecdaa/issuer_keypair.h>
-#include <xaptum-ecdaa/signature.h>
-#include <xaptum-ecdaa/group_public_key.h>
-#include <xaptum-ecdaa/sk_revocation_list.h>
+#include <ecdaa/verify.h>
+#include <ecdaa/sign.h>
+#include <ecdaa/member_keypair.h>
+#include <ecdaa/credential.h>
+#include <ecdaa/issuer_nonce.h>
+#include <ecdaa/issuer_keypair.h>
+#include <ecdaa/signature.h>
+#include <ecdaa/group_public_key.h>
+#include <ecdaa/sk_revocation_list.h>
 
 #include <string.h>
 

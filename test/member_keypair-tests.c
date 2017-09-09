@@ -20,8 +20,8 @@
 
 #include "../src/pairing_curve_utils.h"
 
-#include <xaptum-ecdaa/member_keypair.h>
-#include <xaptum-ecdaa/issuer_nonce.h>
+#include <ecdaa/member_keypair.h>
+#include <ecdaa/issuer_nonce.h>
 
 #include <amcl/randapi.h>
 

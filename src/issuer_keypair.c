@@ -16,7 +16,7 @@
  *
  *****************************************************************************/
 
-#include <xaptum-ecdaa/issuer_keypair.h>
+#include <ecdaa/issuer_keypair.h>
 
 #include "pairing_curve_utils.h"
 #include "schnorr.h"

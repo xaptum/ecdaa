@@ -18,7 +18,7 @@
 
 #include "xaptum-test-utils.h"
 
-#include <xaptum-ecdaa/issuer_keypair.h>
+#include <ecdaa/issuer_keypair.h>
 
 #include <amcl/randapi.h>
 

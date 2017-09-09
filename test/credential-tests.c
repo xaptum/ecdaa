@@ -18,9 +18,9 @@
 
 #include "xaptum-test-utils.h"
 
-#include <xaptum-ecdaa/credential.h>
-#include <xaptum-ecdaa/member_keypair.h>
-#include <xaptum-ecdaa/issuer_keypair.h>
+#include <ecdaa/credential.h>
+#include <ecdaa/member_keypair.h>
+#include <ecdaa/issuer_keypair.h>
 
 #include "../src/pairing_curve_utils.h"
 

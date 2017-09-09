@@ -16,7 +16,7 @@
  *
  *****************************************************************************/
 
-#include <xaptum-ecdaa/issuer_nonce.h>
+#include <ecdaa/issuer_nonce.h>
 
 #include <amcl/amcl.h>
 

@@ -16,7 +16,7 @@
  *
  *****************************************************************************/
 
-#include <xaptum-ecdaa/signature.h>
+#include <ecdaa/signature.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -20,14 +20,14 @@
 #define XAPTUM_ECDAA_XAPTUM_ECDAA_H
 #pragma once
 
-#include "xaptum-ecdaa/credential.h"
-#include "xaptum-ecdaa/group_public_key.h"
-#include "xaptum-ecdaa/issuer_keypair.h"
-#include "xaptum-ecdaa/issuer_nonce.h"
-#include "xaptum-ecdaa/member_keypair.h"
-#include "xaptum-ecdaa/sign.h"
-#include "xaptum-ecdaa/signature.h"
-#include "xaptum-ecdaa/sk_revocation_list.h"
-#include "xaptum-ecdaa/verify.h"
+#include "ecdaa/credential.h"
+#include "ecdaa/group_public_key.h"
+#include "ecdaa/issuer_keypair.h"
+#include "ecdaa/issuer_nonce.h"
+#include "ecdaa/member_keypair.h"
+#include "ecdaa/sign.h"
+#include "ecdaa/signature.h"
+#include "ecdaa/sk_revocation_list.h"
+#include "ecdaa/verify.h"
 
 #endif

@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-#include <xaptum-ecdaa/group_public_key.h>
+#include <ecdaa/group_public_key.h>
 
 #include <amcl/big_256_56.h>
 #include <amcl/randapi.h>

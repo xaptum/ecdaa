@@ -16,11 +16,11 @@
  *
  *****************************************************************************/
 
-#include <xaptum-ecdaa/sign.h>
+#include <ecdaa/sign.h>
 
-#include <xaptum-ecdaa/signature.h>
-#include <xaptum-ecdaa/member_keypair.h>
-#include <xaptum-ecdaa/credential.h>
+#include <ecdaa/signature.h>
+#include <ecdaa/member_keypair.h>
+#include <ecdaa/credential.h>
 
 #include "schnorr.h"
 #include "pairing_curve_utils.h"

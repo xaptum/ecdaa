@@ -16,7 +16,7 @@
  *
  *****************************************************************************/
 
-#include <xaptum-ecdaa/group_public_key.h>
+#include <ecdaa/group_public_key.h>
 
 void ecdaa_serialize_group_public_key(uint8_t *buffer_out,
                                       uint32_t *out_length,
