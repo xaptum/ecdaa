@@ -16,7 +16,7 @@
  *
  *****************************************************************************/
 
-#include "xaptum-test-utils.h"
+#include "ecdaa-test-utils.h"
 
 #include "../src/amcl-extensions/ecp2_BN254.h"
 

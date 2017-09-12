@@ -16,7 +16,7 @@
  *
  *****************************************************************************/
 
-#include "xaptum-test-utils.h"
+#include "ecdaa-test-utils.h"
 
 void get_test_seed(char *out, unsigned out_length)
 {

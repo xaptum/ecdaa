@@ -39,7 +39,7 @@ set(ECDAA_SRCS
         ${ECDAA_AMCL_EXTENSIONS_SRC_DIR}/ecp_BN254.c
         ${ECDAA_AMCL_EXTENSIONS_SRC_DIR}/ecp2_BN254.c
         ${ECDAA_AMCL_EXTENSIONS_SRC_DIR}/pairing_BN254.c
-        ${ECDAA_TEST_DIR}/xaptum-test-utils.c
+        ${ECDAA_TEST_DIR}/ecdaa-test-utils.c
         )
 
 add_library(ecdaa ${ECDAA_SRCS})
