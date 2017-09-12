@@ -21,8 +21,6 @@
 #include "pairing_curve_utils.h"
 #include "schnorr.h"
 
-#include <ecdaa/issuer_nonce.h>
-
 #include <assert.h>
 
 size_t ecdaa_member_public_key_BN254_length()
@@ -37,7 +35,8 @@ size_t ecdaa_member_secret_key_BN254_length()
 
 int ecdaa_member_key_pair_BN254_generate(struct ecdaa_member_public_key_BN254 *pk,
                                          struct ecdaa_member_secret_key_BN254 *sk,
-                                         struct ecdaa_issuer_nonce_t *nonce,
+                                         uint8_t *nonce,
+                                         uint32_t nonce_length,
                                          csprng *rng)
 {
     // 1) Generate Schnorr-type keypair,
@@ -48,8 +47,8 @@ int ecdaa_member_key_pair_BN254_generate(struct ecdaa_member_public_key_BN254 *p
     set_to_basepoint(&basepoint);
     int sign_ret = schnorr_sign(&pk->c,
                                 &pk->s,
-                                nonce->data,
-                                sizeof(ecdaa_issuer_nonce_t),
+                                nonce,
+                                nonce_length,
                                 &basepoint,
                                 &pk->Q,
                                 sk->sk,
@@ -59,7 +58,8 @@ int ecdaa_member_key_pair_BN254_generate(struct ecdaa_member_public_key_BN254 *p
 }
 
 int ecdaa_member_public_key_BN254_validate(struct ecdaa_member_public_key_BN254 *pk,
-                                           struct ecdaa_issuer_nonce_t *nonce_in)
+                                           uint8_t *nonce_in,
+                                           uint32_t nonce_length)
 {
     int ret = 0;
     
@@ -67,8 +67,8 @@ int ecdaa_member_public_key_BN254_validate(struct ecdaa_member_public_key_BN254 
     set_to_basepoint(&basepoint);
     int sign_ret = schnorr_verify(pk->c,
                                   pk->s,
-                                  nonce_in->data,
-                                  sizeof(ecdaa_issuer_nonce_t),
+                                  nonce_in,
+                                  nonce_length,
                                   &basepoint,
                                   &pk->Q);
     if (0 != sign_ret)
@@ -87,7 +87,8 @@ void ecdaa_member_public_key_BN254_serialize(uint8_t *buffer_out,
 
 int ecdaa_member_public_key_BN254_deserialize(struct ecdaa_member_public_key_BN254 *pk_out,
                                               uint8_t *buffer_in,
-                                              struct ecdaa_issuer_nonce_t *nonce_in)
+                                              uint8_t *nonce_in,
+                                              uint32_t nonce_length)
 {
     int ret = 0;
 
@@ -103,7 +104,7 @@ int ecdaa_member_public_key_BN254_deserialize(struct ecdaa_member_public_key_BN2
     if (0 == deserial_ret) {
         // 3) Verify the schnorr signature.
         //  (This also verifies that the public key is valid).
-        int schnorr_ret = ecdaa_member_public_key_BN254_validate(pk_out, nonce_in);
+        int schnorr_ret = ecdaa_member_public_key_BN254_validate(pk_out, nonce_in, nonce_length);
         if (0 != schnorr_ret)
             ret = -2;
     }

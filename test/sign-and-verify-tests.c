@@ -22,7 +22,6 @@
 
 #include <ecdaa/member_keypair_BN254.h>
 #include <ecdaa/credential_BN254.h>
-#include <ecdaa/issuer_nonce.h>
 #include <ecdaa/issuer_keypair_BN254.h>
 #include <ecdaa/signature_BN254.h>
 #include <ecdaa/group_public_key_BN254.h>

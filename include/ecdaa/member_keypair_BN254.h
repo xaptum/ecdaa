@@ -27,8 +27,6 @@ extern "C" {
 #include <amcl/big_256_56.h>
 #include <amcl/ecp_BN254.h>
 
-struct ecdaa_issuer_nonce_t;
-
 /*
  * Member's public key.
  *
@@ -62,7 +60,8 @@ size_t ecdaa_member_secret_key_BN254_length();
  */
 int ecdaa_member_key_pair_BN254_generate(struct ecdaa_member_public_key_BN254 *pk_out,
                                          struct ecdaa_member_secret_key_BN254 *sk_out,
-                                         struct ecdaa_issuer_nonce_t *nonce,
+                                         uint8_t *nonce,
+                                         uint32_t nonce_length,
                                          csprng *rng);
 
 /*
@@ -73,7 +72,8 @@ int ecdaa_member_key_pair_BN254_generate(struct ecdaa_member_public_key_BN254 *p
  * -1 if signature is not valid.
  */
 int ecdaa_member_public_key_BN254_validate(struct ecdaa_member_public_key_BN254 *pk,
-                                           struct ecdaa_issuer_nonce_t *nonce_in);
+                                           uint8_t *nonce_in,
+                                           uint32_t nonce_length);
 
 /*
  * Serialize an `ecdaa_member_public_key_BN254`
@@ -90,7 +90,7 @@ void ecdaa_member_public_key_BN254_serialize(uint8_t *buffer_out,
 /*
  * De-serialize an `ecdaa_member_public_key_BN254`, and check its validity and signature.
  *
- * The `nonce_in` should be the `ecdaa_issuer_nonce_t`
+ * The `nonce_in` should be the nonce
  *  provided by the Issuer when the Member generated this public key.
  *
  * The serialized format is expected to be:
@@ -104,7 +104,8 @@ void ecdaa_member_public_key_BN254_serialize(uint8_t *buffer_out,
  */
 int ecdaa_member_public_key_BN254_deserialize(struct ecdaa_member_public_key_BN254 *pk_out,
                                               uint8_t *buffer_in,
-                                              struct ecdaa_issuer_nonce_t *nonce_in);
+                                              uint8_t *nonce_in,
+                                              uint32_t nonce_length);
 
 /*
  * Serialize an `ecdaa_member_secret_key_BN254`

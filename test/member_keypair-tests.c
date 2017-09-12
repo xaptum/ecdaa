@@ -21,7 +21,6 @@
 #include "../src/pairing_curve_utils.h"
 
 #include <ecdaa/member_keypair_BN254.h>
-#include <ecdaa/issuer_nonce.h>
 
 #include <amcl/randapi.h>
 
@@ -42,12 +41,12 @@ void member_secret_is_valid()
 
     struct ecdaa_member_secret_key_BN254 sk1;
     struct ecdaa_member_public_key_BN254 pk1;
-    ecdaa_issuer_nonce_t nonce = {{0}};
+    uint8_t nonce[32] = {0};
 
     csprng rng;
     create_test_rng(&rng);
 
-    ecdaa_member_key_pair_BN254_generate(&pk1, &sk1, &nonce, &rng);
+    ecdaa_member_key_pair_BN254_generate(&pk1, &sk1, nonce, sizeof(nonce), &rng);
 
     destroy_test_rng(&rng);
 
@@ -55,7 +54,7 @@ void member_secret_is_valid()
 
     struct ecdaa_member_secret_key_BN254 sk2;
     struct ecdaa_member_public_key_BN254 pk2;
-    ecdaa_member_key_pair_BN254_generate(&pk2, &sk2, &nonce, &rng);
+    ecdaa_member_key_pair_BN254_generate(&pk2, &sk2, nonce, sizeof(nonce), &rng);
 
     TEST_ASSERT(BIG_256_56_comp(sk1.sk, sk2.sk) != 0);
 
@@ -71,8 +70,8 @@ void member_public_is_valid()
 
     struct ecdaa_member_secret_key_BN254 sk;
     struct ecdaa_member_public_key_BN254 pk;
-    ecdaa_issuer_nonce_t nonce = {{0}};
-    ecdaa_member_key_pair_BN254_generate(&pk, &sk, &nonce, &rng);
+    uint8_t nonce[32] = {0};
+    ecdaa_member_key_pair_BN254_generate(&pk, &sk, nonce, sizeof(nonce), &rng);
 
     TEST_ASSERT(0 == check_point_membership(&pk.Q));
 

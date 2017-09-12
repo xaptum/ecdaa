@@ -30,7 +30,6 @@ set(XAPTUM_ECDAA_SRCS
         ${XAPTUM_ECDAA_SRC_DIR}/explicit_bzero.c
         ${XAPTUM_ECDAA_SRC_DIR}/group_public_key_BN254.c
         ${XAPTUM_ECDAA_SRC_DIR}/issuer_keypair_BN254.c
-        ${XAPTUM_ECDAA_SRC_DIR}/issuer_nonce.c
         ${XAPTUM_ECDAA_SRC_DIR}/member_keypair_BN254.c
         ${XAPTUM_ECDAA_SRC_DIR}/mpi_utils.c
         ${XAPTUM_ECDAA_SRC_DIR}/pairing_curve_utils.c
