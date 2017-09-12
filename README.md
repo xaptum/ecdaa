@@ -4,7 +4,7 @@ Xaptum, Inc.'s implementation of elliptic-curve-based Direct Anonymous Attestati
 
 # Project Status
 
-[![Build Status](https://travis-ci.org/zanebeckwith/ecdaa.svg?branch=master)](https://travis-ci.org/zanebeckwith/ecdaa)
+[![Build Status](https://travis-ci.org/xaptum/ecdaa.svg?branch=master)](https://travis-ci.org/xaptum/ecdaa)
 
 # Requirements
 
