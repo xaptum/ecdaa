@@ -1,0 +1,11 @@
+language: c
+compiler:
+  - gcc
+before_script:
+  - git submodule update --init --recursive
+  - mkdir -p build
+  - cd build
+  - cmake .. -DCMAKE_BUILD_TYPE=Release
+script:
+  - cmake --build .
+  - ctest -V
