@@ -2,6 +2,10 @@
 
 Xaptum, Inc.'s implementation of elliptic-curve-based Direct Anonymous Attestation signatures.
 
+# Project Status
+
+[![Build Status](https://travis-ci.org/zanebeckwith/ecdaa.svg?branch=master)](https://travis-ci.org/zanebeckwith/ecdaa)
+
 # Requirements
 
 - The CMake build system is used for building.
