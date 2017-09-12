@@ -16,27 +16,27 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_SK_REVOCATION_LIST_H
-#define XAPTUM_ECDAA_SK_REVOCATION_LIST_H
+#ifndef XAPTUM_ECDAA_REVOCATION_LIST_BN254_H
+#define XAPTUM_ECDAA_REVOCATION_LIST_BN254_H
 #pragma once
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct ecdaa_member_secret_key;
+struct ecdaa_member_secret_key_BN254;
 
 #include <stddef.h>
 
 /*
  * Secret-key revocation list.
  *
- * `list` is an array of `member_join_secret_key`s.
+ * `list` is an array of `ecdaa_member_secret_key_BN254`s.
  * `length` is the size of `list`.
  */
-struct ecdaa_sk_revocation_list {
+struct ecdaa_revocation_list_BN254 {
     size_t length;
-    struct ecdaa_member_secret_key *list;
+    struct ecdaa_member_secret_key_BN254 *list;
 };
 
 #ifdef __cplusplus

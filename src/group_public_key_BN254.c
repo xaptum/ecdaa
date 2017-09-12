@@ -16,24 +16,24 @@
  *
  *****************************************************************************/
 
-#include <ecdaa/group_public_key.h>
+#include <ecdaa/group_public_key_BN254.h>
 
 #include "pairing_curve_utils.h"
 
-size_t serialized_group_public_key_length(void)
+size_t ecdaa_group_public_key_BN254_length(void)
 {
-    return SERIALIZED_GROUP_PUBLIC_KEY_LENGTH;
+    return ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH;
 }
 
-void ecdaa_serialize_group_public_key(uint8_t *buffer_out,
-                                      struct ecdaa_group_public_key *gpk)
+void ecdaa_group_public_key_BN254_serialize(uint8_t *buffer_out,
+                                            struct ecdaa_group_public_key_BN254 *gpk)
 {
     serialize_point2(buffer_out, &gpk->X);
     serialize_point2(buffer_out + serialized_point_length_2(), &gpk->Y);
 }
 
-int ecdaa_deserialize_group_public_key(struct ecdaa_group_public_key *gpk_out,
-                                       uint8_t *buffer_in)
+int ecdaa_group_public_key_BN254_deserialize(struct ecdaa_group_public_key_BN254 *gpk_out,
+                                             uint8_t *buffer_in)
 {
     int ret = 0;
 

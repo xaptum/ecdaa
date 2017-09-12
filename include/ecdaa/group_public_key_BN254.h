@@ -16,8 +16,8 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_GROUP_PUBLIC_KEY_H
-#define XAPTUM_ECDAA_GROUP_PUBLIC_KEY_H
+#ifndef XAPTUM_ECDAA_GROUP_PUBLIC_KEY_BN254_H
+#define XAPTUM_ECDAA_GROUP_PUBLIC_KEY_BN254_H
 #pragma once
 
 #ifdef __cplusplus
@@ -31,16 +31,16 @@ extern "C" {
 /*
  * Public key for the DAA group.
  */
-struct ecdaa_group_public_key {
+struct ecdaa_group_public_key_BN254 {
     ECP2_BN254 X;
     ECP2_BN254 Y;
 };
 
-#define SERIALIZED_GROUP_PUBLIC_KEY_LENGTH (2*(4*MODBYTES_256_56 + 1))
-size_t serialized_group_public_key_length(void);
+#define ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH (2*(4*MODBYTES_256_56 + 1))
+size_t ecdaa_group_public_key_BN254_length(void);
 
 /*
- * Serialize an `ecdaa_group_public_key`
+ * Serialize an `ecdaa_group_public_key_BN254`
  *
  * The serialized format is:
  *  ( 0x04 | X.x-coord-real | X.x-coord-imaginary | X.y-coord-real | X.y-coord-imaginary |
@@ -49,11 +49,11 @@ size_t serialized_group_public_key_length(void);
  *
  * The provided buffer is assumed to be large enough.
  */
-void ecdaa_serialize_group_public_key(uint8_t *buffer_out,
-                                      struct ecdaa_group_public_key *gpk);
+void ecdaa_group_public_key_BN254_serialize(uint8_t *buffer_out,
+                                            struct ecdaa_group_public_key_BN254 *gpk);
 
 /*
- * De-serialize an `ecdaa_group_public_key` and check it for validity.
+ * De-serialize an `ecdaa_group_public_key_BN254` and check it for validity.
  *
  * The serialized format is expected to be:
  *  ( 0x04 | X.x-coord-real | X.x-coord-imaginary | X.y-coord-real | X.y-coord-imaginary |
@@ -65,8 +65,8 @@ void ecdaa_serialize_group_public_key(uint8_t *buffer_out,
  *  -1 if either X or Y aren't a point on the curve
  *  -2 if either X or Y aren't in G2
  */
-int ecdaa_deserialize_group_public_key(struct ecdaa_group_public_key *gpk_out,
-                                       uint8_t *buffer_in);
+int ecdaa_group_public_key_BN254_deserialize(struct ecdaa_group_public_key_BN254 *gpk_out,
+                                             uint8_t *buffer_in);
 
 #ifdef __cplusplus
 }

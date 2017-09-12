@@ -16,12 +16,12 @@
  *
  *****************************************************************************/
 
-#include <ecdaa/signature.h>
+#include <ecdaa/signature_BN254.h>
 
-#include <ecdaa/member_keypair.h>
-#include <ecdaa/group_public_key.h>
-#include <ecdaa/sk_revocation_list.h>
-#include <ecdaa/credential.h>
+#include <ecdaa/member_keypair_BN254.h>
+#include <ecdaa/group_public_key_BN254.h>
+#include <ecdaa/revocation_list_BN254.h>
+#include <ecdaa/credential_BN254.h>
 
 #include "schnorr.h"
 #include "pairing_curve_utils.h"
@@ -33,52 +33,17 @@
 extern "C" {
 #endif
 
-size_t serialized_signature_length()
+size_t ecdaa_signature_BN254_length()
 {
-    return SERIALIZED_SIGNATURE_LENGTH;
+    return ECDAA_SIGNATURE_BN254_LENGTH;
 }
 
-void ecdaa_serialize_signature(uint8_t *buffer_out,
-                               struct ecdaa_signature *signature)
-{
-    BIG_256_56_toBytes((char*)buffer_out, signature->c);
-    BIG_256_56_toBytes((char*)(buffer_out + MODBYTES_256_56), signature->s);
-
-    serialize_point(buffer_out + 2*MODBYTES_256_56, &signature->R);
-    serialize_point(buffer_out + 2*MODBYTES_256_56 + serialized_point_length(), &signature->S);
-    serialize_point(buffer_out + 2*MODBYTES_256_56 + 2*serialized_point_length(), &signature->T);
-    serialize_point(buffer_out + 2*MODBYTES_256_56 + 3*serialized_point_length(), &signature->W);
-}
-
-int ecdaa_deserialize_signature(struct ecdaa_signature *signature_out,
-                                uint8_t *buffer_in)
-{
-    int ret = 0;
-
-    BIG_256_56_fromBytes(signature_out->c, (char*)buffer_in);
-    BIG_256_56_fromBytes(signature_out->s, (char*)(buffer_in + MODBYTES_256_56));
-
-    if (0 != deserialize_point(&signature_out->R, buffer_in + MODBYTES_256_56))
-        ret = -1;
-
-    if (0 != deserialize_point(&signature_out->S, buffer_in + MODBYTES_256_56 + serialized_point_length()))
-        ret = -1;
-
-    if (0 != deserialize_point(&signature_out->T, buffer_in + MODBYTES_256_56 + 2*serialized_point_length()))
-        ret = -1;
-
-    if (0 != deserialize_point(&signature_out->W, buffer_in + MODBYTES_256_56 + 3*serialized_point_length()))
-        ret = -1;
-
-    return ret;
-}
-
-int ecdaa_sign(struct ecdaa_signature *signature_out,
-               const uint8_t* message,
-               uint32_t message_len,
-               struct ecdaa_member_secret_key *sk,
-               struct ecdaa_credential *cred,
-               csprng *rng)
+int ecdaa_signature_BN254_sign(struct ecdaa_signature_BN254 *signature_out,
+                               const uint8_t* message,
+                               uint32_t message_len,
+                               struct ecdaa_member_secret_key_BN254 *sk,
+                               struct ecdaa_credential_BN254 *cred,
+                               csprng *rng)
 {
     // 1) Choose random l <- Z_p
     BIG_256_56 l;
@@ -120,11 +85,11 @@ int ecdaa_sign(struct ecdaa_signature *signature_out,
     return sign_ret;
 }
 
-int ecdaa_verify(struct ecdaa_signature *signature,
-                 struct ecdaa_group_public_key *gpk,
-                 struct ecdaa_sk_revocation_list *sk_rev_list,
-                 uint8_t* message,
-                 uint32_t message_len)
+int ecdaa_signature_BN254_verify(struct ecdaa_signature_BN254 *signature,
+                                 struct ecdaa_group_public_key_BN254 *gpk,
+                                 struct ecdaa_revocation_list_BN254 *sk_rev_list,
+                                 uint8_t* message,
+                                 uint32_t message_len)
 {
     int ret = 0;
 
@@ -178,6 +143,62 @@ int ecdaa_verify(struct ecdaa_signature *signature,
         ECP_BN254_mul(&Wcheck, sk_rev_list->list[i].sk);
         if (ECP_BN254_equals(&Wcheck, &signature->W))
             ret = -1;
+    }
+
+    return ret;
+}
+void ecdaa_signature_BN254_serialize(uint8_t *buffer_out,
+                                     struct ecdaa_signature_BN254 *signature)
+{
+    BIG_256_56_toBytes((char*)buffer_out, signature->c);
+    BIG_256_56_toBytes((char*)(buffer_out + MODBYTES_256_56), signature->s);
+
+    serialize_point(buffer_out + 2*MODBYTES_256_56, &signature->R);
+    serialize_point(buffer_out + 2*MODBYTES_256_56 + serialized_point_length(), &signature->S);
+    serialize_point(buffer_out + 2*MODBYTES_256_56 + 2*serialized_point_length(), &signature->T);
+    serialize_point(buffer_out + 2*MODBYTES_256_56 + 3*serialized_point_length(), &signature->W);
+}
+
+int ecdaa_signature_BN254_deserialize(struct ecdaa_signature_BN254 *signature_out,
+                                      uint8_t *buffer_in)
+{
+    int ret = 0;
+
+    BIG_256_56_fromBytes(signature_out->c, (char*)buffer_in);
+    BIG_256_56_fromBytes(signature_out->s, (char*)(buffer_in + MODBYTES_256_56));
+
+    if (0 != deserialize_point(&signature_out->R, buffer_in + MODBYTES_256_56))
+        ret = -1;
+
+    if (0 != deserialize_point(&signature_out->S, buffer_in + MODBYTES_256_56 + serialized_point_length()))
+        ret = -1;
+
+    if (0 != deserialize_point(&signature_out->T, buffer_in + MODBYTES_256_56 + 2*serialized_point_length()))
+        ret = -1;
+
+    if (0 != deserialize_point(&signature_out->W, buffer_in + MODBYTES_256_56 + 3*serialized_point_length()))
+        ret = -1;
+
+    return ret;
+}
+
+int ecdaa_signature_BN254_deserialize_and_verify(struct ecdaa_signature_BN254 *signature_out,
+                                                 struct ecdaa_group_public_key_BN254 *gpk,
+                                                 struct ecdaa_revocation_list_BN254 *sk_rev_list,
+                                                 uint8_t *signature_buffer,
+                                                 uint8_t* message_buffer,
+                                                 uint32_t message_len)
+{
+    int ret = 0;
+
+    // 1) De-serialize the signature
+    ret = ecdaa_signature_BN254_deserialize(signature_out, signature_buffer);
+
+    // 2) Verify the signature
+    if (0 == ret) {
+        int valid_ret = ecdaa_signature_BN254_verify(signature_out, gpk, sk_rev_list, message_buffer, message_len);
+        if (0 != valid_ret)
+            ret = -2;
     }
 
     return ret;

@@ -16,33 +16,33 @@
  *
  *****************************************************************************/
 
-#include <ecdaa/credential.h>
+#include <ecdaa/credential_BN254.h>
 
 #include "schnorr.h"
 #include "explicit_bzero.h"
 #include "pairing_curve_utils.h"
 
-#include <ecdaa/member_keypair.h>
-#include <ecdaa/issuer_keypair.h>
-#include <ecdaa/group_public_key.h>
+#include <ecdaa/member_keypair_BN254.h>
+#include <ecdaa/issuer_keypair_BN254.h>
+#include <ecdaa/group_public_key_BN254.h>
 
 #include "pairing_curve_utils.h"
 
-size_t serialized_credential_length()
+size_t serialized_credential_BN254_length()
 {
-    return SERIALIZED_CREDENTIAL_LENGTH;
+    return ECDAA_CREDENTIAL_BN254_LENGTH;
 }
 
-size_t serialized_credential_signature_length()
+size_t serialized_credential_BN254_signature_length()
 {
-    return SERIALIZED_CREDENTIAL_SIGNATURE_LENGTH;
+    return ECDAA_CREDENTIAL_BN254_SIGNATURE_LENGTH;
 }
 
-int ecdaa_generate_credential(struct ecdaa_credential *cred,
-                              struct ecdaa_credential_signature *cred_sig_out,
-                              struct ecdaa_issuer_secret_key *isk,
-                              struct ecdaa_member_public_key *member_pk,
-                              csprng *rng)
+int ecdaa_credential_BN254_generate(struct ecdaa_credential_BN254 *cred,
+                                    struct ecdaa_credential_BN254_signature *cred_sig_out,
+                                    struct ecdaa_issuer_secret_key_BN254 *isk,
+                                    struct ecdaa_member_public_key_BN254 *member_pk,
+                                    csprng *rng)
 {
     int ret = 0;
 
@@ -106,10 +106,10 @@ int ecdaa_generate_credential(struct ecdaa_credential *cred,
     return ret;
 }
 
-int ecdaa_validate_credential(struct ecdaa_credential *credential,
-                              struct ecdaa_credential_signature *credential_signature,
-                              struct ecdaa_member_public_key *member_pk,
-                              struct ecdaa_group_public_key *gpk)
+int ecdaa_credential_BN254_validate(struct ecdaa_credential_BN254 *credential,
+                                    struct ecdaa_credential_BN254_signature *credential_signature,
+                                    struct ecdaa_member_public_key_BN254 *member_pk,
+                                    struct ecdaa_group_public_key_BN254 *gpk)
 {
     int ret = 0;
 
@@ -158,8 +158,8 @@ int ecdaa_validate_credential(struct ecdaa_credential *credential,
     return ret;
 }
 
-void ecdaa_serialize_credential(uint8_t *buffer_out,
-                                struct ecdaa_credential *credential)
+void ecdaa_credential_BN254_serialize(uint8_t *buffer_out,
+                                      struct ecdaa_credential_BN254 *credential)
 {
     serialize_point(buffer_out, &credential->A);
     serialize_point(buffer_out + serialized_point_length(), &credential->B);
@@ -167,30 +167,30 @@ void ecdaa_serialize_credential(uint8_t *buffer_out,
     serialize_point(buffer_out + 3*serialized_point_length(), &credential->D);
 }
 
-void ecdaa_serialize_credential_signature(uint8_t *buffer_out,
-                                          struct ecdaa_credential_signature *cred_sig)
+void ecdaa_credential_BN254_signature_serialize(uint8_t *buffer_out,
+                                                struct ecdaa_credential_BN254_signature *cred_sig)
 {
     BIG_256_56_toBytes((char*)buffer_out, cred_sig->c);
     BIG_256_56_toBytes((char*)(buffer_out + MODBYTES_256_56), cred_sig->s);
 }
 
-int ecdaa_deserialize_credential_with_signature(struct ecdaa_credential *credential_out,
-                                                struct ecdaa_member_public_key *member_pk,
-                                                struct ecdaa_group_public_key *gpk,
-                                                uint8_t *buffer_in)
+int ecdaa_credential_BN254_deserialize_with_signature(struct ecdaa_credential_BN254 *credential_out,
+                                                      struct ecdaa_member_public_key_BN254 *member_pk,
+                                                      struct ecdaa_group_public_key_BN254 *gpk,
+                                                      uint8_t *buffer_in)
 {
     int ret = 0;
 
     // 1) De-serialize the credential
-    ret = ecdaa_deserialize_credential(credential_out, buffer_in);
+    ret = ecdaa_credential_BN254_deserialize(credential_out, buffer_in);
 
     // 2) De-serialize the credential signature
-    struct ecdaa_credential_signature cred_sig;
+    struct ecdaa_credential_BN254_signature cred_sig;
     BIG_256_56_fromBytes(cred_sig.c, (char*)(buffer_in + 4*serialized_point_length()));
     BIG_256_56_fromBytes(cred_sig.c, (char*)(buffer_in + 4*serialized_point_length() + MODBYTES_256_56));
 
     if (0 == ret) {
-        int valid_ret = ecdaa_validate_credential(credential_out, &cred_sig, member_pk, gpk);
+        int valid_ret = ecdaa_credential_BN254_validate(credential_out, &cred_sig, member_pk, gpk);
         if (0 != valid_ret)
             ret = -2;
     }
@@ -198,8 +198,8 @@ int ecdaa_deserialize_credential_with_signature(struct ecdaa_credential *credent
     return ret;
 }
 
-int ecdaa_deserialize_credential(struct ecdaa_credential *credential_out,
-                                 uint8_t *buffer_in)
+int ecdaa_credential_BN254_deserialize(struct ecdaa_credential_BN254 *credential_out,
+                                       uint8_t *buffer_in)
 {
     int ret = 0;
 

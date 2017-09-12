@@ -18,9 +18,9 @@
 
 #include "xaptum-test-utils.h"
 
-#include <ecdaa/credential.h>
-#include <ecdaa/member_keypair.h>
-#include <ecdaa/issuer_keypair.h>
+#include <ecdaa/credential_BN254.h>
+#include <ecdaa/member_keypair_BN254.h>
+#include <ecdaa/issuer_keypair_BN254.h>
 
 #include "../src/pairing_curve_utils.h"
 
@@ -32,11 +32,11 @@
 typedef struct credential_test_fixture {
     csprng rng;
 
-    struct ecdaa_member_public_key pk;
-    struct ecdaa_member_secret_key sk;
+    struct ecdaa_member_public_key_BN254 pk;
+    struct ecdaa_member_secret_key_BN254 sk;
 
-    struct ecdaa_issuer_public_key ipk;
-    struct ecdaa_issuer_secret_key isk;
+    struct ecdaa_issuer_public_key_BN254 ipk;
+    struct ecdaa_issuer_secret_key_BN254 isk;
 } credential_test_fixture;
 
 static void setup(credential_test_fixture* fixture);
@@ -78,11 +78,11 @@ static void cred_generate_then_validate()
     credential_test_fixture fixture;
     setup(&fixture);
 
-    struct ecdaa_credential cred;
-    struct ecdaa_credential_signature cred_sig;
-    TEST_ASSERT(0 == ecdaa_generate_credential(&cred, &cred_sig, &fixture.isk, &fixture.pk, &fixture.rng));
+    struct ecdaa_credential_BN254 cred;
+    struct ecdaa_credential_BN254_signature cred_sig;
+    TEST_ASSERT(0 == ecdaa_credential_BN254_generate(&cred, &cred_sig, &fixture.isk, &fixture.pk, &fixture.rng));
 
-    TEST_ASSERT(0 == ecdaa_validate_credential(&cred, &cred_sig, &fixture.pk, &fixture.ipk.gpk));
+    TEST_ASSERT(0 == ecdaa_credential_BN254_validate(&cred, &cred_sig, &fixture.pk, &fixture.ipk.gpk));
 
     teardown(&fixture);
 

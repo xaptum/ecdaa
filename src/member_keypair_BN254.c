@@ -16,30 +16,29 @@
  *
  *****************************************************************************/
 
-#include <ecdaa/member_keypair.h>
+#include <ecdaa/member_keypair_BN254.h>
 
 #include "pairing_curve_utils.h"
 #include "schnorr.h"
 
-#include <ecdaa/member_keypair.h>
 #include <ecdaa/issuer_nonce.h>
 
 #include <assert.h>
 
-size_t serialized_member_public_key_length()
+size_t ecdaa_member_public_key_BN254_length()
 {
-   return SERIALIZED_MEMBER_PUBLIC_KEY_LENGTH;
+   return ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH;
 }
 
-size_t serialized_member_secret_key_length()
+size_t ecdaa_member_secret_key_BN254_length()
 {
-    return SERIALIZED_MEMBER_SECRET_KEY_LENGTH;
+    return ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH;
 }
 
-int ecdaa_generate_member_key_pair(struct ecdaa_member_public_key *pk,
-                                   struct ecdaa_member_secret_key *sk,
-                                   struct ecdaa_issuer_nonce_t *nonce,
-                                   csprng *rng)
+int ecdaa_member_key_pair_BN254_generate(struct ecdaa_member_public_key_BN254 *pk,
+                                         struct ecdaa_member_secret_key_BN254 *sk,
+                                         struct ecdaa_issuer_nonce_t *nonce,
+                                         csprng *rng)
 {
     // 1) Generate Schnorr-type keypair,
     schnorr_keygen(&pk->Q, &sk->sk, rng);
@@ -59,8 +58,8 @@ int ecdaa_generate_member_key_pair(struct ecdaa_member_public_key *pk,
     return sign_ret;
 }
 
-int ecdaa_validate_member_public_key(struct ecdaa_member_public_key *pk,
-                                     struct ecdaa_issuer_nonce_t *nonce_in)
+int ecdaa_member_public_key_BN254_validate(struct ecdaa_member_public_key_BN254 *pk,
+                                           struct ecdaa_issuer_nonce_t *nonce_in)
 {
     int ret = 0;
     
@@ -78,17 +77,17 @@ int ecdaa_validate_member_public_key(struct ecdaa_member_public_key *pk,
     return ret;
 }
 
-void ecdaa_serialize_member_public_key(uint8_t *buffer_out,
-                                       struct ecdaa_member_public_key *pk)
+void ecdaa_member_public_key_BN254_serialize(uint8_t *buffer_out,
+                                             struct ecdaa_member_public_key_BN254 *pk)
 {
     serialize_point(buffer_out, &pk->Q);
     BIG_256_56_toBytes((char*)(buffer_out + serialized_point_length()), pk->c);
     BIG_256_56_toBytes((char*)(buffer_out + serialized_point_length() + MODBYTES_256_56), pk->s);
 }
 
-int ecdaa_deserialize_member_public_key(struct ecdaa_member_public_key *pk_out,
-                                        uint8_t *buffer_in,
-                                        struct ecdaa_issuer_nonce_t *nonce_in)
+int ecdaa_member_public_key_BN254_deserialize(struct ecdaa_member_public_key_BN254 *pk_out,
+                                              uint8_t *buffer_in,
+                                              struct ecdaa_issuer_nonce_t *nonce_in)
 {
     int ret = 0;
 
@@ -104,7 +103,7 @@ int ecdaa_deserialize_member_public_key(struct ecdaa_member_public_key *pk_out,
     if (0 == deserial_ret) {
         // 3) Verify the schnorr signature.
         //  (This also verifies that the public key is valid).
-        int schnorr_ret = ecdaa_validate_member_public_key(pk_out, nonce_in);
+        int schnorr_ret = ecdaa_member_public_key_BN254_validate(pk_out, nonce_in);
         if (0 != schnorr_ret)
             ret = -2;
     }
@@ -112,14 +111,14 @@ int ecdaa_deserialize_member_public_key(struct ecdaa_member_public_key *pk_out,
     return ret;
 }
 
-void ecdaa_serialize_member_secret_key(uint8_t *buffer_out,
-                                       struct ecdaa_member_secret_key *sk)
+void ecdaa_member_secret_key_BN254_serialize(uint8_t *buffer_out,
+                                             struct ecdaa_member_secret_key_BN254 *sk)
 {
     BIG_256_56_toBytes((char*)buffer_out, sk->sk);
 }
 
-int ecdaa_deserialize_member_secret_key(struct ecdaa_member_secret_key *sk_out,
-                                        uint8_t *buffer_in)
+int ecdaa_member_secret_key_BN254_deserialize(struct ecdaa_member_secret_key_BN254 *sk_out,
+                                              uint8_t *buffer_in)
 {
     BIG_256_56_fromBytes(sk_out->sk, (char*)buffer_in);
 

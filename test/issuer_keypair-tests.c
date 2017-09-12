@@ -18,7 +18,7 @@
 
 #include "xaptum-test-utils.h"
 
-#include <ecdaa/issuer_keypair.h>
+#include <ecdaa/issuer_keypair_BN254.h>
 
 #include <amcl/randapi.h>
 
@@ -38,17 +38,17 @@ void issuer_secrets_are_valid()
     csprng rng;
     create_test_rng(&rng);
 
-    struct ecdaa_issuer_secret_key sk1;
-    struct ecdaa_issuer_public_key pk1;
-    ecdaa_generate_issuer_key_pair(&pk1, &sk1, &rng);
+    struct ecdaa_issuer_secret_key_BN254 sk1;
+    struct ecdaa_issuer_public_key_BN254 pk1;
+    ecdaa_issuer_key_pair_BN254_generate(&pk1, &sk1, &rng);
 
     TEST_ASSERT(BIG_256_56_comp(sk1.x, sk1.y) != 0);
     TEST_ASSERT(!pk1.gpk.X.inf);
     TEST_ASSERT(!pk1.gpk.Y.inf);
 
-    struct ecdaa_issuer_secret_key sk2;
-    struct ecdaa_issuer_public_key pk2;
-    ecdaa_generate_issuer_key_pair(&pk2, &sk2, &rng);
+    struct ecdaa_issuer_secret_key_BN254 sk2;
+    struct ecdaa_issuer_public_key_BN254 pk2;
+    ecdaa_issuer_key_pair_BN254_generate(&pk2, &sk2, &rng);
     TEST_ASSERT(BIG_256_56_comp(sk1.x, sk2.x) != 0);
     TEST_ASSERT(BIG_256_56_comp(sk1.y, sk2.y) != 0);
 

@@ -22,9 +22,7 @@
 
 #include "../src/pairing_curve_utils.h"
 
-#include <ecdaa/credential.h>
-#include <ecdaa/issuer_keypair.h>
-#include <ecdaa/member_keypair.h>
+#include <ecdaa/credential_BN254.h>
 #include <ecdaa/issuer_nonce.h>
 
 #include <amcl/big_256_56.h>

@@ -52,6 +52,22 @@ and should be at least 128 bytes long.
 Depending on the platform, this seed can be generated, for example, via calls to
 `/dev/urandom` (or `getrandom()`), or a hardware random number generator.
 
+## Naming Convention in API
+
+All API functions exist in the `ecdaa` namespace,
+and are focused on a small number of basic `structs` (e.g. `signature`).
+Function names take the form `ecdaa_<struct-name>_<curve-name>_<action>`.
+For example, for generating a credential when using the BN254 curve-type, the function
+to use is `ecdaa_credential_BN254_generate`.
+
+Output parameters are frequently used in the API functions, and come at the beginning
+of the parameter list.
+
+The fundamental structs have (de-)serialization functions,
+and macros and functions giving their serialized length.
+Again, the format of the serialized length macro/function is
+`ecdaa_<struct-name>_<curve-name>_length` (capitalized for the macro).
+
 ## Join Process
 
 ## Signing and Verifying
