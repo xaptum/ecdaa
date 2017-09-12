@@ -34,7 +34,7 @@ foreach(case_file ${TEST_SRCS})
 
   add_executable(${case_name} ${case_file})
   target_link_libraries(${case_name}
-    PRIVATE xecdaa
+    PRIVATE ecdaa
     )
   target_include_directories(${case_name}
           PRIVATE ${PROJECT_SOURCE_DIR}/include/ecdaa/
@@ -47,5 +47,5 @@ foreach(case_file ${TEST_SRCS})
           COMMAND ${CURRENT_TEST_BINARY_DIR}/${case_name}
           )
 
-  add_dependencies(${case_name} xecdaa)
+  add_dependencies(${case_name} ecdaa)
 endforeach()
