@@ -23,8 +23,11 @@
 #include <ecdaa/revocation_list_BN254.h>
 #include <ecdaa/credential_BN254.h>
 
-#include "schnorr.h"
-#include "pairing_curve_utils.h"
+#include "./internal/schnorr.h"
+#include "./amcl-extensions/big_256_56.h"
+#include "./amcl-extensions/ecp_BN254.h"
+#include "./amcl-extensions/ecp2_BN254.h"
+#include "./amcl-extensions/pairing_BN254.h"
 
 #include <amcl/pair_BN254.h>
 #include <amcl/fp12_BN254.h>
@@ -47,7 +50,7 @@ int ecdaa_signature_BN254_sign(struct ecdaa_signature_BN254 *signature_out,
 {
     // 1) Choose random l <- Z_p
     BIG_256_56 l;
-    random_num_mod_order(&l, rng);
+    big_256_56_random_mod_order(&l, rng);
 
     // 2) Multiply the four points in the credential by l,
     //  and save to the four points in the signature
@@ -94,10 +97,10 @@ int ecdaa_signature_BN254_verify(struct ecdaa_signature_BN254 *signature,
     int ret = 0;
 
     // 1) Check R,S,T,W for membership in group, and R and S for !=inf
-    if (0 != check_point_membership(&signature->R)
-            || 0 != check_point_membership(&signature->S)
-            || 0 != check_point_membership(&signature->T)
-            || 0 != check_point_membership(&signature->W))
+    if (0 != ecp_BN254_check_membership(&signature->R)
+            || 0 != ecp_BN254_check_membership(&signature->S)
+            || 0 != ecp_BN254_check_membership(&signature->T)
+            || 0 != ecp_BN254_check_membership(&signature->W))
         ret = -1;
     if (ECP_BN254_isinf(&signature->R) || ECP_BN254_isinf(&signature->S))
         ret = -1;
@@ -113,7 +116,7 @@ int ecdaa_signature_BN254_verify(struct ecdaa_signature_BN254 *signature,
         ret = -1;
 
     ECP2_BN254 basepoint2;
-    set_to_basepoint2(&basepoint2);
+    ecp2_BN254_set_to_generator(&basepoint2);
 
     // 3) Check e(R, Y) == e(S, P_2)
     FP12_BN254 pairing_one;
@@ -153,10 +156,10 @@ void ecdaa_signature_BN254_serialize(uint8_t *buffer_out,
     BIG_256_56_toBytes((char*)buffer_out, signature->c);
     BIG_256_56_toBytes((char*)(buffer_out + MODBYTES_256_56), signature->s);
 
-    serialize_point(buffer_out + 2*MODBYTES_256_56, &signature->R);
-    serialize_point(buffer_out + 2*MODBYTES_256_56 + serialized_point_length(), &signature->S);
-    serialize_point(buffer_out + 2*MODBYTES_256_56 + 2*serialized_point_length(), &signature->T);
-    serialize_point(buffer_out + 2*MODBYTES_256_56 + 3*serialized_point_length(), &signature->W);
+    ecp_BN254_serialize(buffer_out + 2*MODBYTES_256_56, &signature->R);
+    ecp_BN254_serialize(buffer_out + 2*MODBYTES_256_56 + ECP_BN254_LENGTH, &signature->S);
+    ecp_BN254_serialize(buffer_out + 2*MODBYTES_256_56 + 2*ECP_BN254_LENGTH, &signature->T);
+    ecp_BN254_serialize(buffer_out + 2*MODBYTES_256_56 + 3*ECP_BN254_LENGTH, &signature->W);
 }
 
 int ecdaa_signature_BN254_deserialize(struct ecdaa_signature_BN254 *signature_out,
@@ -167,16 +170,16 @@ int ecdaa_signature_BN254_deserialize(struct ecdaa_signature_BN254 *signature_ou
     BIG_256_56_fromBytes(signature_out->c, (char*)buffer_in);
     BIG_256_56_fromBytes(signature_out->s, (char*)(buffer_in + MODBYTES_256_56));
 
-    if (0 != deserialize_point(&signature_out->R, buffer_in + MODBYTES_256_56))
+    if (0 != ecp_BN254_deserialize(&signature_out->R, buffer_in + MODBYTES_256_56))
         ret = -1;
 
-    if (0 != deserialize_point(&signature_out->S, buffer_in + MODBYTES_256_56 + serialized_point_length()))
+    if (0 != ecp_BN254_deserialize(&signature_out->S, buffer_in + MODBYTES_256_56 + ECP_BN254_LENGTH))
         ret = -1;
 
-    if (0 != deserialize_point(&signature_out->T, buffer_in + MODBYTES_256_56 + 2*serialized_point_length()))
+    if (0 != ecp_BN254_deserialize(&signature_out->T, buffer_in + MODBYTES_256_56 + 2*ECP_BN254_LENGTH))
         ret = -1;
 
-    if (0 != deserialize_point(&signature_out->W, buffer_in + MODBYTES_256_56 + 3*serialized_point_length()))
+    if (0 != ecp_BN254_deserialize(&signature_out->W, buffer_in + MODBYTES_256_56 + 3*ECP_BN254_LENGTH))
         ret = -1;
 
     return ret;

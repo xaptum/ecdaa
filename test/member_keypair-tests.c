@@ -18,7 +18,7 @@
 
 #include "xaptum-test-utils.h"
 
-#include "../src/pairing_curve_utils.h"
+#include "../src/amcl-extensions/ecp_BN254.h"
 
 #include <ecdaa/member_keypair_BN254.h>
 
@@ -73,7 +73,7 @@ void member_public_is_valid()
     uint8_t nonce[32] = {0};
     ecdaa_member_key_pair_BN254_generate(&pk, &sk, nonce, sizeof(nonce), &rng);
 
-    TEST_ASSERT(0 == check_point_membership(&pk.Q));
+    TEST_ASSERT(0 == ecp_BN254_check_membership(&pk.Q));
 
     printf("\tsuccess\n");
 }

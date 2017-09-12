@@ -18,8 +18,8 @@
 
 #include <ecdaa/member_keypair_BN254.h>
 
-#include "pairing_curve_utils.h"
-#include "schnorr.h"
+#include "./amcl-extensions/ecp_BN254.h"
+#include "./internal/schnorr.h"
 
 #include <assert.h>
 
@@ -44,7 +44,7 @@ int ecdaa_member_key_pair_BN254_generate(struct ecdaa_member_public_key_BN254 *p
 
     // 2) and a Schnorr-type signature on the Schnorr-type public_key itself concatenated with the nonce.
     ECP_BN254 basepoint;
-    set_to_basepoint(&basepoint);
+    ecp_BN254_set_to_generator(&basepoint);
     int sign_ret = schnorr_sign(&pk->c,
                                 &pk->s,
                                 nonce,
@@ -64,7 +64,7 @@ int ecdaa_member_public_key_BN254_validate(struct ecdaa_member_public_key_BN254 
     int ret = 0;
     
     ECP_BN254 basepoint;
-    set_to_basepoint(&basepoint);
+    ecp_BN254_set_to_generator(&basepoint);
     int sign_ret = schnorr_verify(pk->c,
                                   pk->s,
                                   nonce_in,
@@ -80,9 +80,9 @@ int ecdaa_member_public_key_BN254_validate(struct ecdaa_member_public_key_BN254 
 void ecdaa_member_public_key_BN254_serialize(uint8_t *buffer_out,
                                              struct ecdaa_member_public_key_BN254 *pk)
 {
-    serialize_point(buffer_out, &pk->Q);
-    BIG_256_56_toBytes((char*)(buffer_out + serialized_point_length()), pk->c);
-    BIG_256_56_toBytes((char*)(buffer_out + serialized_point_length() + MODBYTES_256_56), pk->s);
+    ecp_BN254_serialize(buffer_out, &pk->Q);
+    BIG_256_56_toBytes((char*)(buffer_out + ecp_BN254_length()), pk->c);
+    BIG_256_56_toBytes((char*)(buffer_out + ecp_BN254_length() + MODBYTES_256_56), pk->s);
 }
 
 int ecdaa_member_public_key_BN254_deserialize(struct ecdaa_member_public_key_BN254 *pk_out,
@@ -93,13 +93,13 @@ int ecdaa_member_public_key_BN254_deserialize(struct ecdaa_member_public_key_BN2
     int ret = 0;
 
     // 1) Deserialize schnorr public key Q.
-    int deserial_ret = deserialize_point(&pk_out->Q, buffer_in);
+    int deserial_ret = ecp_BN254_deserialize(&pk_out->Q, buffer_in);
     if (0 != deserial_ret)
         ret = -1;
 
     // 2) Deserialize the schnorr signature
-    BIG_256_56_fromBytes(pk_out->c, (char*)(buffer_in + serialized_point_length()));
-    BIG_256_56_fromBytes(pk_out->s, (char*)(buffer_in + serialized_point_length() + MODBYTES_256_56));
+    BIG_256_56_fromBytes(pk_out->c, (char*)(buffer_in + ecp_BN254_length()));
+    BIG_256_56_fromBytes(pk_out->s, (char*)(buffer_in + ecp_BN254_length() + MODBYTES_256_56));
 
     if (0 == deserial_ret) {
         // 3) Verify the schnorr signature.

@@ -23,8 +23,9 @@ set(TEST_SRCS
         issuer_keypair-tests.c
         credential-tests.c
         member_keypair-tests.c
-        mpi_utils-tests.c
-        pairing_curve_utils-tests.c
+        big_256_56-tests.c
+        ecp_BN254-tests.c
+        ecp2_BN254-tests.c
         schnorr-tests.c
         )
 

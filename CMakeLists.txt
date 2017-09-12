@@ -24,17 +24,21 @@ project(xaptum-ecdaa
 add_compile_options(-Werror -Wall -Wextra -std=c99)
 
 set(XAPTUM_ECDAA_SRC_DIR src)
+set(XAPTUM_ECDAA_INTERNAL_SRC_DIR ${XAPTUM_ECDAA_SRC_DIR}/internal/)
+set(XAPTUM_ECDAA_AMCL_EXTENSIONS_SRC_DIR ${XAPTUM_ECDAA_SRC_DIR}/amcl-extensions/)
 set(XAPTUM_ECDAA_TEST_DIR test)
 set(XAPTUM_ECDAA_SRCS
         ${XAPTUM_ECDAA_SRC_DIR}/credential_BN254.c
-        ${XAPTUM_ECDAA_SRC_DIR}/explicit_bzero.c
         ${XAPTUM_ECDAA_SRC_DIR}/group_public_key_BN254.c
         ${XAPTUM_ECDAA_SRC_DIR}/issuer_keypair_BN254.c
         ${XAPTUM_ECDAA_SRC_DIR}/member_keypair_BN254.c
-        ${XAPTUM_ECDAA_SRC_DIR}/mpi_utils.c
-        ${XAPTUM_ECDAA_SRC_DIR}/pairing_curve_utils.c
-        ${XAPTUM_ECDAA_SRC_DIR}/schnorr.c
         ${XAPTUM_ECDAA_SRC_DIR}/signature_BN254.c
+        ${XAPTUM_ECDAA_INTERNAL_SRC_DIR}/explicit_bzero.c
+        ${XAPTUM_ECDAA_INTERNAL_SRC_DIR}/schnorr.c
+        ${XAPTUM_ECDAA_AMCL_EXTENSIONS_SRC_DIR}/big_256_56.c
+        ${XAPTUM_ECDAA_AMCL_EXTENSIONS_SRC_DIR}/ecp_BN254.c
+        ${XAPTUM_ECDAA_AMCL_EXTENSIONS_SRC_DIR}/ecp2_BN254.c
+        ${XAPTUM_ECDAA_AMCL_EXTENSIONS_SRC_DIR}/pairing_BN254.c
         ${XAPTUM_ECDAA_TEST_DIR}/xaptum-test-utils.c
         )
 

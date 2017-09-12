@@ -18,9 +18,11 @@
 
 #include "xaptum-test-utils.h"
 
-#include "../src/schnorr.h"
+#include "../src/internal/schnorr.h"
 
-#include "../src/pairing_curve_utils.h"
+#include "../src/amcl-extensions/big_256_56.h"
+#include "../src/amcl-extensions/ecp_BN254.h"
+#include "../src/amcl-extensions/ecp2_BN254.h"
 
 #include <ecdaa/credential_BN254.h>
 
@@ -103,7 +105,7 @@ void schnorr_sign_sane()
     BIG_256_56 c, s;
 
     ECP_BN254 basepoint;
-    set_to_basepoint(&basepoint);
+    ecp_BN254_set_to_generator(&basepoint);
     TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng));
 
     TEST_ASSERT(0 == BIG_256_56_iszilch(c));
@@ -135,7 +137,7 @@ void schnorr_verify_wrong_key()
     BIG_256_56 c, s;
 
     ECP_BN254 basepoint;
-    set_to_basepoint(&basepoint);
+    ecp_BN254_set_to_generator(&basepoint);
     TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng));
 
     TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public_wrong));
@@ -165,7 +167,7 @@ void schnorr_verify_wrong_msg()
     BIG_256_56 c, s;
 
     ECP_BN254 basepoint;
-    set_to_basepoint(&basepoint);
+    ecp_BN254_set_to_generator(&basepoint);
     TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng));
 
     TEST_ASSERT(-1 == schnorr_verify(c, s, msg_wrong, msg_len_wrong, &basepoint, &public));
@@ -193,7 +195,7 @@ void schnorr_verify_bad_sig()
     BIG_256_56 c={314,0}, s={2718,0};   // Just set these to random values
 
     ECP_BN254 basepoint;
-    set_to_basepoint(&basepoint);
+    ecp_BN254_set_to_generator(&basepoint);
     TEST_ASSERT(-1 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public));
 
     destroy_test_rng(&rng);
@@ -219,7 +221,7 @@ void schnorr_sign_integration()
     BIG_256_56 c, s;
 
     ECP_BN254 basepoint;
-    set_to_basepoint(&basepoint);
+    ecp_BN254_set_to_generator(&basepoint);
     TEST_ASSERT(0 == schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng));
 
     TEST_ASSERT(0 == schnorr_verify(c, s, msg, msg_len, &basepoint, &public));
@@ -242,14 +244,14 @@ void schnorr_sign_integration_other_basepoint()
     BIG_256_56 c, s;
 
     ECP_BN254 basepoint;
-    set_to_basepoint(&basepoint);
+    ecp_BN254_set_to_generator(&basepoint);
     BIG_256_56 rand;
-    random_num_mod_order(&rand, &rng);
+    big_256_56_random_mod_order(&rand, &rng);
     ECP_BN254_mul(&basepoint, rand);
 
     ECP_BN254 public;
     BIG_256_56 private;
-    random_num_mod_order(&private, &rng);
+    big_256_56_random_mod_order(&private, &rng);
     ECP_BN254_copy(&public, &basepoint);
     ECP_BN254_mul(&public, private);
 
@@ -301,7 +303,7 @@ void schnorr_credential_sign_integration()
 
     BIG_256_56 member_private = {2718, 0};
     ECP_BN254 member_public;
-    set_to_basepoint(&member_public);
+    ecp_BN254_set_to_generator(&member_public);
     ECP_BN254_mul(&member_public, member_private);
 
     BIG_256_56 issuer_private_key_y = {2718, 0};
@@ -309,7 +311,7 @@ void schnorr_credential_sign_integration()
     BIG_256_56 credential_random = {314, 2718, 0};
 
     ECP_BN254 B;
-    set_to_basepoint(&B);
+    ecp_BN254_set_to_generator(&B);
     ECP_BN254_mul(&B, credential_random);
     ECP_BN254_mul(&B, issuer_private_key_y);
 
@@ -367,15 +369,15 @@ void schnorr_issuer_sign_integration()
     create_test_rng(&rng);
 
     BIG_256_56 issuer_private_x;
-    random_num_mod_order(&issuer_private_x, &rng);
+    big_256_56_random_mod_order(&issuer_private_x, &rng);
     ECP2_BN254 issuer_public_X;
-    set_to_basepoint2(&issuer_public_X);
+    ecp2_BN254_set_to_generator(&issuer_public_X);
     ECP2_BN254_mul(&issuer_public_X, issuer_private_x);
 
     BIG_256_56 issuer_private_y;
-    random_num_mod_order(&issuer_private_y, &rng);
+    big_256_56_random_mod_order(&issuer_private_y, &rng);
     ECP2_BN254 issuer_public_Y;
-    set_to_basepoint2(&issuer_public_Y);
+    ecp2_BN254_set_to_generator(&issuer_public_Y);
     ECP2_BN254_mul(&issuer_public_Y, issuer_private_y);
 
     BIG_256_56 c, sx, sy;
@@ -412,7 +414,7 @@ void schnorr_sign_benchmark()
     gettimeofday(&tv1, NULL);
 
     ECP_BN254 basepoint;
-    set_to_basepoint(&basepoint);
+    ecp_BN254_set_to_generator(&basepoint);
     for (unsigned i = 0; i < rounds; i++) {
         schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng);
     }

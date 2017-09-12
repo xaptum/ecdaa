@@ -18,7 +18,7 @@
 
 #include <ecdaa/group_public_key_BN254.h>
 
-#include "pairing_curve_utils.h"
+#include "./amcl-extensions/ecp2_BN254.h"
 
 size_t ecdaa_group_public_key_BN254_length(void)
 {
@@ -28,8 +28,8 @@ size_t ecdaa_group_public_key_BN254_length(void)
 void ecdaa_group_public_key_BN254_serialize(uint8_t *buffer_out,
                                             struct ecdaa_group_public_key_BN254 *gpk)
 {
-    serialize_point2(buffer_out, &gpk->X);
-    serialize_point2(buffer_out + serialized_point_length_2(), &gpk->Y);
+    ecp2_BN254_serialize(buffer_out, &gpk->X);
+    ecp2_BN254_serialize(buffer_out + ECP2_BN254_LENGTH, &gpk->Y);
 }
 
 int ecdaa_group_public_key_BN254_deserialize(struct ecdaa_group_public_key_BN254 *gpk_out,
@@ -37,22 +37,22 @@ int ecdaa_group_public_key_BN254_deserialize(struct ecdaa_group_public_key_BN254
 {
     int ret = 0;
 
-    int deserial_ret_x = deserialize_point2(&gpk_out->X, buffer_in);
+    int deserial_ret_x = ecp2_BN254_deserialize(&gpk_out->X, buffer_in);
     if (0 != deserial_ret_x)
         ret = -1;
 
     if (0 == deserial_ret_x) {
-        int member_ret_x = check_point_membership2(&gpk_out->X);
+        int member_ret_x = ecp2_BN254_check_membership(&gpk_out->X);
         if (0 != member_ret_x)
             ret = -2;
     }
 
-    int deserial_ret_y = deserialize_point2(&gpk_out->Y, buffer_in + serialized_point_length_2());
+    int deserial_ret_y = ecp2_BN254_deserialize(&gpk_out->Y, buffer_in + ECP2_BN254_LENGTH);
     if (0 != deserial_ret_y)
         ret = -1;
 
     if (0 == deserial_ret_y) {
-        int member_ret_y = check_point_membership2(&gpk_out->Y);
+        int member_ret_y = ecp2_BN254_check_membership(&gpk_out->Y);
         if (0 != member_ret_y)
             ret = -2;
     }

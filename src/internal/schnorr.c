@@ -19,8 +19,9 @@
 #include "schnorr.h"
 
 #include "explicit_bzero.h"
-#include "mpi_utils.h"
-#include "pairing_curve_utils.h"
+#include "../amcl-extensions/big_256_56.h"
+#include "../amcl-extensions/ecp_BN254.h"
+#include "../amcl-extensions/ecp2_BN254.h"
 
 #include <amcl/ecp_BN254.h>
 #include <amcl/amcl.h>
@@ -31,9 +32,9 @@ void schnorr_keygen(ECP_BN254 *public_out,
                     BIG_256_56 *private_out,
                     csprng *rng)
 {
-    random_num_mod_order(private_out, rng);
+    big_256_56_random_mod_order(private_out, rng);
 
-    set_to_basepoint(public_out);
+    ecp_BN254_set_to_generator(public_out);
 
     ECP_BN254_mul(public_out, *private_out);
 }
@@ -59,12 +60,12 @@ int schnorr_sign(BIG_256_56 *c_out,
                  csprng *rng)
 {
     // 1) (Commit 1) Verify basepoint belongs to group
-    if (0 != check_point_membership(basepoint))
+    if (0 != ecp_BN254_check_membership(basepoint))
         return -1;
 
     // 2) (Commit 2) Choose random k <- Z_n
     BIG_256_56 k;
-    random_num_mod_order(&k, rng);
+    big_256_56_random_mod_order(&k, rng);
 
     // 3) (Commit 3) Multiply basepoint by k: R = k*basepoint
     ECP_BN254 R;
@@ -73,16 +74,16 @@ int schnorr_sign(BIG_256_56 *c_out,
 
     // 4) (Sign 1) Compute c = Hash( R | basepoint | public_key | msg_in )
     uint8_t hash_input_begin[195];
-    assert(3*serialized_point_length() == sizeof(hash_input_begin));
-    serialize_point(hash_input_begin, &R);
-    serialize_point(hash_input_begin+serialized_point_length(), basepoint);
-    serialize_point(hash_input_begin+2*serialized_point_length(), public_key);
-    hash_into_mpi_two(c_out, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
+    assert(3*ECP_BN254_LENGTH == sizeof(hash_input_begin));
+    ecp_BN254_serialize(hash_input_begin, &R);
+    ecp_BN254_serialize(hash_input_begin+ECP_BN254_LENGTH, basepoint);
+    ecp_BN254_serialize(hash_input_begin+2*ECP_BN254_LENGTH, public_key);
+    big_256_56_from_two_message_hash(c_out, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
 
     // 5) (Sign 2) Compute s = k + c * private_key
     BIG_256_56 curve_order;
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
-    mpi_mod_mul_and_add(s_out, k, *c_out, private_key, curve_order);    // normalizes and mod-reduces s_out and c_out
+    big_256_56_mod_mul_and_add(s_out, k, *c_out, private_key, curve_order);    // normalizes and mod-reduces s_out and c_out
 
     // Clear intermediate, sensitive memory.
     explicit_bzero(&k, sizeof(BIG_256_56));
@@ -100,7 +101,7 @@ int schnorr_verify(BIG_256_56 c,
     int ret = 0;
 
     // 1) Check public key for validity
-    if (0 != check_point_membership(public_key))
+    if (0 != ecp_BN254_check_membership(public_key))
         ret = -1;
 
     // 2) Multiply basepoint by s (R = s*P)
@@ -121,12 +122,12 @@ int schnorr_verify(BIG_256_56 c,
     // 5) Compute c' = Hash( R | basepoint | msg_in )
     //      (modular-reduce c', too).
     uint8_t hash_input_begin[195];
-    assert(3*serialized_point_length() == sizeof(hash_input_begin));
-    serialize_point(hash_input_begin, &R);
-    serialize_point(hash_input_begin+serialized_point_length(), basepoint);
-    serialize_point(hash_input_begin+2*serialized_point_length(), public_key);
+    assert(3*ECP_BN254_LENGTH == sizeof(hash_input_begin));
+    ecp_BN254_serialize(hash_input_begin, &R);
+    ecp_BN254_serialize(hash_input_begin+ECP_BN254_LENGTH, basepoint);
+    ecp_BN254_serialize(hash_input_begin+2*ECP_BN254_LENGTH, public_key);
     BIG_256_56 c_prime;
-    hash_into_mpi_two(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
+    big_256_56_from_two_message_hash(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
     BIG_256_56 curve_order;
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
     BIG_256_56_mod(c_prime, curve_order);
@@ -150,11 +151,11 @@ int credential_schnorr_sign(BIG_256_56 *c_out,
 {
     // 1) Set generator
     ECP_BN254 generator;
-    set_to_basepoint(&generator);
+    ecp_BN254_set_to_generator(&generator);
 
     // 2) Choose random r <- Z_n
     BIG_256_56 r;
-    random_num_mod_order(&r, rng);
+    big_256_56_random_mod_order(&r, rng);
 
     // 3) Multiply generator by r: U = r*generator
     ECP_BN254 U;
@@ -168,14 +169,14 @@ int credential_schnorr_sign(BIG_256_56 *c_out,
 
     // 5) Compute c = Hash( U | V | generator | B | member_public_key | D )
     uint8_t hash_input[390];
-    assert(6*serialized_point_length() == sizeof(hash_input));
-    serialize_point(hash_input, &U);
-    serialize_point(hash_input+serialized_point_length(), &V);
-    serialize_point(hash_input+2*serialized_point_length(), &generator);
-    serialize_point(hash_input+3*serialized_point_length(), B);
-    serialize_point(hash_input+4*serialized_point_length(), member_public_key);
-    serialize_point(hash_input+5*serialized_point_length(), D);
-    hash_into_mpi(c_out, hash_input, sizeof(hash_input));
+    assert(6*ECP_BN254_LENGTH == sizeof(hash_input));
+    ecp_BN254_serialize(hash_input, &U);
+    ecp_BN254_serialize(hash_input+ECP_BN254_LENGTH, &V);
+    ecp_BN254_serialize(hash_input+2*ECP_BN254_LENGTH, &generator);
+    ecp_BN254_serialize(hash_input+3*ECP_BN254_LENGTH, B);
+    ecp_BN254_serialize(hash_input+4*ECP_BN254_LENGTH, member_public_key);
+    ecp_BN254_serialize(hash_input+5*ECP_BN254_LENGTH, D);
+    big_256_56_from_hash(c_out, hash_input, sizeof(hash_input));
 
     // 6) Compute ly = (credential_random x issuer_private_key_y) mod curve_order
     BIG_256_56 curve_order;
@@ -184,7 +185,7 @@ int credential_schnorr_sign(BIG_256_56 *c_out,
     BIG_256_56_modmul(ly, credential_random, issuer_private_key_y, curve_order);
 
     // 7) Compute s = r + c * ly
-    mpi_mod_mul_and_add(s_out, r, *c_out, ly, curve_order);    // normalizes and mod-reduces s_out and c_out
+    big_256_56_mod_mul_and_add(s_out, r, *c_out, ly, curve_order);    // normalizes and mod-reduces s_out and c_out
 
     // Clear intermediate, sensitive memory.
     explicit_bzero(&r, sizeof(BIG_256_56));
@@ -202,7 +203,7 @@ int credential_schnorr_verify(BIG_256_56 c,
 
     // 1) Set generator
     ECP_BN254 generator;
-    set_to_basepoint(&generator);
+    ecp_BN254_set_to_generator(&generator);
 
     // 2) Multiply generator by s (R1 = s*P)
     ECP_BN254 R1;
@@ -237,15 +238,15 @@ int credential_schnorr_verify(BIG_256_56 c,
     // 8) Compute c' = Hash( R1 | R2 | generator | B | member_public_key | D )
     //      (modular-reduce c', too).
     uint8_t hash_input[390];
-    assert(6*serialized_point_length() == sizeof(hash_input));
-    serialize_point(hash_input, &R1);
-    serialize_point(hash_input+serialized_point_length(), &R2);
-    serialize_point(hash_input+2*serialized_point_length(), &generator);
-    serialize_point(hash_input+3*serialized_point_length(), B);
-    serialize_point(hash_input+4*serialized_point_length(), member_public_key);
-    serialize_point(hash_input+5*serialized_point_length(), D);
+    assert(6*ECP_BN254_LENGTH == sizeof(hash_input));
+    ecp_BN254_serialize(hash_input, &R1);
+    ecp_BN254_serialize(hash_input+ECP_BN254_LENGTH, &R2);
+    ecp_BN254_serialize(hash_input+2*ECP_BN254_LENGTH, &generator);
+    ecp_BN254_serialize(hash_input+3*ECP_BN254_LENGTH, B);
+    ecp_BN254_serialize(hash_input+4*ECP_BN254_LENGTH, member_public_key);
+    ecp_BN254_serialize(hash_input+5*ECP_BN254_LENGTH, D);
     BIG_256_56 c_prime;
-    hash_into_mpi(&c_prime, hash_input, sizeof(hash_input));
+    big_256_56_from_hash(&c_prime, hash_input, sizeof(hash_input));
     BIG_256_56 curve_order;
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
     BIG_256_56_mod(c_prime, curve_order);
@@ -269,12 +270,12 @@ int issuer_schnorr_sign(BIG_256_56 *c_out,
 {
     // 1) Set generator_2
     ECP2_BN254 generator_2;
-    set_to_basepoint2(&generator_2);
+    ecp2_BN254_set_to_generator(&generator_2);
 
     // 2) Choose random rx, ry <- Z_n
     BIG_256_56 rx, ry;
-    random_num_mod_order(&rx, rng);
-    random_num_mod_order(&ry, rng);
+    big_256_56_random_mod_order(&rx, rng);
+    big_256_56_random_mod_order(&ry, rng);
 
     // 3) Multiply generator_2 by rx: Ux = rx*generator_2
     ECP2_BN254 Ux;
@@ -288,21 +289,21 @@ int issuer_schnorr_sign(BIG_256_56 *c_out,
 
     // 5) Compute c = Hash( Ux | Uy | generator_2 | X | Y )
     uint8_t hash_input[645];
-    assert(5*serialized_point_length_2() == sizeof(hash_input));
-    serialize_point2(hash_input, &Ux);
-    serialize_point2(hash_input+serialized_point_length_2(), &Uy);
-    serialize_point2(hash_input+2*serialized_point_length_2(), &generator_2);
-    serialize_point2(hash_input+3*serialized_point_length_2(), X);
-    serialize_point2(hash_input+4*serialized_point_length_2(), Y);
-    hash_into_mpi(c_out, hash_input, sizeof(hash_input));
+    assert(5*ECP2_BN254_LENGTH == sizeof(hash_input));
+    ecp2_BN254_serialize(hash_input, &Ux);
+    ecp2_BN254_serialize(hash_input+ECP2_BN254_LENGTH, &Uy);
+    ecp2_BN254_serialize(hash_input+2*ECP2_BN254_LENGTH, &generator_2);
+    ecp2_BN254_serialize(hash_input+3*ECP2_BN254_LENGTH, X);
+    ecp2_BN254_serialize(hash_input+4*ECP2_BN254_LENGTH, Y);
+    big_256_56_from_hash(c_out, hash_input, sizeof(hash_input));
 
     // 6) Compute sx = rx + c * private_key_x
     BIG_256_56 curve_order;
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
-    mpi_mod_mul_and_add(sx_out, rx, *c_out, issuer_private_key_x, curve_order);    // normalizes and mod-reduces sx_out and c_out
+    big_256_56_mod_mul_and_add(sx_out, rx, *c_out, issuer_private_key_x, curve_order);    // normalizes and mod-reduces sx_out and c_out
 
     // 7) Compute sy = ry + c * private_key_y
-    mpi_mod_mul_and_add(sy_out, ry, *c_out, issuer_private_key_y, curve_order);    // normalizes and mod-reduces sy_out and c_out
+    big_256_56_mod_mul_and_add(sy_out, ry, *c_out, issuer_private_key_y, curve_order);    // normalizes and mod-reduces sy_out and c_out
 
     // Clear intermediate, sensitive memory.
     explicit_bzero(&rx, sizeof(BIG_256_56));
@@ -321,7 +322,7 @@ int issuer_schnorr_verify(BIG_256_56 c,
 
     // 1) Set generator_2
     ECP2_BN254 generator_2;
-    set_to_basepoint2(&generator_2);
+    ecp2_BN254_set_to_generator(&generator_2);
 
     // 2) Multiply generator_2 by sx (R1 = sx*P2)
     ECP2_BN254 R1;
@@ -356,14 +357,14 @@ int issuer_schnorr_verify(BIG_256_56 c,
     // 8) Compute c' = Hash( R1 | R2 | generator_2 | X | Y )
     //      (modular-reduce c', too).
     uint8_t hash_input[645];
-    assert(5*serialized_point_length_2() == sizeof(hash_input));
-    serialize_point2(hash_input, &R1);
-    serialize_point2(hash_input+serialized_point_length_2(), &R2);
-    serialize_point2(hash_input+2*serialized_point_length_2(), &generator_2);
-    serialize_point2(hash_input+3*serialized_point_length_2(), X);
-    serialize_point2(hash_input+4*serialized_point_length_2(), Y);
+    assert(5*ECP2_BN254_LENGTH == sizeof(hash_input));
+    ecp2_BN254_serialize(hash_input, &R1);
+    ecp2_BN254_serialize(hash_input+ECP2_BN254_LENGTH, &R2);
+    ecp2_BN254_serialize(hash_input+2*ECP2_BN254_LENGTH, &generator_2);
+    ecp2_BN254_serialize(hash_input+3*ECP2_BN254_LENGTH, X);
+    ecp2_BN254_serialize(hash_input+4*ECP2_BN254_LENGTH, Y);
     BIG_256_56 c_prime;
-    hash_into_mpi(&c_prime, hash_input, sizeof(hash_input));
+    big_256_56_from_hash(&c_prime, hash_input, sizeof(hash_input));
     BIG_256_56 curve_order;
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
     BIG_256_56_mod(c_prime, curve_order);

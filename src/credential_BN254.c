@@ -18,15 +18,16 @@
 
 #include <ecdaa/credential_BN254.h>
 
-#include "schnorr.h"
-#include "explicit_bzero.h"
-#include "pairing_curve_utils.h"
+#include "./internal/schnorr.h"
+#include "./internal/explicit_bzero.h"
+#include "./amcl-extensions/big_256_56.h"
+#include "./amcl-extensions/ecp_BN254.h"
+#include "./amcl-extensions/ecp2_BN254.h"
+#include "./amcl-extensions/pairing_BN254.h"
 
 #include <ecdaa/member_keypair_BN254.h>
 #include <ecdaa/issuer_keypair_BN254.h>
 #include <ecdaa/group_public_key_BN254.h>
-
-#include "pairing_curve_utils.h"
 
 size_t serialized_credential_BN254_length()
 {
@@ -51,10 +52,10 @@ int ecdaa_credential_BN254_generate(struct ecdaa_credential_BN254 *cred,
 
     // 1) Choose random l <- Z_p
     BIG_256_56 l;
-    random_num_mod_order(&l, rng);
+    big_256_56_random_mod_order(&l, rng);
 
     // 2) Multiply generator by l and save to cred->A (A = l*P)
-    set_to_basepoint(&cred->A);
+    ecp_BN254_set_to_generator(&cred->A);
     ECP_BN254_mul(&cred->A, l);
 
     // 3) Multiply A by my secret y and save to cred->B (B = y*A)
@@ -114,10 +115,10 @@ int ecdaa_credential_BN254_validate(struct ecdaa_credential_BN254 *credential,
     int ret = 0;
 
     // 1) Check A,B,C,D for membership in group, and A for !=inf
-    if (0 != check_point_membership(&credential->A)
-            || 0 != check_point_membership(&credential->B)
-            || 0 != check_point_membership(&credential->C)
-            || 0 != check_point_membership(&credential->D))
+    if (0 != ecp_BN254_check_membership(&credential->A)
+            || 0 != ecp_BN254_check_membership(&credential->B)
+            || 0 != ecp_BN254_check_membership(&credential->C)
+            || 0 != ecp_BN254_check_membership(&credential->D))
         ret = -1;
     if (ECP_BN254_isinf(&credential->A))
         ret = -1;
@@ -132,7 +133,7 @@ int ecdaa_credential_BN254_validate(struct ecdaa_credential_BN254 *credential,
         ret = -1;
 
     ECP2_BN254 basepoint2;
-    set_to_basepoint2(&basepoint2);
+    ecp2_BN254_set_to_generator(&basepoint2);
 
     // 3) Check e(A, Y) == e(B, P_2)
     FP12_BN254 pairing_one;
@@ -161,10 +162,10 @@ int ecdaa_credential_BN254_validate(struct ecdaa_credential_BN254 *credential,
 void ecdaa_credential_BN254_serialize(uint8_t *buffer_out,
                                       struct ecdaa_credential_BN254 *credential)
 {
-    serialize_point(buffer_out, &credential->A);
-    serialize_point(buffer_out + serialized_point_length(), &credential->B);
-    serialize_point(buffer_out + 2*serialized_point_length(), &credential->C);
-    serialize_point(buffer_out + 3*serialized_point_length(), &credential->D);
+    ecp_BN254_serialize(buffer_out, &credential->A);
+    ecp_BN254_serialize(buffer_out + ECP_BN254_LENGTH, &credential->B);
+    ecp_BN254_serialize(buffer_out + 2*ECP_BN254_LENGTH, &credential->C);
+    ecp_BN254_serialize(buffer_out + 3*ECP_BN254_LENGTH, &credential->D);
 }
 
 void ecdaa_credential_BN254_signature_serialize(uint8_t *buffer_out,
@@ -186,8 +187,8 @@ int ecdaa_credential_BN254_deserialize_with_signature(struct ecdaa_credential_BN
 
     // 2) De-serialize the credential signature
     struct ecdaa_credential_BN254_signature cred_sig;
-    BIG_256_56_fromBytes(cred_sig.c, (char*)(buffer_in + 4*serialized_point_length()));
-    BIG_256_56_fromBytes(cred_sig.c, (char*)(buffer_in + 4*serialized_point_length() + MODBYTES_256_56));
+    BIG_256_56_fromBytes(cred_sig.c, (char*)(buffer_in + 4*ECP_BN254_LENGTH));
+    BIG_256_56_fromBytes(cred_sig.c, (char*)(buffer_in + 4*ECP_BN254_LENGTH + MODBYTES_256_56));
 
     if (0 == ret) {
         int valid_ret = ecdaa_credential_BN254_validate(credential_out, &cred_sig, member_pk, gpk);
@@ -203,16 +204,16 @@ int ecdaa_credential_BN254_deserialize(struct ecdaa_credential_BN254 *credential
 {
     int ret = 0;
 
-    if (0 != deserialize_point(&credential_out->A, buffer_in))
+    if (0 != ecp_BN254_deserialize(&credential_out->A, buffer_in))
         ret = -1;
 
-    if (0 != deserialize_point(&credential_out->B, buffer_in + serialized_point_length()))
+    if (0 != ecp_BN254_deserialize(&credential_out->B, buffer_in + ECP_BN254_LENGTH))
         ret = -1;
 
-    if (0 != deserialize_point(&credential_out->C, buffer_in + 2*serialized_point_length()))
+    if (0 != ecp_BN254_deserialize(&credential_out->C, buffer_in + 2*ECP_BN254_LENGTH))
         ret = -1;
 
-    if (0 != deserialize_point(&credential_out->D, buffer_in + 3*serialized_point_length()))
+    if (0 != ecp_BN254_deserialize(&credential_out->D, buffer_in + 3*ECP_BN254_LENGTH))
         ret = -1;
 
     return ret;

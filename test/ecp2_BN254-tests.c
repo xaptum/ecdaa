@@ -18,38 +18,18 @@
 
 #include "xaptum-test-utils.h"
 
-#include "../src/pairing_curve_utils.h"
-
-#include <amcl/randapi.h>
+#include "../src/amcl-extensions/ecp2_BN254.h"
 
 #include <stdio.h>
 
-static void g1_basepoint_not_inf();
-
 static void g2_basepoint_not_inf();
 
-static void random_num_mod_order_is_valid();
 
 int main()
 {
-    g1_basepoint_not_inf();
     g2_basepoint_not_inf();
 
-    random_num_mod_order_is_valid();
-
     return 0;
-}
-
-void g1_basepoint_not_inf()
-{
-    printf("Starting pairing_curve_utils::g1_basepoint_not_inf...\n");
-
-    ECP_BN254 point;
-    set_to_basepoint(&point);
-
-    TEST_ASSERT(!point.inf);
-
-    printf("\tsuccess\n");
 }
 
 void g2_basepoint_not_inf()
@@ -57,34 +37,10 @@ void g2_basepoint_not_inf()
     printf("Starting pairing_curve_utils::g2_basepoint_not_inf...\n");
 
     ECP2_BN254 point;
-    set_to_basepoint2(&point);
+    ecp2_BN254_set_to_generator(&point);
 
     TEST_ASSERT(!point.inf);
 
     printf("\tsuccess\n");
 }
 
-void random_num_mod_order_is_valid()
-{
-    printf("Starting pairing_curve_utils::random_num_mod_order_is_valid...\n");
-
-    BIG_256_56 curve_order;
-    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
-
-    csprng rng;
-    create_test_rng(&rng);
-
-    BIG_256_56 num;
-    for (int i = 0; i < 50000; ++i) {
-        random_num_mod_order(&num, &rng);
-
-        TEST_ASSERT(BIG_256_56_iszilch(num) == 0);
-        TEST_ASSERT(BIG_256_56_isunity(num) == 0);
-
-        TEST_ASSERT(BIG_256_56_comp(num, curve_order) == -1);
-    }
-
-    destroy_test_rng(&rng);
-
-    printf("\tsuccess\n");
-}

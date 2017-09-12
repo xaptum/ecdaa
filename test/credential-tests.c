@@ -22,7 +22,9 @@
 #include <ecdaa/member_keypair_BN254.h>
 #include <ecdaa/issuer_keypair_BN254.h>
 
-#include "../src/pairing_curve_utils.h"
+#include "../src/amcl-extensions/big_256_56.h"
+#include "../src/amcl-extensions/ecp_BN254.h"
+#include "../src/amcl-extensions/ecp2_BN254.h"
 
 #include <amcl/ecp_BN254.h>
 #include <amcl/ecp2_BN254.h>
@@ -53,16 +55,16 @@ static void setup(credential_test_fixture* fixture)
 {
     create_test_rng(&fixture->rng);
 
-    random_num_mod_order(&fixture->isk.x, &fixture->rng);
-    set_to_basepoint2(&fixture->ipk.gpk.X);
+    big_256_56_random_mod_order(&fixture->isk.x, &fixture->rng);
+    ecp2_BN254_set_to_generator(&fixture->ipk.gpk.X);
     ECP2_BN254_mul(&fixture->ipk.gpk.X, fixture->isk.x);
 
-    random_num_mod_order(&fixture->isk.y, &fixture->rng);
-    set_to_basepoint2(&fixture->ipk.gpk.Y);
+    big_256_56_random_mod_order(&fixture->isk.y, &fixture->rng);
+    ecp2_BN254_set_to_generator(&fixture->ipk.gpk.Y);
     ECP2_BN254_mul(&fixture->ipk.gpk.Y, fixture->isk.y);
 
-    set_to_basepoint(&fixture->pk.Q);
-    random_num_mod_order(&fixture->sk.sk, &fixture->rng);
+    ecp_BN254_set_to_generator(&fixture->pk.Q);
+    big_256_56_random_mod_order(&fixture->sk.sk, &fixture->rng);
     ECP_BN254_mul(&fixture->pk.Q, fixture->sk.sk);
 }
 

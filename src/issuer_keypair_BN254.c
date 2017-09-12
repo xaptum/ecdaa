@@ -18,8 +18,9 @@
 
 #include <ecdaa/issuer_keypair_BN254.h>
 
-#include "pairing_curve_utils.h"
-#include "schnorr.h"
+#include "./amcl-extensions/big_256_56.h"
+#include "./amcl-extensions/ecp2_BN254.h"
+#include "./internal/schnorr.h"
 
 #include <ecdaa/group_public_key_BN254.h>
 
@@ -37,13 +38,13 @@ int ecdaa_issuer_key_pair_BN254_generate(struct ecdaa_issuer_public_key_BN254 *p
 {
     // Secret key is
     // two random Bignums.
-    random_num_mod_order(&sk->x, rng);
-    random_num_mod_order(&sk->y, rng);
+    big_256_56_random_mod_order(&sk->x, rng);
+    big_256_56_random_mod_order(&sk->y, rng);
 
     // Public key is
     // 1) G2 generator raised to the two private key random Bignums...
-    set_to_basepoint2(&pk->gpk.X);
-    set_to_basepoint2(&pk->gpk.Y);
+    ecp2_BN254_set_to_generator(&pk->gpk.X);
+    ecp2_BN254_set_to_generator(&pk->gpk.Y);
     ECP2_BN254_mul(&pk->gpk.X, sk->x);
     ECP2_BN254_mul(&pk->gpk.Y, sk->y);
 

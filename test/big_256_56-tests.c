@@ -18,7 +18,7 @@
 
 #include "xaptum-test-utils.h"
 
-#include "../src/mpi_utils.h"
+#include "../src/amcl-extensions/big_256_56.h"
 
 #include <amcl/ecp_BN254.h>
 
@@ -35,6 +35,7 @@ static void mul_and_add_modulus_two();
 static void mul_and_add_normalization_works();
 static void mul_and_add_greater_than_modulus_ok();
 static void mul_and_add_small_sanity_check();
+static void random_num_mod_order_is_valid();
 
 int main()
 {
@@ -48,6 +49,7 @@ int main()
     mul_and_add_normalization_works();
     mul_and_add_greater_than_modulus_ok();
     mul_and_add_small_sanity_check();
+    random_num_mod_order_is_valid();
 }
 
 void hash_not_zero()
@@ -57,7 +59,7 @@ void hash_not_zero()
     BIG_256_56 mpi;
     uint8_t msg[1024];
     uint32_t msg_len = 1024;
-    hash_into_mpi(&mpi, msg, msg_len);
+    big_256_56_from_hash(&mpi, msg, msg_len);
 
     TEST_ASSERT(0 == BIG_256_56_iszilch(mpi));
 
@@ -75,7 +77,7 @@ void hash_two_not_zero()
     uint32_t msg1_len = 1024;
     uint8_t msg2[1024];
     uint32_t msg2_len = 1024;
-    hash_into_mpi_two(&mpi, msg1, msg1_len, msg2, msg2_len);
+    big_256_56_from_two_message_hash(&mpi, msg1, msg1_len, msg2, msg2_len);
 
     TEST_ASSERT(0 == BIG_256_56_iszilch(mpi));
 
@@ -91,7 +93,7 @@ void hash_ok_with_no_msg()
     BIG_256_56 mpi;
     uint8_t *msg = NULL;
     uint32_t msg_len = 0;
-    hash_into_mpi(&mpi, msg, msg_len);
+    big_256_56_from_hash(&mpi, msg, msg_len);
 
     TEST_ASSERT(0 == BIG_256_56_iszilch(mpi));
 
@@ -107,8 +109,8 @@ void hash_same_message()
     BIG_256_56 mpi1, mpi2;
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*) msg);
-    hash_into_mpi(&mpi1, msg, msg_len);
-    hash_into_mpi(&mpi2, msg, msg_len);
+    big_256_56_from_hash(&mpi1, msg, msg_len);
+    big_256_56_from_hash(&mpi2, msg, msg_len);
 
     TEST_ASSERT(0 == BIG_256_56_comp(mpi1, mpi2));
 
@@ -125,8 +127,8 @@ void hash_two_same_messages()
     uint8_t *msg2 = (uint8_t*) "Test message numero dos";
     uint32_t msg2_len = strlen((char*) msg2);
 
-    hash_into_mpi_two(&mpi1, msg1, msg1_len, msg2, msg2_len);
-    hash_into_mpi_two(&mpi2, msg1, msg1_len, msg2, msg2_len);
+    big_256_56_from_two_message_hash(&mpi1, msg1, msg1_len, msg2, msg2_len);
+    big_256_56_from_two_message_hash(&mpi2, msg1, msg1_len, msg2, msg2_len);
 
     TEST_ASSERT(0 == BIG_256_56_comp(mpi1, mpi2));
 
@@ -146,7 +148,7 @@ void mul_and_add_all_zeros()
     BIG_256_56_zero(x);
     BIG_256_56_zero(b);
 
-    mpi_mod_mul_and_add(&y, b, m, x, modulus);
+    big_256_56_mod_mul_and_add(&y, b, m, x, modulus);
     TEST_ASSERT(1 == BIG_256_56_iszilch(b));
 
     printf("\tsuccess\n");
@@ -165,7 +167,7 @@ void mul_and_add_all_ones()
     BIG_256_56_one(x);
     BIG_256_56_one(b);
 
-    mpi_mod_mul_and_add(&y, b, m, x, modulus);
+    big_256_56_mod_mul_and_add(&y, b, m, x, modulus);
 
     BIG_256_56 expected = {0};
     expected[0] = 2;
@@ -188,7 +190,7 @@ void mul_and_add_modulus_two()
     b[0] = 2;   // Should make final answer even.
 
     BIG_256_56 y;
-    mpi_mod_mul_and_add(&y, b, m, x, modulus);
+    big_256_56_mod_mul_and_add(&y, b, m, x, modulus);
 
     TEST_ASSERT(1 == BIG_256_56_iszilch(y));
 
@@ -220,10 +222,10 @@ void mul_and_add_normalization_works()
     BIG_256_56_norm(b_norm);
 
     BIG_256_56 y;
-    mpi_mod_mul_and_add(&y, b, m, x, modulus);
+    big_256_56_mod_mul_and_add(&y, b, m, x, modulus);
 
     BIG_256_56 y_expected;
-    mpi_mod_mul_and_add(&y_expected, b_norm, m_norm, x_norm, modulus);
+    big_256_56_mod_mul_and_add(&y_expected, b_norm, m_norm, x_norm, modulus);
 
     TEST_ASSERT(0 == BIG_256_56_comp(m, m_norm));
     TEST_ASSERT(0 == BIG_256_56_comp(x, x_norm));
@@ -274,10 +276,10 @@ void mul_and_add_greater_than_modulus_ok()
     BIG_256_56_mod(b_mod, modulus);
 
     BIG_256_56 y;
-    mpi_mod_mul_and_add(&y, b, m, x, modulus);
+    big_256_56_mod_mul_and_add(&y, b, m, x, modulus);
 
     BIG_256_56 y_expected;
-    mpi_mod_mul_and_add(&y_expected, b_mod, m_mod, x_mod, modulus);
+    big_256_56_mod_mul_and_add(&y_expected, b_mod, m_mod, x_mod, modulus);
 
     TEST_ASSERT(0 == BIG_256_56_comp(y, y_expected));
 
@@ -300,10 +302,34 @@ void mul_and_add_small_sanity_check()
     BIG_256_56 y_expected = {0};
     y_expected[0] = 9;  // 4 + 9*15 mod 13 = 9
 
-    mpi_mod_mul_and_add(&y, b, m, x, modulus);
+    big_256_56_mod_mul_and_add(&y, b, m, x, modulus);
 
     TEST_ASSERT(0 == BIG_256_56_comp(y_expected, y));
 
     printf("\tsuccess\n");
 }
 
+void random_num_mod_order_is_valid()
+{
+    printf("Starting pairing_curve_utils::random_num_mod_order_is_valid...\n");
+
+    BIG_256_56 curve_order;
+    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
+
+    csprng rng;
+    create_test_rng(&rng);
+
+    BIG_256_56 num;
+    for (int i = 0; i < 50000; ++i) {
+        big_256_56_random_mod_order(&num, &rng);
+
+        TEST_ASSERT(BIG_256_56_iszilch(num) == 0);
+        TEST_ASSERT(BIG_256_56_isunity(num) == 0);
+
+        TEST_ASSERT(BIG_256_56_comp(num, curve_order) == -1);
+    }
+
+    destroy_test_rng(&rng);
+
+    printf("\tsuccess\n");
+}
