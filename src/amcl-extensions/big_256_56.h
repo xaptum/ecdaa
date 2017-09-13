@@ -16,8 +16,8 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_BIG_256_56_EXTENSIONS_H
-#define XAPTUM_ECDAA_BIG_256_56_EXTENSIONS_H
+#ifndef ECDAA_BIG_256_56_EXTENSIONS_H
+#define ECDAA_BIG_256_56_EXTENSIONS_H
 #pragma once
 
 #ifdef __cplusplus
