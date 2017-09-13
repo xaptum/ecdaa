@@ -14,6 +14,8 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
+option(ECDAA_SANITIZE "test using address sanitizer" OFF)
+
 list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 find_package(AMCL REQUIRED QUIET)
 
@@ -24,6 +26,16 @@ project(ecdaa
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -std=c99")
 
 SET(CMAKE_C_FLAGS_DEBUGWITHCOVERAGE "${CMAKE_C_FLAGS_DEBUGWITHCOVERAGE} -O0 -fprofile-arcs -ftest-coverage")
+
+if(UNIX AND NOT APPLE)
+        if(ECDAA_SANITIZE)
+                set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address,undefined" CACHE STRING "" FORCE)
+        endif()
+endif()
+
+find_program(MEMORYCHECK_COMMAND NAMES valgrind)
+set(MEMORYCHECK_COMMAND_OPTIONS
+        "--error-exitcode=5 --leak-check=full -v --track-origins=yes --partial-loads-ok=no")
 
 set(ECDAA_SRC_DIR src)
 set(ECDAA_INTERNAL_SRC_DIR ${ECDAA_SRC_DIR}/internal/)
