@@ -29,8 +29,6 @@
 #include <amcl/big_256_56.h>
 #include <amcl/ecp_BN254.h>
 
-#include <sys/time.h>
-
 #include <string.h>
 
 static void schnorr_keygen_sane();
@@ -45,8 +43,6 @@ static void schnorr_credential_sign_integration();
 static void schnorr_issuer_sign_sane();
 static void schnorr_issuer_sign_integration();
 
-static void schnorr_sign_benchmark();
-
 int main()
 {
     schnorr_keygen_sane();
@@ -60,7 +56,6 @@ int main()
     schnorr_credential_sign_integration();
     schnorr_issuer_sign_sane();
     schnorr_issuer_sign_integration();
-    schnorr_sign_benchmark();
 }
 
 void schnorr_keygen_sane()
@@ -91,11 +86,14 @@ void schnorr_sign_sane()
 {
     printf("Starting schnorr::schnorr_sign_sane...\n");
 
+    csprng rng;
+    create_test_rng(&rng);
+
     ECP_BN254 public;
     BIG_256_56 private;
 
-    csprng rng;
-    create_test_rng(&rng);
+    big_256_56_random_mod_order(&private, &rng);
+    ecp_BN254_set_to_generator(&public);
 
     ECP_BN254_mul(&public, private);
 
@@ -271,9 +269,10 @@ void schnorr_credential_sign_sane()
     ECP_BN254 member_public;
     BIG_256_56 member_private;
     BIG_256_56 issuer_private;
-    ECP_BN254_mul(&member_public, member_private);
 
     ECP_BN254 B, D;
+    ecp_BN254_set_to_generator(&B);
+    ecp_BN254_set_to_generator(&D);
 
     BIG_256_56 credential_random;
 
@@ -281,6 +280,13 @@ void schnorr_credential_sign_sane()
 
     csprng rng;
     create_test_rng(&rng);
+
+    big_256_56_random_mod_order(&credential_random, &rng);
+
+    big_256_56_random_mod_order(&member_private, &rng);
+    big_256_56_random_mod_order(&issuer_private, &rng);
+    ecp_BN254_set_to_generator(&member_public);
+    ECP_BN254_mul(&member_public, member_private);
 
     TEST_ASSERT(0 == credential_schnorr_sign(&c, &s, &B, &member_public, &D, issuer_private, credential_random, &rng));
 
@@ -344,6 +350,8 @@ void schnorr_issuer_sign_sane()
     big_256_56_random_mod_order(&issuer_private_y, &rng);
     ECP2_BN254 issuer_public_X;
     ECP2_BN254 issuer_public_Y;
+    ecp2_BN254_set_to_generator(&issuer_public_X);
+    ecp2_BN254_set_to_generator(&issuer_public_Y);
     ECP2_BN254_mul(&issuer_public_X, issuer_private_x);
     ECP2_BN254_mul(&issuer_public_Y, issuer_private_y);
 
@@ -392,46 +400,3 @@ void schnorr_issuer_sign_integration()
 
     printf("\tsuccess\n");
 }
-
-void schnorr_sign_benchmark()
-{
-    unsigned rounds = 2500;
-
-    printf("Starting schnorr::schnorr_sign_benchmark (%d iterations)...\n", rounds);
-
-    ECP_BN254 public;
-    BIG_256_56 private;
-
-    csprng rng;
-    create_test_rng(&rng);
-
-    schnorr_keygen(&public, &private, &rng);
-
-    uint8_t *msg = (uint8_t*) "Test message";
-    uint32_t msg_len = strlen((char*)msg);
-
-    BIG_256_56 c, s;
-
-    struct timeval tv1;
-    gettimeofday(&tv1, NULL);
-
-    ECP_BN254 basepoint;
-    ecp_BN254_set_to_generator(&basepoint);
-    for (unsigned i = 0; i < rounds; i++) {
-        schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng);
-    }
-
-    struct timeval tv2;
-    gettimeofday(&tv2, NULL);
-    unsigned long long elapsed = (tv2.tv_usec + tv2.tv_sec * 1000000) -
-        (tv1.tv_usec + tv1.tv_sec * 1000000);
-
-    printf("%llu usec (%6llu signs/s)\n",
-            elapsed,
-            rounds * 1000000ULL / elapsed);
-
-    TEST_ASSERT (elapsed < 2000 * rounds); // If we're taking more than 2ms per signature, something's wrong.
-
-    destroy_test_rng(&rng);
-}
-

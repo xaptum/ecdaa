@@ -18,10 +18,12 @@
 
 #include "ecdaa-test-utils.h"
 
+#include "../src/internal/schnorr.h"
 #include "../src/amcl-extensions/big_256_56.h"
 #include "../src/amcl-extensions/ecp_BN254.h"
 #include "../src/amcl-extensions/ecp2_BN254.h"
 
+#include <ecdaa/credential_BN254.h>
 #include <ecdaa/member_keypair_BN254.h>
 #include <ecdaa/credential_BN254.h>
 #include <ecdaa/issuer_keypair_BN254.h>
@@ -29,12 +31,13 @@
 #include <ecdaa/group_public_key_BN254.h>
 #include <ecdaa/revocation_list_BN254.h>
 
+#include <sys/time.h>
 #include <string.h>
 
-#include <sys/time.h>
+static void schnorr_sign_benchmark();
 
-static void sign_then_verify_good();
-static void sign_then_verify_on_rev_list();
+static void sign_benchmark();
+static void verify_benchmark();
 
 typedef struct sign_and_verify_fixture {
     csprng rng;
@@ -53,8 +56,10 @@ static void teardown(sign_and_verify_fixture* fixture);
 
 int main()
 {
-    sign_then_verify_good();
-    sign_then_verify_on_rev_list();
+    schnorr_sign_benchmark();
+
+    sign_benchmark();
+    verify_benchmark();
 }
 
 static void setup(sign_and_verify_fixture* fixture)
@@ -88,41 +93,104 @@ static void teardown(sign_and_verify_fixture *fixture)
     destroy_test_rng(&fixture->rng);
 }
 
-static void sign_then_verify_good()
+void schnorr_sign_benchmark()
 {
-    printf("Starting sign-and-verify::sign_then_verify_good...\n");
+    unsigned rounds = 2500;
 
-    sign_and_verify_fixture fixture;
-    setup(&fixture);
+    printf("Starting schnorr::schnorr_sign_benchmark (%d iterations)...\n", rounds);
 
-    struct ecdaa_signature_BN254 sig;
-    TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
+    ECP_BN254 public;
+    BIG_256_56 private;
 
-    TEST_ASSERT(0 == ecdaa_signature_BN254_verify(&sig, &fixture.ipk.gpk, &fixture.sk_rev_list, fixture.msg, fixture.msg_len));
+    csprng rng;
+    create_test_rng(&rng);
 
-    teardown(&fixture);
+    schnorr_keygen(&public, &private, &rng);
 
-    printf("\tsuccess\n");
+    uint8_t *msg = (uint8_t*) "Test message";
+    uint32_t msg_len = strlen((char*)msg);
+
+    BIG_256_56 c, s;
+
+    struct timeval tv1;
+    gettimeofday(&tv1, NULL);
+
+    ECP_BN254 basepoint;
+    ecp_BN254_set_to_generator(&basepoint);
+    for (unsigned i = 0; i < rounds; i++) {
+        schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng);
+    }
+
+    struct timeval tv2;
+    gettimeofday(&tv2, NULL);
+    unsigned long long elapsed = (tv2.tv_usec + tv2.tv_sec * 1000000) -
+        (tv1.tv_usec + tv1.tv_sec * 1000000);
+
+    printf("%llu usec (%6llu signs/s)\n",
+            elapsed,
+            rounds * 1000000ULL / elapsed);
+
+    destroy_test_rng(&rng);
 }
 
-static void sign_then_verify_on_rev_list()
+static void sign_benchmark()
 {
-    printf("Starting sign-and-verify::sign_then_verify_on_rev_list...\n");
+    unsigned rounds = 250;
+
+    printf("Starting sign-and-verify::sign_benchmark (%d iterations)...\n", rounds);
 
     sign_and_verify_fixture fixture;
     setup(&fixture);
 
-    // Put self on a secret-key revocation list, to be used in verify.
-    struct ecdaa_member_secret_key_BN254 sk_rev_list_bad_raw[1];
-    BIG_256_56_copy(sk_rev_list_bad_raw[0].sk, fixture.sk.sk);
-    struct ecdaa_revocation_list_BN254 sk_rev_list_bad = {.length=1, .list=sk_rev_list_bad_raw};
-
     struct ecdaa_signature_BN254 sig;
-    TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
 
-    TEST_ASSERT(0 != ecdaa_signature_BN254_verify(&sig, &fixture.ipk.gpk, &sk_rev_list_bad, fixture.msg, fixture.msg_len));
+    struct timeval tv1;
+    gettimeofday(&tv1, NULL);
+
+    for (unsigned i = 0; i < rounds; i++) {
+        TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
+    }
+
+    struct timeval tv2;
+    gettimeofday(&tv2, NULL);
+    unsigned long long elapsed = (tv2.tv_usec + tv2.tv_sec * 1000000) -
+        (tv1.tv_usec + tv1.tv_sec * 1000000);
 
     teardown(&fixture);
 
-    printf("\tsuccess\n");
+    printf("%llu usec (%6llu signs/s)\n",
+            elapsed,
+            rounds * 1000000ULL / elapsed);
+}
+
+static void verify_benchmark()
+{
+    unsigned rounds = 250;
+
+    printf("Starting sign-and-verify::verify_benchmark (%d iterations)...\n", rounds);
+
+    sign_and_verify_fixture fixture;
+    setup(&fixture);
+
+    struct ecdaa_signature_BN254 sig;
+
+    TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
+
+    struct timeval tv1;
+    gettimeofday(&tv1, NULL);
+
+    for (unsigned i = 0; i < rounds; i++) {
+        TEST_ASSERT(0 == ecdaa_signature_BN254_verify(&sig, &fixture.ipk.gpk, &fixture.sk_rev_list, fixture.msg, fixture.msg_len));
+    }
+
+    struct timeval tv2;
+    gettimeofday(&tv2, NULL);
+    unsigned long long elapsed = (tv2.tv_usec + tv2.tv_sec * 1000000) -
+        (tv1.tv_usec + tv1.tv_sec * 1000000);
+
+    teardown(&fixture);
+
+    printf("%llu usec (%6llu verifications/s)\n",
+            elapsed,
+            rounds * 1000000ULL / elapsed);
 }

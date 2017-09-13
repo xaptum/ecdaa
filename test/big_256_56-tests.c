@@ -56,8 +56,8 @@ void hash_not_zero()
 {
     printf("Starting mpi_utils::hash_not_zero...\n");
 
-    BIG_256_56 mpi;
-    uint8_t msg[1024];
+    BIG_256_56 mpi = {0};
+    uint8_t msg[1024] = {0};
     uint32_t msg_len = 1024;
     big_256_56_from_hash(&mpi, msg, msg_len);
 
@@ -72,10 +72,10 @@ void hash_two_not_zero()
 {
     printf("Starting mpi_utils::hash_two_not_zero...\n");
 
-    BIG_256_56 mpi;
-    uint8_t msg1[1024];
+    BIG_256_56 mpi = {0};
+    uint8_t msg1[1024] = {0};
     uint32_t msg1_len = 1024;
-    uint8_t msg2[1024];
+    uint8_t msg2[1024] = {0};
     uint32_t msg2_len = 1024;
     big_256_56_from_two_message_hash(&mpi, msg1, msg1_len, msg2, msg2_len);
 
@@ -320,7 +320,7 @@ void random_num_mod_order_is_valid()
     create_test_rng(&rng);
 
     BIG_256_56 num;
-    for (int i = 0; i < 50000; ++i) {
+    for (int i = 0; i < 500; ++i) {
         big_256_56_random_mod_order(&num, &rng);
 
         TEST_ASSERT(BIG_256_56_iszilch(num) == 0);
