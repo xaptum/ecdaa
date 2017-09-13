@@ -16,7 +16,7 @@
  *
  *****************************************************************************/
 
-#include "xaptum-test-utils.h"
+#include "ecdaa-test-utils.h"
 
 #include <ecdaa/issuer_keypair_BN254.h>
 

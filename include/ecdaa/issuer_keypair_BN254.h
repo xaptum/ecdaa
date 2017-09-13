@@ -16,8 +16,8 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_ISSUER_KEYPAIR_BN254_H
-#define XAPTUM_ECDAA_ISSUER_KEYPAIR_BN254_H
+#ifndef ECDAA_ISSUER_KEYPAIR_BN254_H
+#define ECDAA_ISSUER_KEYPAIR_BN254_H
 #pragma once
 
 #ifdef __cplusplus

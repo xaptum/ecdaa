@@ -16,8 +16,8 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_SCHNORR_H
-#define XAPTUM_ECDAA_SCHNORR_H
+#ifndef ECDAA_SCHNORR_H
+#define ECDAA_SCHNORR_H
 #pragma once
 
 #ifdef __cplusplus

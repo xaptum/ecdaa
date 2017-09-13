@@ -16,8 +16,8 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_EXPLICIT_BZERO_H
-#define XAPTUM_ECDAA_EXPLICIT_BZERO_H
+#ifndef ECDAA_EXPLICIT_BZERO_H
+#define ECDAA_EXPLICIT_BZERO_H
 #pragma once
 
 #ifdef __cplusplus

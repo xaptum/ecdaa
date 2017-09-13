@@ -16,8 +16,8 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_GROUP_PUBLIC_KEY_BN254_H
-#define XAPTUM_ECDAA_GROUP_PUBLIC_KEY_BN254_H
+#ifndef ECDAA_GROUP_PUBLIC_KEY_BN254_H
+#define ECDAA_GROUP_PUBLIC_KEY_BN254_H
 #pragma once
 
 #ifdef __cplusplus

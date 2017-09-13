@@ -16,8 +16,8 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_XAPTUM_ECDAA_H
-#define XAPTUM_ECDAA_XAPTUM_ECDAA_H
+#ifndef ECDAA_ECDAA_H
+#define ECDAA_ECDAA_H
 #pragma once
 
 #include "ecdaa/credential_BN254.h"

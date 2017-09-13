@@ -1,6 +1,6 @@
-# xaptum-ecdaa
+# ecdaa
 
-Xaptum, Inc.'s implementation of elliptic-curve-based Direct Anonymous Attestation signatures.
+A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures.
 
 # Project Status
 

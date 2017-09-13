@@ -16,8 +16,8 @@
  *
  *****************************************************************************/
 
-#ifndef XAPTUM_ECDAA_SIGNATURE_BN254_H
-#define XAPTUM_ECDAA_SIGNATURE_BN254_H
+#ifndef ECDAA_SIGNATURE_BN254_H
+#define ECDAA_SIGNATURE_BN254_H
 #pragma once
 
 #ifdef __cplusplus
