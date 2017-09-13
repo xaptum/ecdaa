@@ -1,27 +1,52 @@
 language: c
+
 compiler:
   - gcc
+
 before_script:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y valgrind
+
   - git submodule update --init --recursive
   - mkdir build
   - cd build
+
   - mkdir debug-with-coverage
   - cd debug-with-coverage
   - cmake ../.. -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON
   - cd ..
+
   - mkdir release
   - cd release
   - cmake ../.. -DCMAKE_BUILD_TYPE=Release
   - cd ..
+
+  - mkdir memcheck
+  - cd memcheck
+  - cmake ../.. -DCMAKE_BUILD_TYPE=RelWithDebInfo
+  - cd ..
+
 script:
   - cd release
   - cmake --build .
   - ctest -V
   - cd ..
+
   - cd debug-with-coverage
   - cmake --build .
   - ctest -V
   - cd ..
+
+  - cd memcheck
+  - cmake --build .
+  - ctest -V -E benchmarks -T memcheck
+  - cd ..
+
 after_success:
   - cd debug-with-coverage
   - ../../.travis/upload-gcov-results.sh `pwd`
+  - cd ..
+
+  - cd memcheck
+  - ../../.travis/show-memcheck-results.sh `pwd`
+  - cd ..
