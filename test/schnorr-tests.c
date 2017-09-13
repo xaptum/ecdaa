@@ -335,17 +335,19 @@ void schnorr_issuer_sign_sane()
 {
     printf("Starting schnorr::schnorr_issuer_sign_sane...\n");
 
+    csprng rng;
+    create_test_rng(&rng);
+
     BIG_256_56 issuer_private_x;
+    big_256_56_random_mod_order(&issuer_private_x, &rng);
     BIG_256_56 issuer_private_y;
+    big_256_56_random_mod_order(&issuer_private_y, &rng);
     ECP2_BN254 issuer_public_X;
     ECP2_BN254 issuer_public_Y;
     ECP2_BN254_mul(&issuer_public_X, issuer_private_x);
     ECP2_BN254_mul(&issuer_public_Y, issuer_private_y);
 
     BIG_256_56 c, sx, sy;
-
-    csprng rng;
-    create_test_rng(&rng);
 
     TEST_ASSERT(0 == issuer_schnorr_sign(&c, &sx, &sy, &issuer_public_X, &issuer_public_Y, issuer_private_x, issuer_private_y, &rng));
 

@@ -19,7 +19,7 @@ find_package(AMCL REQUIRED QUIET)
 
 project(xaptum-ecdaa
         LANGUAGES C
-        VERSION "0.1.0")
+        VERSION "0.1.1")
 
 add_compile_options(-Werror -Wall -Wextra -std=c99)
 
