@@ -27,6 +27,7 @@ set(TEST_SRCS
         ecp_BN254-tests.c
         ecp2_BN254-tests.c
         schnorr-tests.c
+        benchmarks.c
         )
 
 foreach(case_file ${TEST_SRCS})

@@ -33,6 +33,32 @@ A C implementation of elliptic-curve-based Direct Anonymous Attestation signatur
 
 `ctest -V`
 
+## Testing and Analysis
+
+The unit-tests are contained in the `test` directory.
+Test code coverage is measured using `gcov`, and monitored via `codecov`.
+
+### Valgrind
+
+The Valgrind `memcheck` tool can be run on a `CMAKE_BUILD_TYPE=RelWithDebInfo` build,
+by using the following command
+(benchmarks are excluded because they take too long under the Valgrind instrumentation):
+
+`ctest -E benchmarks -T memcheck`
+
+The following options are passed to the `memcheck` executable:
+- `--track-origins=yes` Track the origin of uninitialized values (small Valgrind performance hit)
+- `--partial-loads-ok=no` Loads from partially invalid addresses are treated the same as loads from completely invalid addresses
+- `--leak-check=full` Search for memory leaks after program completion, and give a full report for each individually.
+  - As we're striving for "malloc-free" code, we expect to have zero memory leaks
+- `-v` Verbose `memcheck` output
+- `--error-exitcode=5` A memory error causes a return code of 5, so memory errors will fail the tests.
+
+In general, the `memcheck` checks are expected to alert us of any accidental memory access issues
+(using un-initialized values, accessing beyond the stack pointer, bad pointers to `memcpy`-like functions).
+By running randomized tests under `memcheck`, we hope to also discover places where
+a malicious user could access unauthorized memory, too.
+
 # Usage
 
 ## Random number generator

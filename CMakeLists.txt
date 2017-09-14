@@ -25,6 +25,10 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -std=c99")
 
 SET(CMAKE_C_FLAGS_DEBUGWITHCOVERAGE "${CMAKE_C_FLAGS_DEBUGWITHCOVERAGE} -O0 -fprofile-arcs -ftest-coverage")
 
+find_program(MEMORYCHECK_COMMAND NAMES valgrind)
+set(MEMORYCHECK_COMMAND_OPTIONS
+        "--error-exitcode=5 --leak-check=full -v --track-origins=yes --partial-loads-ok=no")
+
 set(ECDAA_SRC_DIR src)
 set(ECDAA_INTERNAL_SRC_DIR ${ECDAA_SRC_DIR}/internal/)
 set(ECDAA_AMCL_EXTENSIONS_SRC_DIR ${ECDAA_SRC_DIR}/amcl-extensions/)
