@@ -6,6 +6,8 @@ A C implementation of elliptic-curve-based Direct Anonymous Attestation signatur
 
 [![Build Status](https://travis-ci.org/xaptum/ecdaa.svg?branch=master)](https://travis-ci.org/xaptum/ecdaa)
 
+[![codecov](https://codecov.io/gh/xaptum/ecdaa/branch/master/graph/badge.svg)](https://codecov.io/gh/xaptum/ecdaa)
+
 # Requirements
 
 - The CMake build system is used for building.

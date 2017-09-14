@@ -3,9 +3,25 @@ compiler:
   - gcc
 before_script:
   - git submodule update --init --recursive
-  - mkdir -p build
+  - mkdir build
   - cd build
-  - cmake .. -DCMAKE_BUILD_TYPE=Release
+  - mkdir debug-with-coverage
+  - cd debug-with-coverage
+  - cmake ../.. -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON
+  - cd ..
+  - mkdir release
+  - cd release
+  - cmake ../.. -DCMAKE_BUILD_TYPE=Release
+  - cd ..
 script:
+  - cd release
   - cmake --build .
   - ctest -V
+  - cd ..
+  - cd debug-with-coverage
+  - cmake --build .
+  - ctest -V
+  - cd ..
+after_success:
+  - cd debug-with-coverage
+  - ../../.travis/upload-gcov-results.sh `pwd`

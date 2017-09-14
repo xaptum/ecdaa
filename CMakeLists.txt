@@ -21,7 +21,9 @@ project(ecdaa
         LANGUAGES C
         VERSION "0.1.1")
 
-add_compile_options(-Werror -Wall -Wextra -std=c99)
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -std=c99")
+
+SET(CMAKE_C_FLAGS_DEBUGWITHCOVERAGE "${CMAKE_C_FLAGS_DEBUGWITHCOVERAGE} -O0 -fprofile-arcs -ftest-coverage")
 
 set(ECDAA_SRC_DIR src)
 set(ECDAA_INTERNAL_SRC_DIR ${ECDAA_SRC_DIR}/internal/)
