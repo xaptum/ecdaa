@@ -5,33 +5,31 @@ A C implementation of elliptic-curve-based Direct Anonymous Attestation signatur
 # Project Status
 
 [![Build Status](https://travis-ci.org/xaptum/ecdaa.svg?branch=master)](https://travis-ci.org/xaptum/ecdaa)
-
 [![codecov](https://codecov.io/gh/xaptum/ecdaa/branch/master/graph/badge.svg)](https://codecov.io/gh/xaptum/ecdaa)
 
 # Requirements
 
 - The CMake build system is used for building.
+- gcc
 - For building the AMCL dependency:
   - python3
-  - gcc
 
 # Building
 
-`git submodule update --init --recursive`
-
-`mkdir -p build`
-
-`cd build`
-
-`cmake .. -DCMAKE_BUILD_TYPE=Debug`
-
-`cmake --build . -- -j4`
+```bash
+git submodule update --init --recursive
+mkdir -p build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+cmake --build . -- -j4
+```
 
 # Running the tests
 
-`cd build`
-
-`ctest -V`
+```bash
+cd build
+ctest -V
+```
 
 ## Testing and Analysis
 
