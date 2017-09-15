@@ -14,53 +14,100 @@
 
 language: c
 
-compiler:
-  - gcc
+compiler: gcc
 
-before_script:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y valgrind
+jobs:
+  include:
 
-  - git submodule update --init --recursive
-  - mkdir build
-  - cd build
+  # Release build, gcc
+  - env: TYPE=RELEASE
+    before_script:
+      - cmake . -DCMAKE_BUILD_TYPE=Release
+    script:
+      - cmake --build . -- -j2
+      - ctest -VV
 
-  - mkdir debug-with-coverage
-  - cd debug-with-coverage
-  - cmake ../.. -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON
-  - cd ..
+  # Debug build, to get code coverage with gcov
+  - env: TYPE=DEBUG_WITH_COVERAGE
+    before_script:
+      - cmake . -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON
+    script:
+      - cmake --build . -- -j2
+      - ctest -VV
+    after_success:
+      - .travis/upload-gcov-results.sh `pwd`
 
-  - mkdir release
-  - cd release
-  - cmake ../.. -DCMAKE_BUILD_TYPE=Release
-  - cd ..
+  # Release build, clang
+  - env: TYPE=RELEASE-WITH-CLANG
+    compiler: clang
+    before_script:
+      - cmake . -DCMAKE_BUILD_TYPE=Release
+    script:
+      - cmake --build . -- -j2
+      - ctest -VV
 
-  - mkdir memcheck
-  - cd memcheck
-  - cmake ../.. -DCMAKE_BUILD_TYPE=RelWithDebInfo
-  - cd ..
+  # cppcheck
+  - env: TYPE=CPPCHECK
+    addons:
+      apt:
+        packages:
+          - cppcheck
+    script:
+      - .travis/run-cppcheck.sh
 
-script:
-  - cd release
-  - cmake --build .
-  - ctest -V
-  - cd ..
+  # Memcheck
+  - env: TYPE=MEMCHECK
+    addons:
+      apt:
+        packages:
+          - valgrind
+    before_script:
+      - cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    script:
+      - cmake --build . -- -j2
+      - ctest -VV -E benchmarks -T memcheck
+    after_failure:
+      - .travis/show-memcheck-results.sh `pwd`
+  
+  # Scan-build
+  - env: TYPE=SCAN_BUILD
+    script:
+      - .travis/run-scanbuild.sh `pwd` `pwd`
 
-  - cd debug-with-coverage
-  - cmake --build .
-  - ctest -V
-  - cd ..
+  # SGCheck
+  - env: TYPE=SGCHECK
+    before_script:
+      - .travis/install-valgrind.sh `pwd`     # Use a bleeding-edge version, so sg-check works on Ubuntu14
+      - cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    script:
+      - cmake --build . -- -j2
+      - .travis/run-sgcheck.sh `pwd` `pwd`/valgrind/bin/valgrind
 
-  - cd memcheck
-  - cmake --build .
-  - ctest -V -E benchmarks -T memcheck
-  - cd ..
+  # Sanitizers
+  - env: TYPE=SANITIZE
+    compiler: clang
+    before_script:
+      - cmake . -DCMAKE_BUILD_TYPE=RelWithSanitize
+    script:
+      - cmake --build . -- -j2
+      - ctest -VV -E benchmarks
 
-after_success:
-  - cd debug-with-coverage
-  - ../../.travis/upload-gcov-results.sh `pwd`
-  - cd ..
+  # Coverity scan
+  - if: branch = coverity_scan
+    env: TYPE=COVERITY_SCAN
+    env:
+      - secure: "jZ3ilXiiqM2qdkPXkOow0RqHz9eA4zZwZbhDKjBfL2wFEiV8u9u5GSzXjLZ6++oh5UzIyp/UdfLyN7vp1+mm7XSYx9X3TeLCmhmP/PZkys/YzrBgTeIxgLubekI4kOa9YdgPQ+d35Nm0AXngw2WrSaefeeKeaRTn/LFAfI5SYlhBXnnZmsRORuCCWDoSWDwvjIUGzcEqpq0uJ+C5Dps8gSExBUFyEkQ5tyaZvCxfujfwB6yP/wDgJzeQL+gSe47/RFinYqJeSvWBViwrGk78sCAZtbHaPy9HbqLUKSslb6WlPMecVbV+kqcN7i4b/bbr68WGDN2fEMzdlBIYJRkhtYFB3nR3T7mh50HQ8l9ZZmWkKekoU9YDcCuRb4HeA20bNF5U/bVFZSnfQPDOXAKnT+jlzAgH3XNEo2YeaCPNLnHZexrGKu9VedzvmCKFjTAW3oj096TLMgon3yg2Wax3XXV7UE0SiRkS9h0P6K1vW+CVKDll6KN5uaRGe4mOOo8Mlb+6l+iagrYpksk4fi4KhhuRkGLOeixNxVWjupaML7C/ShrOzj5XxMkVVgI8Jh7ucY7HguTQW2s6VurZ58jzaqmFBZwZgQ+m1uT7cKnnBBWsL84NVJ1jedPcf034kkxoGABtHWzRGP5gKf3RJTsS7nAwkNXBctKkoNJQ7bQVitM="
+    addons:
+      coverity_scan:
+        project:
+          name: "xaptum/ecdaa"
+          description: "A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures"
+        notification_email: ecdaa-coverity-reports@xaptum.com
+        build_command_prepend: "cmake . -DCMAKE_BUILD_TYPE=Release"
+        build_command:   "cmake --build ."
+        branch_pattern: coverity_scan
 
-  - cd memcheck
-  - ../../.travis/show-memcheck-results.sh `pwd`
-  - cd ..
+    before_install:
+      - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+    script:
+      - echo "Done"
