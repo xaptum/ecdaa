@@ -84,8 +84,8 @@ Test code coverage is measured using `gcov`, and monitored via `codecov`.
 
 ### Valgrind
 
-The Valgrind tools `memcheck` and `exp-sgcheck` are used for heap and stack/global memory checking, respectively.
-Every build on `travis-ci` runs both tools.
+The Valgrind tool `memcheck` is used for heap memory checking.
+Every build on `travis-ci` runs this test.
 
 To run a `memcheck` test, do the following:
 
@@ -96,23 +96,6 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo
 # (benchmarks are excluded because they take too long under the Valgrind instrumentation)
 ctest -VV -E benchmark -T memcheck
 ```
-
-To run an `sgcheck` test, do the following:
-```bash
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo
-# (benchmarks are excluded because they take too long under the Valgrind instrumentation)
-valgrind --tool=exp-sgcheck ctest -VV -E benchmark
-```
-
-TODO: Currently, the version of `valgrind` available on the `travis-ci` build servers
-has a bug that prevents using `sgcheck` for this code.
-For this reason, a bleeding-edge version of `valgrind` gets installed on the `travis`
-servers for each build.
-It is possible that the version of `sgcheck` used there is not properly
-finding the issues it should be.
-Once the fixes to `sgcheck` are mainlined, this needs to be remedied.
 
 ### Scan-build
 

@@ -74,15 +74,6 @@ jobs:
     script:
       - .travis/run-scanbuild.sh `pwd` `pwd`
 
-  # SGCheck
-  - env: TYPE=SGCHECK
-    before_script:
-      - .travis/install-valgrind.sh `pwd`     # Use a bleeding-edge version, so sg-check works on Ubuntu14
-      - cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo
-    script:
-      - cmake --build . -- -j2
-      - .travis/run-sgcheck.sh `pwd` `pwd`/valgrind/bin/valgrind
-
   # Sanitizers
   - env: TYPE=SANITIZE
     compiler: clang
