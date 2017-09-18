@@ -6,6 +6,7 @@ A C implementation of elliptic-curve-based Direct Anonymous Attestation signatur
 
 [![Build Status](https://travis-ci.org/xaptum/ecdaa.svg?branch=master)](https://travis-ci.org/xaptum/ecdaa)
 [![codecov](https://codecov.io/gh/xaptum/ecdaa/branch/master/graph/badge.svg)](https://codecov.io/gh/xaptum/ecdaa)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/13775/badge.svg)](https://scan.coverity.com/projects/xaptum-ecdaa)
 
 # Requirements
 
@@ -30,32 +31,6 @@ cmake --build . -- -j4
 cd build
 ctest -V
 ```
-
-## Testing and Analysis
-
-The unit-tests are contained in the `test` directory.
-Test code coverage is measured using `gcov`, and monitored via `codecov`.
-
-### Valgrind
-
-The Valgrind `memcheck` tool can be run on a `CMAKE_BUILD_TYPE=RelWithDebInfo` build,
-by using the following command
-(benchmarks are excluded because they take too long under the Valgrind instrumentation):
-
-`ctest -E benchmarks -T memcheck`
-
-The following options are passed to the `memcheck` executable:
-- `--track-origins=yes` Track the origin of uninitialized values (small Valgrind performance hit)
-- `--partial-loads-ok=no` Loads from partially invalid addresses are treated the same as loads from completely invalid addresses
-- `--leak-check=full` Search for memory leaks after program completion, and give a full report for each individually.
-  - As we're striving for "malloc-free" code, we expect to have zero memory leaks
-- `-v` Verbose `memcheck` output
-- `--error-exitcode=5` A memory error causes a return code of 5, so memory errors will fail the tests.
-
-In general, the `memcheck` checks are expected to alert us of any accidental memory access issues
-(using un-initialized values, accessing beyond the stack pointer, bad pointers to `memcpy`-like functions).
-By running randomized tests under `memcheck`, we hope to also discover places where
-a malicious user could access unauthorized memory, too.
 
 # Usage
 
@@ -101,6 +76,82 @@ Again, the format of the serialized length macro/function is
 ## Join Process
 
 ## Signing and Verifying
+
+## Testing and Analysis
+
+The unit-tests are contained in the `test` directory.
+Test code coverage is measured using `gcov`, and monitored via `codecov`.
+
+### Valgrind
+
+The Valgrind tool `memcheck` is used for heap memory checking.
+Every build on `travis-ci` runs this test.
+
+To run a `memcheck` test, do the following:
+
+```bash
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo
+# (benchmarks are excluded because they take too long under the Valgrind instrumentation)
+ctest -VV -E benchmark -T memcheck
+```
+
+### Scan-build
+
+Clang's `scan-build` tool is a general static analyzer, run every build on `travis-ci`.
+
+The `scan-build` tool can be run locally by doing the following:
+
+```bash
+mkdir build
+cd build
+scan-build cmake .. -DCMAKE_BUILD_TYPE=Debug
+scan-build --status-bugs cmake --build . -- -j2 #status-bugs means a bug causes a non-zero return code
+```
+
+Scan-build has a large number of options for specifying the types of bugs to look for,
+so it would be a good idea to study those and tune our usage of this tool.
+
+### cppcheck
+
+The `cppcheck` static analyzer is also available, and is run every build on `travis-ci`.
+To run it do the following:
+
+```bash
+cppcheck -v --std=c99 --error-exitcode=6 include/ src/ test/
+```
+
+This tool is generally considered to have a lower false-positive rate than
+many other static analyzers, though with that comes a potential loss of strictness.
+
+TODO: Once we have tests that actually use all the defined functions, we should
+use `enable=all` in `cppcheck`.
+
+### Address and Undefined Behavior Sanitizers
+
+Google produced "sanitizer" tools (code instrumenters that check for errors
+while running, and thus "dynamically") for checking memory use and
+code that may produce undefined behavior.
+These sanitizers are now part of both the Clang and GCC compilers.
+The address sanitizer and undefined behavior sanitizer
+(including the unsigned-int-overflow sanitizer) are run for every build on `travis-ci`.
+
+To run tests using these sanitizers, do the following:
+
+```bash
+mkdir build
+cmake . -DCMAKE_BUILD_TYPE=RelWithSanitize
+cmake --build . -- -j2
+# (benchmarks are excluded because they take too long under the sanitizer instrumentation)
+ctest -VV -E benchmark
+```
+
+### Coverity
+
+Coverity static analysis is run after any push to the `coverity_scan` branch.
+Coverity is a static analyzer provided by Synopsys, and the reports
+for this project can be found by clicking the Coverity link at the top of this README.
 
 # License
 Copyright 2017 Xaptum, Inc.
