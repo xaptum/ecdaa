@@ -18,9 +18,24 @@
 
 #include "explicit_bzero.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#elif defined(HAVE_MEMSET_S)
+#include <string.h>
+#include <stdlib.h>
+#endif
+
 void explicit_bzero(void *const pnt, const size_t len)
 {
-    // TODO: Figure out how well this works, and portable solutions.
+#ifdef _WIN32
+    SecureZeroMemory(pnt, len);
+#elif defined(HAVE_MEMSET_S)
+    if (len > 0U && memset_s(pnt, (rsize_t) len, 0, (rsize_t) len) != 0) {
+        abort();
+    }
+#elif defined(HAVE_EXPLICIT_BZERO)
+    explicit_bzero(pnt, len);
+#else
     volatile unsigned char *volatile pnt_ =
         (volatile unsigned char *volatile) pnt;
 
@@ -28,4 +43,5 @@ void explicit_bzero(void *const pnt, const size_t len)
     while (i < len) {
         pnt_[i++] = 0U;
     }
+#endif
 }
