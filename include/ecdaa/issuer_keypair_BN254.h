@@ -51,7 +51,7 @@ struct ecdaa_issuer_secret_key_BN254 {
 };
 
 #define ECDAA_ISSUER_SECRET_KEY_BN254_LENGTH (2*MODBYTES_256_56)
-size_t ecdaa_issuer_secret_key_BN254_length();
+size_t ecdaa_issuer_secret_key_BN254_length(void);
 
 /*
  * Generate a fresh `ecdaa_issuer_public_key_BN254`, `ecdaa_issuer_secret_key_BN254` keypair.

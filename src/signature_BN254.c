@@ -32,7 +32,7 @@
 #include <amcl/pair_BN254.h>
 #include <amcl/fp12_BN254.h>
 
-size_t ecdaa_signature_BN254_length()
+size_t ecdaa_signature_BN254_length(void)
 {
     return ECDAA_SIGNATURE_BN254_LENGTH;
 }

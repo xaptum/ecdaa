@@ -30,7 +30,7 @@ extern "C" {
 #include <stdint.h>
 
 #define ECP_BN254_LENGTH (2*MODBYTES_256_56 + 1)
-size_t ecp_BN254_length();
+size_t ecp_BN254_length(void);
 
 /*
  * Initialize ECP_BN254 point to G1 generator.

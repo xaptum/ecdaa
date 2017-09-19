@@ -45,7 +45,7 @@ struct ecdaa_signature_BN254 {
 };
 
 #define ECDAA_SIGNATURE_BN254_LENGTH (2*MODBYTES_256_56 + 4*(2*MODBYTES_256_56 + 1))
-size_t ecdaa_signature_BN254_length();
+size_t ecdaa_signature_BN254_length(void);
 /*
  * Create an ECDAA signature.
  *

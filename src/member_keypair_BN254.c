@@ -23,12 +23,12 @@
 
 #include <assert.h>
 
-size_t ecdaa_member_public_key_BN254_length()
+size_t ecdaa_member_public_key_BN254_length(void)
 {
    return ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH;
 }
 
-size_t ecdaa_member_secret_key_BN254_length()
+size_t ecdaa_member_secret_key_BN254_length(void)
 {
     return ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH;
 }

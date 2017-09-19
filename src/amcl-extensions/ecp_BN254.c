@@ -18,7 +18,7 @@
 
 #include "./ecp_BN254.h"
 
-size_t ecp_BN254_length()
+size_t ecp_BN254_length(void)
 {
     return ECP_BN254_LENGTH;
 }
