@@ -16,12 +16,8 @@
  *
  *****************************************************************************/
 
-#include <amcl/randapi.h>
-
 #include <stdlib.h>
 #include <time.h>
-
-#define SEED_LEN 256
 
 #define TEST_ASSERT(cond) \
     do \
@@ -42,8 +38,3 @@
         } \
     } while(0);
 
-void get_test_seed(char *out, unsigned out_length);
-
-void create_test_rng(csprng *rng);
-
-void destroy_test_rng(csprng *rng);

@@ -21,6 +21,7 @@
 #include <ecdaa/credential_BN254.h>
 #include <ecdaa/member_keypair_BN254.h>
 #include <ecdaa/issuer_keypair_BN254.h>
+#include <ecdaa/prng.h>
 
 #include "../src/amcl-extensions/big_256_56.h"
 #include "../src/amcl-extensions/ecp_BN254.h"
@@ -32,7 +33,7 @@
 #include <string.h>
 
 typedef struct credential_test_fixture {
-    csprng rng;
+    struct ecdaa_prng prng;
 
     struct ecdaa_member_public_key_BN254 pk;
     struct ecdaa_member_secret_key_BN254 sk;
@@ -42,7 +43,7 @@ typedef struct credential_test_fixture {
 } credential_test_fixture;
 
 static void setup(credential_test_fixture* fixture);
-static void teardown(credential_test_fixture *fixture);
+static void teardown(credential_test_fixture* fixture);
 
 static void cred_generate_then_validate();
 
@@ -53,24 +54,24 @@ int main()
 
 static void setup(credential_test_fixture* fixture)
 {
-    create_test_rng(&fixture->rng);
+    TEST_ASSERT(0 == ecdaa_prng_init(&fixture->prng));
 
-    big_256_56_random_mod_order(&fixture->isk.x, &fixture->rng);
+    big_256_56_random_mod_order(&fixture->isk.x, get_csprng(&fixture->prng));
     ecp2_BN254_set_to_generator(&fixture->ipk.gpk.X);
     ECP2_BN254_mul(&fixture->ipk.gpk.X, fixture->isk.x);
 
-    big_256_56_random_mod_order(&fixture->isk.y, &fixture->rng);
+    big_256_56_random_mod_order(&fixture->isk.y, get_csprng(&fixture->prng));
     ecp2_BN254_set_to_generator(&fixture->ipk.gpk.Y);
     ECP2_BN254_mul(&fixture->ipk.gpk.Y, fixture->isk.y);
 
     ecp_BN254_set_to_generator(&fixture->pk.Q);
-    big_256_56_random_mod_order(&fixture->sk.sk, &fixture->rng);
+    big_256_56_random_mod_order(&fixture->sk.sk, get_csprng(&fixture->prng));
     ECP_BN254_mul(&fixture->pk.Q, fixture->sk.sk);
 }
 
-static void teardown(credential_test_fixture *fixture)
+static void teardown(credential_test_fixture* fixture)
 {
-    destroy_test_rng(&fixture->rng);
+    ecdaa_prng_free(&fixture->prng);
 }
 
 static void cred_generate_then_validate()
@@ -82,7 +83,7 @@ static void cred_generate_then_validate()
 
     struct ecdaa_credential_BN254 cred;
     struct ecdaa_credential_BN254_signature cred_sig;
-    TEST_ASSERT(0 == ecdaa_credential_BN254_generate(&cred, &cred_sig, &fixture.isk, &fixture.pk, &fixture.rng));
+    TEST_ASSERT(0 == ecdaa_credential_BN254_generate(&cred, &cred_sig, &fixture.isk, &fixture.pk, &fixture.prng));
 
     TEST_ASSERT(0 == ecdaa_credential_BN254_validate(&cred, &cred_sig, &fixture.pk, &fixture.ipk.gpk));
 

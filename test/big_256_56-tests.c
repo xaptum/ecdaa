@@ -20,6 +20,8 @@
 
 #include "../src/amcl-extensions/big_256_56.h"
 
+#include <ecdaa/prng.h>
+
 #include <amcl/ecp_BN254.h>
 
 #include <stdio.h>
@@ -316,12 +318,12 @@ void random_num_mod_order_is_valid()
     BIG_256_56 curve_order;
     BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
 
-    csprng rng;
-    create_test_rng(&rng);
+    struct ecdaa_prng prng;
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
 
     BIG_256_56 num;
     for (int i = 0; i < 500; ++i) {
-        big_256_56_random_mod_order(&num, &rng);
+        big_256_56_random_mod_order(&num, get_csprng(&prng));
 
         TEST_ASSERT(BIG_256_56_iszilch(num) == 0);
         TEST_ASSERT(BIG_256_56_isunity(num) == 0);
@@ -329,7 +331,7 @@ void random_num_mod_order_is_valid()
         TEST_ASSERT(BIG_256_56_comp(num, curve_order) == -1);
     }
 
-    destroy_test_rng(&rng);
+    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }

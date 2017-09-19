@@ -18,6 +18,8 @@
 
 #include <ecdaa/member_keypair_BN254.h>
 
+#include <ecdaa/prng.h>
+
 #include "./amcl-extensions/ecp_BN254.h"
 #include "./internal/schnorr.h"
 
@@ -37,10 +39,10 @@ int ecdaa_member_key_pair_BN254_generate(struct ecdaa_member_public_key_BN254 *p
                                          struct ecdaa_member_secret_key_BN254 *sk,
                                          uint8_t *nonce,
                                          uint32_t nonce_length,
-                                         csprng *rng)
+                                         struct ecdaa_prng *prng)
 {
     // 1) Generate Schnorr-type keypair,
-    schnorr_keygen(&pk->Q, &sk->sk, rng);
+    schnorr_keygen(&pk->Q, &sk->sk, prng);
 
     // 2) and a Schnorr-type signature on the Schnorr-type public_key itself concatenated with the nonce.
     ECP_BN254 basepoint;
@@ -52,7 +54,7 @@ int ecdaa_member_key_pair_BN254_generate(struct ecdaa_member_public_key_BN254 *p
                                 &basepoint,
                                 &pk->Q,
                                 sk->sk,
-                                rng);
+                                prng);
 
     return sign_ret;
 }

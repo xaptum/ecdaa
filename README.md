@@ -39,23 +39,18 @@ ctest -V
 Many of the functions provided by this library (particularly, those used by an Issuer or a Member)
 require a pointer to a pseudo-random number generator (type `csprng`).
 The security of these algorithms depends critically on the proper seeding of this prng.
+This means that the first use of any `ecdaa_prng` MUST be preceeded by a call to
+`ecdaa_prng_init` on the prng.
 
-Before using these functions, create and seed the `csprng`:
+The seed for the `ecdaa_prng` is generated using code adapted from Libsodium's
+`randombytes_buf`.
+A discussion on how this function works and any caveats can be found at Libsodium's webpage.
+Specifically, the procedure for using a non-standard random number generator
+(e.g. in environments where `/dev/urandom` isn't available but a hardware rng is)
+may be useful.
 
-```c
-#include <amcl/amcl.h>
-#include <amcl/randapi.h>
-csprng rng;
-char seed[SEED_LEN];
-/* Get cryptographically-secure random bytes of length SEED_LEN into seed */
-octet seed_as_octet = {.len=SEED_LEN, .max=SEED_LEN, .val=seed};
-CREATE_CSPRNG(rng, &seed_as_octet);
-```
-
-The random seed `seed` MUST be generated in a cryptographically-secure manner,
-and should be at least 128 bytes long.
-Depending on the platform, this seed can be generated, for example, via calls to
-`/dev/urandom` (or `getrandom()`), or a hardware random number generator.
+When an `ecdaa_prng` is no longer needed, `ecdaa_prng_free` should be called on it
+to securely erase its sensitive memory.
 
 ## Naming Convention in API
 

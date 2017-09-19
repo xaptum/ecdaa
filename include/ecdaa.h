@@ -24,6 +24,7 @@
 #include "ecdaa/group_public_key_BN254.h"
 #include "ecdaa/issuer_keypair_BN254.h"
 #include "ecdaa/member_keypair_BN254.h"
+#include "ecdaa/prng.h"
 #include "ecdaa/revocation_list_BN254.h"
 #include "ecdaa/signature_BN254.h"
 

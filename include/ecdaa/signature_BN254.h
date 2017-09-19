@@ -31,6 +31,7 @@ struct ecdaa_credential_BN254;
 struct ecdaa_member_secret_key_BN254;
 struct ecdaa_revocation_list_BN254;
 struct ecdaa_group_public_key_BN254;
+struct ecdaa_prng;
 
 /*
  * ECDAA signature.
@@ -58,7 +59,7 @@ int ecdaa_signature_BN254_sign(struct ecdaa_signature_BN254 *signature_out,
                                uint32_t message_len,
                                struct ecdaa_member_secret_key_BN254 *sk,
                                struct ecdaa_credential_BN254 *cred,
-                               csprng *rng);
+                               struct ecdaa_prng *prng);
 
 /*
  * Verify an ECDAA signature.

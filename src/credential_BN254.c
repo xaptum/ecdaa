@@ -28,6 +28,7 @@
 #include <ecdaa/member_keypair_BN254.h>
 #include <ecdaa/issuer_keypair_BN254.h>
 #include <ecdaa/group_public_key_BN254.h>
+#include <ecdaa/prng.h>
 
 size_t ecdaa_credential_BN254_length(void)
 {
@@ -43,7 +44,7 @@ int ecdaa_credential_BN254_generate(struct ecdaa_credential_BN254 *cred,
                                     struct ecdaa_credential_BN254_signature *cred_sig_out,
                                     struct ecdaa_issuer_secret_key_BN254 *isk,
                                     struct ecdaa_member_public_key_BN254 *member_pk,
-                                    csprng *rng)
+                                    struct ecdaa_prng *prng)
 {
     int ret = 0;
 
@@ -52,7 +53,7 @@ int ecdaa_credential_BN254_generate(struct ecdaa_credential_BN254 *cred,
 
     // 1) Choose random l <- Z_p
     BIG_256_56 l;
-    big_256_56_random_mod_order(&l, rng);
+    big_256_56_random_mod_order(&l, get_csprng(prng));
 
     // 2) Multiply generator by l and save to cred->A (A = l*P)
     ecp_BN254_set_to_generator(&cred->A);
@@ -97,7 +98,7 @@ int ecdaa_credential_BN254_generate(struct ecdaa_credential_BN254 *cred,
                                           &cred->D,
                                           isk->y,
                                           l,
-                                          rng);
+                                          prng);
     if (0 != schnorr_ret)
         ret = -1;
 

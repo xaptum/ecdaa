@@ -28,6 +28,7 @@
 #include <ecdaa/signature_BN254.h>
 #include <ecdaa/group_public_key_BN254.h>
 #include <ecdaa/revocation_list_BN254.h>
+#include <ecdaa/prng.h>
 
 #include <string.h>
 
@@ -37,7 +38,7 @@ static void sign_then_verify_good();
 static void sign_then_verify_on_rev_list();
 
 typedef struct sign_and_verify_fixture {
-    csprng rng;
+    struct ecdaa_prng prng;
     uint8_t *msg;
     uint32_t msg_len;
     struct ecdaa_revocation_list_BN254 sk_rev_list;
@@ -49,7 +50,7 @@ typedef struct sign_and_verify_fixture {
 } sign_and_verify_fixture;
 
 static void setup(sign_and_verify_fixture* fixture);
-static void teardown(sign_and_verify_fixture* fixture);
+static void teardown(sign_and_verify_fixture *fixture);
 
 int main()
 {
@@ -59,22 +60,22 @@ int main()
 
 static void setup(sign_and_verify_fixture* fixture)
 {
-    create_test_rng(&fixture->rng);
+    TEST_ASSERT(0 == ecdaa_prng_init(&fixture->prng));
 
-    big_256_56_random_mod_order(&fixture->isk.x, &fixture->rng);
+    big_256_56_random_mod_order(&fixture->isk.x, get_csprng(&fixture->prng));
     ecp2_BN254_set_to_generator(&fixture->ipk.gpk.X);
     ECP2_BN254_mul(&fixture->ipk.gpk.X, fixture->isk.x);
 
-    big_256_56_random_mod_order(&fixture->isk.y, &fixture->rng);
+    big_256_56_random_mod_order(&fixture->isk.y, get_csprng(&fixture->prng));
     ecp2_BN254_set_to_generator(&fixture->ipk.gpk.Y);
     ECP2_BN254_mul(&fixture->ipk.gpk.Y, fixture->isk.y);
 
     ecp_BN254_set_to_generator(&fixture->pk.Q);
-    big_256_56_random_mod_order(&fixture->sk.sk, &fixture->rng);
+    big_256_56_random_mod_order(&fixture->sk.sk, get_csprng(&fixture->prng));
     ECP_BN254_mul(&fixture->pk.Q, fixture->sk.sk);
 
     struct ecdaa_credential_BN254_signature cred_sig;
-    ecdaa_credential_BN254_generate(&fixture->cred, &cred_sig, &fixture->isk, &fixture->pk, &fixture->rng);
+    ecdaa_credential_BN254_generate(&fixture->cred, &cred_sig, &fixture->isk, &fixture->pk, &fixture->prng);
 
     fixture->msg = (uint8_t*) "Test message";
     fixture->msg_len = strlen((char*)fixture->msg);
@@ -85,7 +86,7 @@ static void setup(sign_and_verify_fixture* fixture)
 
 static void teardown(sign_and_verify_fixture *fixture)
 {
-    destroy_test_rng(&fixture->rng);
+    ecdaa_prng_free(&fixture->prng);
 }
 
 static void sign_then_verify_good()
@@ -96,7 +97,7 @@ static void sign_then_verify_good()
     setup(&fixture);
 
     struct ecdaa_signature_BN254 sig;
-    TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
+    TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.prng));
 
     TEST_ASSERT(0 == ecdaa_signature_BN254_verify(&sig, &fixture.ipk.gpk, &fixture.sk_rev_list, fixture.msg, fixture.msg_len));
 
@@ -118,7 +119,7 @@ static void sign_then_verify_on_rev_list()
     struct ecdaa_revocation_list_BN254 sk_rev_list_bad = {.length=1, .list=sk_rev_list_bad_raw};
 
     struct ecdaa_signature_BN254 sig;
-    TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
+    TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.prng));
 
     TEST_ASSERT(0 != ecdaa_signature_BN254_verify(&sig, &fixture.ipk.gpk, &sk_rev_list_bad, fixture.msg, fixture.msg_len));
 
