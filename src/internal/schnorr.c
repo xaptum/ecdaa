@@ -39,17 +39,6 @@ void schnorr_keygen(ECP_BN254 *public_out,
     ECP_BN254_mul(public_out, *private_out);
 }
 
-void convert_schnorr_public_key_to_bytes(octet *public_key_as_bytes, ECP_BN254 *public_key)
-{
-    BIG_256_56 Q_x, Q_y;
-    ECP_BN254_get(Q_x, Q_y, public_key);
-
-    public_key_as_bytes->val[0] = 0x04;
-    BIG_256_56_toBytes(&(public_key_as_bytes->val[1]), Q_x);
-
-    BIG_256_56_toBytes(&(public_key_as_bytes->val[MODBYTES_256_56+1]), Q_y);
-}
-
 int schnorr_sign(BIG_256_56 *c_out,
                  BIG_256_56 *s_out,
                  const uint8_t *msg_in,
