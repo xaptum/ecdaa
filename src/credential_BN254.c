@@ -29,12 +29,12 @@
 #include <ecdaa/issuer_keypair_BN254.h>
 #include <ecdaa/group_public_key_BN254.h>
 
-size_t serialized_credential_BN254_length()
+size_t ecdaa_credential_BN254_length(void)
 {
     return ECDAA_CREDENTIAL_BN254_LENGTH;
 }
 
-size_t serialized_credential_BN254_signature_length()
+size_t ecdaa_credential_BN254_signature_length(void)
 {
     return ECDAA_CREDENTIAL_BN254_SIGNATURE_LENGTH;
 }

@@ -29,7 +29,7 @@ extern "C" {
 #include <stddef.h>
 
 #define ECP2_BN254_LENGTH (4*MODBYTES_256_56 + 1)
-size_t ecp2_BN254_length();
+size_t ecp2_BN254_length(void);
 
 /*
  * Initialize ECP2_BN254 point to G2 generator.

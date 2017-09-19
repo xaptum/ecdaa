@@ -28,7 +28,7 @@ size_t ecdaa_issuer_public_key_BN254_length(void) {
     return ECDAA_ISSUER_PUBLIC_KEY_BN254_LENGTH;
 }
 
-size_t ecdaa_issuer_secret_key_BN254_length() {
+size_t ecdaa_issuer_secret_key_BN254_length(void) {
     return ECDAA_ISSUER_SECRET_KEY_BN254_LENGTH;
 }
 

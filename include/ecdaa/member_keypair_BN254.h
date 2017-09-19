@@ -39,7 +39,7 @@ struct ecdaa_member_public_key_BN254 {
 };
 
 #define ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH ((2*MODBYTES_256_56 + 1) + MODBYTES_256_56 + MODBYTES_256_56)
-size_t ecdaa_member_public_key_BN254_length();
+size_t ecdaa_member_public_key_BN254_length(void);
 
 /*
  * Member's secret key.
@@ -49,7 +49,7 @@ struct ecdaa_member_secret_key_BN254 {
 };
 
 #define ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH (MODBYTES_256_56)
-size_t ecdaa_member_secret_key_BN254_length();
+size_t ecdaa_member_secret_key_BN254_length(void);
 
 /*
  * Generate a fresh `ecdaa_member_public_key_BN254`, `ecdaa_member_secret_key_BN254` pair.
