@@ -233,7 +233,7 @@ int credential_schnorr_verify(BIG_256_56 c,
     // 7) Compute difference of R2 and c*D, and save to R2 (R2 = s*member_public_key - c*D)
     ECP_BN254_sub(&R2, &D_c);
     // Nb. No need to call ECP_BN254_affine here,
-    // as R1 gets passed to ECP_BN254_toOctet in a minute (which implicitly converts to affine)
+    // as R2 gets passed to ECP_BN254_toOctet in a minute (which implicitly converts to affine)
 
     // 8) Compute c' = Hash( R1 | R2 | generator | B | member_public_key | D )
     //      (modular-reduce c', too).
@@ -352,7 +352,7 @@ int issuer_schnorr_verify(BIG_256_56 c,
     // 7) Compute difference of R2 and c*Y, and save to R2 (R2 = sy*P2 - c*Y)
     ECP2_BN254_sub(&R2, &Y_c);
     // Nb. No need to call ECP2_BN254_affine here,
-    // as R1 gets passed to ECP2_BN254_toOctet in a minute (which implicitly converts to affine)
+    // as R2 gets passed to ECP2_BN254_toOctet in a minute (which implicitly converts to affine)
 
     // 8) Compute c' = Hash( R1 | R2 | generator_2 | X | Y )
     //      (modular-reduce c', too).
