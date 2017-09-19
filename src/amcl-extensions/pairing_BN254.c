@@ -25,12 +25,6 @@ void compute_pairing(FP12_BN254 *pairing_out,
                      ECP_BN254 *g1_point,
                      ECP2_BN254 *g2_point)
 {
-    // TODO: Why is this necessary?
-    // (it looks like only _add and _sub don't convert to affine)
-    // (but, why is affine necessary for ate computation?)
-    ECP_BN254_affine(g1_point);
-    ECP2_BN254_affine(g2_point);
-
     PAIR_BN254_ate(pairing_out, g2_point, g1_point);
     PAIR_BN254_fexp(pairing_out);
 }

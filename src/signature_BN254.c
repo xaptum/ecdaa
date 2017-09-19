@@ -123,9 +123,11 @@ int ecdaa_signature_BN254_verify(struct ecdaa_signature_BN254 *signature,
         ret = -1;
 
     // 4) Compute R+W
+    //      Nb. Add doesn't convert to affine, so do that explicitly
     ECP_BN254 RW;
     ECP_BN254_copy(&RW, &signature->R);
     ECP_BN254_add(&RW, &signature->W);
+    ECP_BN254_affine(&RW);
 
     // 5) Check e(T, P_2) == e(R+W, X)
     FP12_BN254 pairing_two;

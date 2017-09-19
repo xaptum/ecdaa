@@ -84,9 +84,9 @@ int ecdaa_credential_BN254_generate(struct ecdaa_credential_BN254 *cred,
     ECP_BN254_mul(&Qxyl, xyl);
 
     // 9) Add Ax and xyl*Q and save to cred->C (C = x*A + xyl*Q)
+    //      Nb. Add doesn't convert to affine, so do that explicitly
     ECP_BN254_add(&cred->C, &Qxyl);
-    // Nb. No need to call ECP_BN254_affine here,
-    // as C always gets multiplied during signing (which implicitly converts to affine)
+    ECP_BN254_affine(&cred->C);
 
     // 10) Perform a Schnorr-like signature,
     //  to prove the credential was properly constructed by someone with knowledge of y.
@@ -144,9 +144,11 @@ int ecdaa_credential_BN254_validate(struct ecdaa_credential_BN254 *credential,
         ret = -1;
 
     // 4) Compute A+D
+    //      Nb. Add doesn't convert to affine, so do that explicitly
     ECP_BN254 AD;
     ECP_BN254_copy(&AD, &credential->A);
     ECP_BN254_add(&AD, &credential->D);
+    ECP_BN254_affine(&AD);
 
     // 5) Check e(C, P_2) == e(A+D, X)
     FP12_BN254 pairing_two;
