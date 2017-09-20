@@ -16,12 +16,20 @@ language: c
 
 compiler: gcc
 
+env:
+  global:
+    - LIBSODIUM_DIR=${TRAVIS_BUILD_DIR}/libsodium
+    - CFLAGS=-I${LIBSODIUM_DIR}/include/
+    - LDFLAGS=-L${LIBSODIUM_DIR}/lib/
+    - LD_LIBRARY_PATH=${LIBSODIUM_DIR}/lib/
+
 jobs:
   include:
 
   # Release build, gcc
   - env: TYPE=RELEASE
     before_script:
+      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - cmake . -DCMAKE_BUILD_TYPE=Release
     script:
       - cmake --build . -- -j2
@@ -30,17 +38,19 @@ jobs:
   # Debug build, to get code coverage with gcov
   - env: TYPE=DEBUG_WITH_COVERAGE
     before_script:
+      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - cmake . -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON
     script:
       - cmake --build . -- -j2
       - ctest -VV
     after_success:
-      - .travis/upload-gcov-results.sh `pwd`
+      - .travis/upload-gcov-results.sh ${TRAVIS_BUILD_DIR}
 
   # Release build, clang
   - env: TYPE=RELEASE-WITH-CLANG
     compiler: clang
     before_script:
+      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - cmake . -DCMAKE_BUILD_TYPE=Release
     script:
       - cmake --build . -- -j2
@@ -62,22 +72,26 @@ jobs:
         packages:
           - valgrind
     before_script:
+      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo
     script:
       - cmake --build . -- -j2
       - ctest -VV -E benchmarks -T memcheck
     after_failure:
-      - .travis/show-memcheck-results.sh `pwd`
+      - .travis/show-memcheck-results.sh ${TRAVIS_BUILD_DIR}
   
   # Scan-build
   - env: TYPE=SCAN_BUILD
+    before_script:
+      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
     script:
-      - .travis/run-scanbuild.sh `pwd` `pwd`
+      - .travis/run-scanbuild.sh ${TRAVIS_BUILD_DIR} ${TRAVIS_BUILD_DIR}
 
   # Sanitizers
   - env: TYPE=SANITIZE
     compiler: clang
     before_script:
+      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - cmake . -DCMAKE_BUILD_TYPE=RelWithSanitize
     script:
       - cmake --build . -- -j2
@@ -94,7 +108,7 @@ jobs:
           name: "xaptum/ecdaa"
           description: "A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures"
         notification_email: ecdaa-coverity-reports@xaptum.com
-        build_command_prepend: "cmake . -DCMAKE_BUILD_TYPE=Release"
+        build_command_prepend: ".travis/install-libsodium.sh ${LIBSODIUM_DIR} && cmake . -DCMAKE_BUILD_TYPE=Release"
         build_command:   "cmake --build ."
         branch_pattern: coverity_scan
 
