@@ -39,36 +39,6 @@ void ecp2_BN254_set_to_generator(ECP2_BN254 *point)
     ECP2_BN254_set(point, &x, &y);
 }
 
-int ecp2_BN254_check_membership(ECP2_BN254 *point)
-{
-    // TODO: Check if this is correct!
-    ECP2_BN254 point_copy;
-    ECP2_BN254_copy(&point_copy, point);
-
-    BIG_256_56 curve_order;
-    BIG_256_56_rcopy(curve_order, CURVE_Order_BN254);
-
-    /* Check point is not in wrong group */
-    int nb = BIG_256_56_nbits(curve_order);
-    BIG_256_56 k;
-    BIG_256_56_one(k);
-    BIG_256_56_shl(k, (nb+4)/2);
-    BIG_256_56_add(k, curve_order, k);
-    BIG_256_56_sdiv(k, curve_order); /* get co-factor */
-
-    while (BIG_256_56_parity(k) == 0) {
-        ECP2_BN254_dbl(&point_copy);
-        BIG_256_56_fshr(k,1);
-    }
-
-    if (!BIG_256_56_isunity(k))
-        ECP2_BN254_mul(&point_copy,k);
-    if (ECP2_BN254_isinf(&point_copy))
-        return -1;
-
-    return 0;
-}
-
 void ecp2_BN254_serialize(uint8_t *buffer_out,
                          ECP2_BN254 *point)
 {
@@ -82,20 +52,50 @@ void ecp2_BN254_serialize(uint8_t *buffer_out,
 }
 
 int ecp2_BN254_deserialize(ECP2_BN254 *point_out,
-                           const uint8_t *buffer)
+                           uint8_t *buffer)
 {
-    int ret = 0;
+    // 1) Check that serialized point was properly formatted.
+    if (0x4 != buffer[0])
+        return -2;
 
-    if (0x04 != buffer[0])
-        ret = -1;
+    // 2) Get the xa, xb, ya, yb coordinates.
+	BIG_256_56 xa, xb, ya, yb;
+    BIG_256_56_fromBytes(xa, (char*)&(buffer[1]));
+    BIG_256_56_fromBytes(xb, (char*)&(buffer[MODBYTES_256_56+1]));
+    BIG_256_56_fromBytes(ya, (char*)&(buffer[2*MODBYTES_256_56+1]));
+    BIG_256_56_fromBytes(yb, (char*)&(buffer[3*MODBYTES_256_56+1]));
 
-    octet as_oct = {.len = 0,
-                    .max = ECP2_BN254_LENGTH,
-                    .val = (char*)(buffer + 1)};
+    // 3) Check the coordinates are valid Fp points
+    //  (i.e. that they are less-than modulus)
+    //  (step 2 in X9.62 Sec 5.2.2)
+    BIG_256_56 q;
+    BIG_256_56_rcopy(q, Modulus_BN254);
+    if (1 == BIG_256_56_comp(xa, q))
+        return -1;
+    if (1 == BIG_256_56_comp(xb, q))
+        return -1;
+    if (1 == BIG_256_56_comp(ya, q))
+        return -1;
+    if (1 == BIG_256_56_comp(yb, q))
+        return -1;
 
-    int from_ret = ECP2_BN254_fromOctet(point_out, &as_oct);
-    if (1 != from_ret)
-        ret = -1;
+    // 4) Check that point is on curve (ECP2_BN254_set does this implicitly).
+    //      (step 3 in X9.62 Sec 5.2.2)
+    FP2_BN254 wx, wy;
+    FP_BN254_nres(&(wx.a), xa);
+    FP_BN254_nres(&(wx.b), xb);
+    FP_BN254_nres(&(wy.a), ya);
+    FP_BN254_nres(&(wy.b), yb);
+    if (!ECP2_BN254_set(point_out, &wx, &wy))
+        return -1;
 
-    return ret;
+    // 5) Check that point is not the identity.
+    //      (step 1 in X9.62 Sec 5.2.2)
+    if (ECP2_BN254_isinf(point_out)) {
+        return -1;
+    }
+
+    // TODO: How to check for subgroup attack? How get cofactor of G2?
+
+    return 0;
 }

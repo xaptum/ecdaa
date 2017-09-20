@@ -72,8 +72,6 @@ void member_public_is_valid()
     uint8_t nonce[32] = {0};
     ecdaa_member_key_pair_BN254_generate(&pk, &sk, nonce, sizeof(nonce), &prng);
 
-    TEST_ASSERT(0 == ecp_BN254_check_membership(&pk.Q));
-
     ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");

@@ -116,13 +116,8 @@ int ecdaa_credential_BN254_validate(struct ecdaa_credential_BN254 *credential,
     int ret = 0;
 
     // 1) Check A,B,C,D for membership in group, and A for !=inf
-    if (0 != ecp_BN254_check_membership(&credential->A)
-            || 0 != ecp_BN254_check_membership(&credential->B)
-            || 0 != ecp_BN254_check_membership(&credential->C)
-            || 0 != ecp_BN254_check_membership(&credential->D))
-        ret = -1;
-    if (ECP_BN254_isinf(&credential->A))
-        ret = -1;
+    // NOTE: We assume the credential was obtained from a call to `deserialize`,
+    //  which already checked the validity of the points A,B,C,D
     
     // 2) Verify schnorr-like signature
     int schnorr_ret = credential_schnorr_verify(credential_signature->c,

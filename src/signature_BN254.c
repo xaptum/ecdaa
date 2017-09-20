@@ -94,13 +94,8 @@ int ecdaa_signature_BN254_verify(struct ecdaa_signature_BN254 *signature,
     int ret = 0;
 
     // 1) Check R,S,T,W for membership in group, and R and S for !=inf
-    if (0 != ecp_BN254_check_membership(&signature->R)
-            || 0 != ecp_BN254_check_membership(&signature->S)
-            || 0 != ecp_BN254_check_membership(&signature->T)
-            || 0 != ecp_BN254_check_membership(&signature->W))
-        ret = -1;
-    if (ECP_BN254_isinf(&signature->R) || ECP_BN254_isinf(&signature->S))
-        ret = -1;
+    // NOTE: We assume the signature was obtained from a call to `deserialize`,
+    //  which already checked the validity of the points R,S,T,W
     
     // 2) Check Schnorr-type signature
     int schnorr_ret = schnorr_verify(signature->c,

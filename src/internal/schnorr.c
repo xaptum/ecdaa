@@ -51,8 +51,8 @@ int schnorr_sign(BIG_256_56 *c_out,
                  struct ecdaa_prng *prng)
 {
     // 1) (Commit 1) Verify basepoint belongs to group
-    if (0 != ecp_BN254_check_membership(basepoint))
-        return -1;
+    // NOTE: We assume the basepoint was obtained from a call to set_to_generator,
+    //  which means it's valid.
 
     // 2) (Commit 2) Choose random k <- Z_n
     BIG_256_56 k;
@@ -92,8 +92,8 @@ int schnorr_verify(BIG_256_56 c,
     int ret = 0;
 
     // 1) Check public key for validity
-    if (0 != ecp_BN254_check_membership(public_key))
-        ret = -1;
+    // NOTE: We assume the public key was obtained from `deserialize`,
+    //  which checked its validity.
 
     // 2) Multiply basepoint by s (R = s*P)
     ECP_BN254 R;

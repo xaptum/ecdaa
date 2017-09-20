@@ -37,25 +37,11 @@ int ecdaa_group_public_key_BN254_deserialize(struct ecdaa_group_public_key_BN254
 {
     int ret = 0;
 
-    int deserial_ret_x = ecp2_BN254_deserialize(&gpk_out->X, buffer_in);
-    if (0 != deserial_ret_x)
+    if (0 != ecp2_BN254_deserialize(&gpk_out->X, buffer_in))
         ret = -1;
 
-    if (0 == deserial_ret_x) {
-        int member_ret_x = ecp2_BN254_check_membership(&gpk_out->X);
-        if (0 != member_ret_x)
-            ret = -2;
-    }
-
-    int deserial_ret_y = ecp2_BN254_deserialize(&gpk_out->Y, buffer_in + ECP2_BN254_LENGTH);
-    if (0 != deserial_ret_y)
+    if (0 != ecp2_BN254_deserialize(&gpk_out->Y, buffer_in + ECP2_BN254_LENGTH))
         ret = -1;
-
-    if (0 == deserial_ret_y) {
-        int member_ret_y = ecp2_BN254_check_membership(&gpk_out->Y);
-        if (0 != member_ret_y)
-            ret = -2;
-    }
 
     return ret;
 }
