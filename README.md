@@ -93,6 +93,7 @@ To run a `memcheck` test, do the following:
 mkdir build
 cd build
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo
+cmake --build . -- -j2
 # (benchmarks are excluded because they take too long under the Valgrind instrumentation)
 ctest -VV -E benchmark -T memcheck
 ```
