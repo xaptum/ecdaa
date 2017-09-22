@@ -110,6 +110,23 @@ int ecdaa_member_public_key_BN254_deserialize(struct ecdaa_member_public_key_BN2
                                               uint32_t nonce_length);
 
 /*
+ * De-serialize an `ecdaa_member_public_key_BN254`, check its validity, but NOT its signature.
+ *
+ * The serialized format is expected to be:
+ *  ( 0x04 | Q.x-coord | Q.y-coord | c | s )
+ *  where all numbers are zero-padded and in big-endian byte-order.
+ *
+ *  NOTE: The full public key (including the signature) is de-serialized,
+ *  even though the signature does NOT get checked.
+ *
+ * Returns:
+ * 0 on success
+ * -1 if the format is incorrect
+ */
+int ecdaa_member_public_key_BN254_deserialize_no_check(struct ecdaa_member_public_key_BN254 *pk_out,
+                                                       uint8_t *buffer_in);
+
+/*
  * Serialize an `ecdaa_member_secret_key_BN254`
  *
  * The serialized secret key is zero-padded in big-endian byte-order.

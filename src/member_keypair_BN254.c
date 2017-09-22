@@ -94,14 +94,10 @@ int ecdaa_member_public_key_BN254_deserialize(struct ecdaa_member_public_key_BN2
 {
     int ret = 0;
 
-    // 1) Deserialize schnorr public key Q.
-    int deserial_ret = ecp_BN254_deserialize(&pk_out->Q, buffer_in);
+    // 1) Deserialize public key and its signature.
+    int deserial_ret = ecdaa_member_public_key_BN254_deserialize_no_check(pk_out, buffer_in);
     if (0 != deserial_ret)
         ret = -1;
-
-    // 2) Deserialize the schnorr signature
-    BIG_256_56_fromBytes(pk_out->c, (char*)(buffer_in + ecp_BN254_length()));
-    BIG_256_56_fromBytes(pk_out->s, (char*)(buffer_in + ecp_BN254_length() + MODBYTES_256_56));
 
     if (0 == deserial_ret) {
         // 3) Verify the schnorr signature.
@@ -110,6 +106,23 @@ int ecdaa_member_public_key_BN254_deserialize(struct ecdaa_member_public_key_BN2
         if (0 != schnorr_ret)
             ret = -2;
     }
+
+    return ret;
+}
+
+int ecdaa_member_public_key_BN254_deserialize_no_check(struct ecdaa_member_public_key_BN254 *pk_out,
+                                                       uint8_t *buffer_in)
+{
+    int ret = 0;
+
+    // 1) Deserialize schnorr public key Q.
+    int deserial_ret = ecp_BN254_deserialize(&pk_out->Q, buffer_in);
+    if (0 != deserial_ret)
+        ret = -1;
+
+    // 2) Deserialize the schnorr signature
+    BIG_256_56_fromBytes(pk_out->c, (char*)(buffer_in + ecp_BN254_length()));
+    BIG_256_56_fromBytes(pk_out->s, (char*)(buffer_in + ecp_BN254_length() + MODBYTES_256_56));
 
     return ret;
 }

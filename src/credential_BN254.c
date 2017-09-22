@@ -181,17 +181,18 @@ void ecdaa_credential_BN254_signature_serialize(uint8_t *buffer_out,
 int ecdaa_credential_BN254_deserialize_with_signature(struct ecdaa_credential_BN254 *credential_out,
                                                       struct ecdaa_member_public_key_BN254 *member_pk,
                                                       struct ecdaa_group_public_key_BN254 *gpk,
-                                                      uint8_t *buffer_in)
+                                                      uint8_t *cred_buffer_in,
+                                                      uint8_t *cred_sig_buffer_in)
 {
     int ret = 0;
 
     // 1) De-serialize the credential
-    ret = ecdaa_credential_BN254_deserialize(credential_out, buffer_in);
+    ret = ecdaa_credential_BN254_deserialize(credential_out, cred_buffer_in);
 
     // 2) De-serialize the credential signature
     struct ecdaa_credential_BN254_signature cred_sig;
-    BIG_256_56_fromBytes(cred_sig.c, (char*)(buffer_in + 4*ECP_BN254_LENGTH));
-    BIG_256_56_fromBytes(cred_sig.c, (char*)(buffer_in + 4*ECP_BN254_LENGTH + MODBYTES_256_56));
+    BIG_256_56_fromBytes(cred_sig.c, (char*)(cred_sig_buffer_in));
+    BIG_256_56_fromBytes(cred_sig.s, (char*)(cred_sig_buffer_in + MODBYTES_256_56));
 
     if (0 == ret) {
         int valid_ret = ecdaa_credential_BN254_validate(credential_out, &cred_sig, member_pk, gpk);
