@@ -43,7 +43,7 @@ void member_secret_is_valid()
     uint8_t nonce[32] = {0};
 
     struct ecdaa_prng prng;
-    ecdaa_prng_init(&prng);
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
 
     ecdaa_member_key_pair_BN254_generate(&pk1, &sk1, nonce, sizeof(nonce), &prng);
 
@@ -65,7 +65,7 @@ void member_public_is_valid()
     printf("Starting context::member_public_is_valid...\n");
 
     struct ecdaa_prng prng;
-    ecdaa_prng_init(&prng);
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
 
     struct ecdaa_member_secret_key_BN254 sk;
     struct ecdaa_member_public_key_BN254 pk;
