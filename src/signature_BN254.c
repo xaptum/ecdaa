@@ -169,16 +169,16 @@ int ecdaa_signature_BN254_deserialize(struct ecdaa_signature_BN254 *signature_ou
     BIG_256_56_fromBytes(signature_out->c, (char*)buffer_in);
     BIG_256_56_fromBytes(signature_out->s, (char*)(buffer_in + MODBYTES_256_56));
 
-    if (0 != ecp_BN254_deserialize(&signature_out->R, buffer_in + MODBYTES_256_56))
+    if (0 != ecp_BN254_deserialize(&signature_out->R, buffer_in + 2*MODBYTES_256_56))
         ret = -1;
 
-    if (0 != ecp_BN254_deserialize(&signature_out->S, buffer_in + MODBYTES_256_56 + ECP_BN254_LENGTH))
+    if (0 != ecp_BN254_deserialize(&signature_out->S, buffer_in + 2*MODBYTES_256_56 + ECP_BN254_LENGTH))
         ret = -1;
 
-    if (0 != ecp_BN254_deserialize(&signature_out->T, buffer_in + MODBYTES_256_56 + 2*ECP_BN254_LENGTH))
+    if (0 != ecp_BN254_deserialize(&signature_out->T, buffer_in + 2*MODBYTES_256_56 + 2*ECP_BN254_LENGTH))
         ret = -1;
 
-    if (0 != ecp_BN254_deserialize(&signature_out->W, buffer_in + MODBYTES_256_56 + 3*ECP_BN254_LENGTH))
+    if (0 != ecp_BN254_deserialize(&signature_out->W, buffer_in + 2*MODBYTES_256_56 + 3*ECP_BN254_LENGTH))
         ret = -1;
 
     return ret;
