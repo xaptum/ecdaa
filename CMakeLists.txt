@@ -21,7 +21,7 @@ option(DISABLE_LIBSODIUM_RNG_SEED_FUNCTION
         "Disable the default Libsodium-based seed function"
         OFF)
 
-option(ECDAA_BUILD_TOPLEVEL_PROGRAMS
+option(ECDAA_BUILD_EXAMPLE_PROGRAMS
         "Build the top-level driver programs for running ECDAA task"
         ON)
 
@@ -86,7 +86,7 @@ enable_testing()
 set(ECDAA_TEST_DIR test)
 add_subdirectory(${ECDAA_TEST_DIR})
 
-if(ECDAA_BUILD_TOPLEVEL_PROGRAMS)
+if(ECDAA_BUILD_EXAMPLE_PROGRAMS)
         set(ECDAA_PROGRAMS_DIR examples)
         add_subdirectory(${ECDAA_PROGRAMS_DIR})
-endif(ECDAA_BUILD_TOPLEVEL_PROGRAMS)
+endif(ECDAA_BUILD_EXAMPLE_PROGRAMS)
