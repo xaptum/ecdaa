@@ -23,6 +23,8 @@
 #include "../amcl-extensions/ecp_BN254.h"
 #include "../amcl-extensions/ecp2_BN254.h"
 
+#include <ecdaa/prng.h>
+
 #include <amcl/ecp_BN254.h>
 #include <amcl/amcl.h>
 
@@ -30,9 +32,9 @@
 
 void schnorr_keygen(ECP_BN254 *public_out,
                     BIG_256_56 *private_out,
-                    csprng *rng)
+                    struct ecdaa_prng *prng)
 {
-    big_256_56_random_mod_order(private_out, rng);
+    big_256_56_random_mod_order(private_out, get_csprng(prng));
 
     ecp_BN254_set_to_generator(public_out);
 
@@ -46,7 +48,7 @@ int schnorr_sign(BIG_256_56 *c_out,
                  ECP_BN254 *basepoint,
                  ECP_BN254 *public_key,
                  BIG_256_56 private_key,
-                 csprng *rng)
+                 struct ecdaa_prng *prng)
 {
     // 1) (Commit 1) Verify basepoint belongs to group
     if (0 != ecp_BN254_check_membership(basepoint))
@@ -54,7 +56,7 @@ int schnorr_sign(BIG_256_56 *c_out,
 
     // 2) (Commit 2) Choose random k <- Z_n
     BIG_256_56 k;
-    big_256_56_random_mod_order(&k, rng);
+    big_256_56_random_mod_order(&k, get_csprng(prng));
 
     // 3) (Commit 3) Multiply basepoint by k: R = k*basepoint
     ECP_BN254 R;
@@ -136,7 +138,7 @@ int credential_schnorr_sign(BIG_256_56 *c_out,
                             ECP_BN254 *D,
                             BIG_256_56 issuer_private_key_y,
                             BIG_256_56 credential_random,
-                            csprng *rng)
+                            struct ecdaa_prng *prng)
 {
     // 1) Set generator
     ECP_BN254 generator;
@@ -144,7 +146,7 @@ int credential_schnorr_sign(BIG_256_56 *c_out,
 
     // 2) Choose random r <- Z_n
     BIG_256_56 r;
-    big_256_56_random_mod_order(&r, rng);
+    big_256_56_random_mod_order(&r, get_csprng(prng));
 
     // 3) Multiply generator by r: U = r*generator
     ECP_BN254 U;
@@ -255,7 +257,7 @@ int issuer_schnorr_sign(BIG_256_56 *c_out,
                         ECP2_BN254 *Y,
                         BIG_256_56 issuer_private_key_x,
                         BIG_256_56 issuer_private_key_y,
-                        csprng *rng)
+                        struct ecdaa_prng *prng)
 {
     // 1) Set generator_2
     ECP2_BN254 generator_2;
@@ -263,8 +265,8 @@ int issuer_schnorr_sign(BIG_256_56 *c_out,
 
     // 2) Choose random rx, ry <- Z_n
     BIG_256_56 rx, ry;
-    big_256_56_random_mod_order(&rx, rng);
-    big_256_56_random_mod_order(&ry, rng);
+    big_256_56_random_mod_order(&rx, get_csprng(prng));
+    big_256_56_random_mod_order(&ry, get_csprng(prng));
 
     // 3) Multiply generator_2 by rx: Ux = rx*generator_2
     ECP2_BN254 Ux;

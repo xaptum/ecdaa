@@ -27,10 +27,10 @@ extern "C" {
 struct ecdaa_member_public_key_BN254;
 struct ecdaa_issuer_secret_key_BN254;
 struct ecdaa_group_public_key_BN254;
+struct ecdaa_prng;
 
 #include <amcl/ecp_BN254.h>
 #include <amcl/big_256_56.h>
-#include <amcl/randapi.h>
 
 #include <stdint.h>
 
@@ -68,7 +68,7 @@ int ecdaa_credential_BN254_generate(struct ecdaa_credential_BN254 *cred_out,
                                     struct ecdaa_credential_BN254_signature *cred_sig_out,
                                     struct ecdaa_issuer_secret_key_BN254 *isk,
                                     struct ecdaa_member_public_key_BN254 *member_pk,
-                                    csprng *rng);
+                                    struct ecdaa_prng *prng);
 
 /*
  * Validate a credential and its signature.

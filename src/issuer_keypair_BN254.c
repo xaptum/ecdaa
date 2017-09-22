@@ -18,6 +18,8 @@
 
 #include <ecdaa/issuer_keypair_BN254.h>
 
+#include <ecdaa/prng.h>
+
 #include "./amcl-extensions/big_256_56.h"
 #include "./amcl-extensions/ecp2_BN254.h"
 #include "./internal/schnorr.h"
@@ -34,12 +36,12 @@ size_t ecdaa_issuer_secret_key_BN254_length(void) {
 
 int ecdaa_issuer_key_pair_BN254_generate(struct ecdaa_issuer_public_key_BN254 *pk,
                                          struct ecdaa_issuer_secret_key_BN254 *sk,
-                                         csprng *rng)
+                                         struct ecdaa_prng *prng)
 {
     // Secret key is
     // two random Bignums.
-    big_256_56_random_mod_order(&sk->x, rng);
-    big_256_56_random_mod_order(&sk->y, rng);
+    big_256_56_random_mod_order(&sk->x, get_csprng(prng));
+    big_256_56_random_mod_order(&sk->y, get_csprng(prng));
 
     // Public key is
     // 1) G2 generator raised to the two private key random Bignums...
@@ -49,7 +51,7 @@ int ecdaa_issuer_key_pair_BN254_generate(struct ecdaa_issuer_public_key_BN254 *p
     ECP2_BN254_mul(&pk->gpk.Y, sk->y);
 
     // 2) and a Schnorr-type signature to prove our knowledge of those two random Bignums.
-    int sign_ret = issuer_schnorr_sign(&pk->c, &pk->sx, &pk->sy, &pk->gpk.X, &pk->gpk.Y, sk->x, sk->y, rng);
+    int sign_ret = issuer_schnorr_sign(&pk->c, &pk->sx, &pk->sy, &pk->gpk.X, &pk->gpk.Y, sk->x, sk->y, prng);
     if (0 != sign_ret)
         return -1;
 

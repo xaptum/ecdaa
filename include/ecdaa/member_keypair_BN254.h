@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+struct ecdaa_prng;
+
 #include <amcl/big_256_56.h>
 #include <amcl/ecp_BN254.h>
 
@@ -62,7 +64,7 @@ int ecdaa_member_key_pair_BN254_generate(struct ecdaa_member_public_key_BN254 *p
                                          struct ecdaa_member_secret_key_BN254 *sk_out,
                                          uint8_t *nonce,
                                          uint32_t nonce_length,
-                                         csprng *rng);
+                                         struct ecdaa_prng *prng);
 
 /*
  * Check the signature on an `ecdaa_member_public_key_BN254`.

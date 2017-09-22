@@ -22,6 +22,7 @@
 #include <ecdaa/group_public_key_BN254.h>
 #include <ecdaa/revocation_list_BN254.h>
 #include <ecdaa/credential_BN254.h>
+#include <ecdaa/prng.h>
 
 #include "./internal/schnorr.h"
 #include "./amcl-extensions/big_256_56.h"
@@ -42,11 +43,11 @@ int ecdaa_signature_BN254_sign(struct ecdaa_signature_BN254 *signature_out,
                                uint32_t message_len,
                                struct ecdaa_member_secret_key_BN254 *sk,
                                struct ecdaa_credential_BN254 *cred,
-                               csprng *rng)
+                               struct ecdaa_prng *prng)
 {
     // 1) Choose random l <- Z_p
     BIG_256_56 l;
-    big_256_56_random_mod_order(&l, rng);
+    big_256_56_random_mod_order(&l, get_csprng(prng));
 
     // 2) Multiply the four points in the credential by l,
     //  and save to the four points in the signature
@@ -76,7 +77,7 @@ int ecdaa_signature_BN254_sign(struct ecdaa_signature_BN254 *signature_out,
                                 &signature_out->S,
                                 &signature_out->W,
                                 sk->sk,
-                                rng);
+                                prng);
     
     // Clear sensitive intermediate memory.
     BIG_256_56_zero(l);

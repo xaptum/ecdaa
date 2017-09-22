@@ -26,6 +26,7 @@ set(TEST_SRCS
         big_256_56-tests.c
         ecp_BN254-tests.c
         ecp2_BN254-tests.c
+        prng-tests.c
         schnorr-tests.c
         benchmarks.c
         )

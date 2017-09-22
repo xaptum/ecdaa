@@ -27,7 +27,8 @@ extern "C" {
 #include <ecdaa/group_public_key_BN254.h>
 
 #include <amcl/big_256_56.h>
-#include <amcl/randapi.h>
+
+struct ecdaa_prng;
 
 /*
  * Issuer's public key.
@@ -62,7 +63,7 @@ size_t ecdaa_issuer_secret_key_BN254_length(void);
  */
 int ecdaa_issuer_key_pair_BN254_generate(struct ecdaa_issuer_public_key_BN254 *pk_out,
                                          struct ecdaa_issuer_secret_key_BN254 *sk_out,
-                                         csprng *rng);
+                                         struct ecdaa_prng *prng);
 
 /*
  * Check the signature on an `ecdaa_issuer_public_key_BN254`.

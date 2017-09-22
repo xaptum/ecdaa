@@ -24,10 +24,11 @@
 extern "C" {
 #endif
 
+struct ecdaa_prng;
+
 #include <amcl/big_256_56.h>
 #include <amcl/ecp_BN254.h>
 #include <amcl/ecp2_BN254.h>
-#include <amcl/randapi.h>
 
 #include <stdint.h>
 
@@ -39,7 +40,7 @@ extern "C" {
  */
 void schnorr_keygen(ECP_BN254 *public_out,
                     BIG_256_56 *private_out,
-                    csprng *rng);
+                    struct ecdaa_prng *prng);
 
 /*
  * Perform Schnorr signature of msg_in, allowing for a non-standard basepoint.
@@ -62,7 +63,7 @@ int schnorr_sign(BIG_256_56 *c_out,
                  ECP_BN254 *basepoint,
                  ECP_BN254 *public_key,
                  BIG_256_56 private_key,
-                 csprng *rng);
+                 struct ecdaa_prng *prng);
 
 /*
  * Verify that (c, s) is a valid Schnorr signature of msg_in, allowing for a non-standard basepoint.
@@ -105,7 +106,7 @@ int credential_schnorr_sign(BIG_256_56 *c_out,
                             ECP_BN254 *D,
                             BIG_256_56 issuer_private_key_y,
                             BIG_256_56 credential_random,
-                            csprng *rng);
+                            struct ecdaa_prng *prng);
 
 /*
  * Verify that (c, s) is a valid 'credential-Schnorr' signature.
@@ -150,7 +151,7 @@ int issuer_schnorr_sign(BIG_256_56 *c_out,
                         ECP2_BN254 *Y,
                         BIG_256_56 issuer_private_key_x,
                         BIG_256_56 issuer_private_key_y,
-                        csprng *rng);
+                        struct ecdaa_prng *prng);
 
 /*
  * Verify that (c, sx, sy) is a valid 'issuer-Schnorr' signature.

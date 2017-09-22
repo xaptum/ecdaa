@@ -21,8 +21,7 @@
 #include "../src/amcl-extensions/ecp_BN254.h"
 
 #include <ecdaa/member_keypair_BN254.h>
-
-#include <amcl/randapi.h>
+#include <ecdaa/prng.h>
 
 static void member_secret_is_valid();
 static void member_public_is_valid();
@@ -43,20 +42,20 @@ void member_secret_is_valid()
     struct ecdaa_member_public_key_BN254 pk1;
     uint8_t nonce[32] = {0};
 
-    csprng rng;
-    create_test_rng(&rng);
+    struct ecdaa_prng prng;
+    ecdaa_prng_init(&prng);
 
-    ecdaa_member_key_pair_BN254_generate(&pk1, &sk1, nonce, sizeof(nonce), &rng);
-
-    destroy_test_rng(&rng);
+    ecdaa_member_key_pair_BN254_generate(&pk1, &sk1, nonce, sizeof(nonce), &prng);
 
     TEST_ASSERT(!pk1.Q.inf);
 
     struct ecdaa_member_secret_key_BN254 sk2;
     struct ecdaa_member_public_key_BN254 pk2;
-    ecdaa_member_key_pair_BN254_generate(&pk2, &sk2, nonce, sizeof(nonce), &rng);
+    ecdaa_member_key_pair_BN254_generate(&pk2, &sk2, nonce, sizeof(nonce), &prng);
 
     TEST_ASSERT(BIG_256_56_comp(sk1.sk, sk2.sk) != 0);
+
+    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -65,15 +64,17 @@ void member_public_is_valid()
 {
     printf("Starting context::member_public_is_valid...\n");
 
-    csprng rng;
-    create_test_rng(&rng);
+    struct ecdaa_prng prng;
+    ecdaa_prng_init(&prng);
 
     struct ecdaa_member_secret_key_BN254 sk;
     struct ecdaa_member_public_key_BN254 pk;
     uint8_t nonce[32] = {0};
-    ecdaa_member_key_pair_BN254_generate(&pk, &sk, nonce, sizeof(nonce), &rng);
+    ecdaa_member_key_pair_BN254_generate(&pk, &sk, nonce, sizeof(nonce), &prng);
 
     TEST_ASSERT(0 == ecp_BN254_check_membership(&pk.Q));
+
+    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }

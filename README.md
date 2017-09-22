@@ -12,6 +12,7 @@ A C implementation of elliptic-curve-based Direct Anonymous Attestation signatur
 
 - The CMake build system is used for building.
 - gcc
+- libsodium >= 1.0.11 (optionally, see below)
 - For building the AMCL dependency:
   - python3
 
@@ -37,25 +38,22 @@ ctest -V
 ## Random number generator
 
 Many of the functions provided by this library (particularly, those used by an Issuer or a Member)
-require a pointer to a pseudo-random number generator (type `csprng`).
+require a pseudo random number generator (type `ecdaa_prng`).
 The security of these algorithms depends critically on the proper seeding of this prng.
+This means that the first use of any `ecdaa_prng` MUST be preceeded by a call to
+`ecdaa_prng_init` (or `ecdaa_prng_init_custom`, see below) on the prng.
 
-Before using these functions, create and seed the `csprng`:
+In `ecdaa_prng_init`, the seed for the `ecdaa_prng` is generated from Libsodium's
+`randombytes_buf` function.
+A discussion on how this function works and any caveats can be found at Libsodium's webpage.
 
-```c
-#include <amcl/amcl.h>
-#include <amcl/randapi.h>
-csprng rng;
-char seed[SEED_LEN];
-/* Get cryptographically-secure random bytes of length SEED_LEN into seed */
-octet seed_as_octet = {.len=SEED_LEN, .max=SEED_LEN, .val=seed};
-CREATE_CSPRNG(rng, &seed_as_octet);
-```
+To use a different function for obtaining cryptographically-secure random data for a seed,
+pass the option `-DDISABLE_LIBSODIUM_RNG_SEED_FUNCTION=ON` to CMake (this will remove the dependency on libsodium)
+and use the function `ecdaa_prng_init_custom` rather than `ecdaa_prng_init`,
+passing in a buffer of cryptographically-strong random bytes of length at least `AMCL_SEED_SIZE`.
 
-The random seed `seed` MUST be generated in a cryptographically-secure manner,
-and should be at least 128 bytes long.
-Depending on the platform, this seed can be generated, for example, via calls to
-`/dev/urandom` (or `getrandom()`), or a hardware random number generator.
+When an `ecdaa_prng` is no longer needed, `ecdaa_prng_free` should be called on it
+to securely erase its sensitive memory.
 
 ## Naming Convention in API
 

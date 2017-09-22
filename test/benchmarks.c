@@ -30,6 +30,7 @@
 #include <ecdaa/signature_BN254.h>
 #include <ecdaa/group_public_key_BN254.h>
 #include <ecdaa/revocation_list_BN254.h>
+#include <ecdaa/prng.h>
 
 #include <sys/time.h>
 #include <string.h>
@@ -40,7 +41,7 @@ static void sign_benchmark();
 static void verify_benchmark();
 
 typedef struct sign_and_verify_fixture {
-    csprng rng;
+    struct ecdaa_prng prng;
     uint8_t *msg;
     uint32_t msg_len;
     struct ecdaa_revocation_list_BN254 sk_rev_list;
@@ -64,22 +65,22 @@ int main()
 
 static void setup(sign_and_verify_fixture* fixture)
 {
-    create_test_rng(&fixture->rng);
+    TEST_ASSERT(0 == ecdaa_prng_init(&fixture->prng));
 
-    big_256_56_random_mod_order(&fixture->isk.x, &fixture->rng);
+    big_256_56_random_mod_order(&fixture->isk.x, get_csprng(&fixture->prng));
     ecp2_BN254_set_to_generator(&fixture->ipk.gpk.X);
     ECP2_BN254_mul(&fixture->ipk.gpk.X, fixture->isk.x);
 
-    big_256_56_random_mod_order(&fixture->isk.y, &fixture->rng);
+    big_256_56_random_mod_order(&fixture->isk.y, get_csprng(&fixture->prng));
     ecp2_BN254_set_to_generator(&fixture->ipk.gpk.Y);
     ECP2_BN254_mul(&fixture->ipk.gpk.Y, fixture->isk.y);
 
     ecp_BN254_set_to_generator(&fixture->pk.Q);
-    big_256_56_random_mod_order(&fixture->sk.sk, &fixture->rng);
+    big_256_56_random_mod_order(&fixture->sk.sk, get_csprng(&fixture->prng));
     ECP_BN254_mul(&fixture->pk.Q, fixture->sk.sk);
 
     struct ecdaa_credential_BN254_signature cred_sig;
-    ecdaa_credential_BN254_generate(&fixture->cred, &cred_sig, &fixture->isk, &fixture->pk, &fixture->rng);
+    ecdaa_credential_BN254_generate(&fixture->cred, &cred_sig, &fixture->isk, &fixture->pk, &fixture->prng);
 
     fixture->msg = (uint8_t*) "Test message";
     fixture->msg_len = strlen((char*)fixture->msg);
@@ -88,9 +89,9 @@ static void setup(sign_and_verify_fixture* fixture)
     fixture->sk_rev_list.list=NULL;
 }
 
-static void teardown(sign_and_verify_fixture *fixture)
+static void teardown(sign_and_verify_fixture* fixture)
 {
-    destroy_test_rng(&fixture->rng);
+    ecdaa_prng_free(&fixture->prng);
 }
 
 void schnorr_sign_benchmark()
@@ -102,10 +103,10 @@ void schnorr_sign_benchmark()
     ECP_BN254 public;
     BIG_256_56 private;
 
-    csprng rng;
-    create_test_rng(&rng);
+    struct ecdaa_prng prng;
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
 
-    schnorr_keygen(&public, &private, &rng);
+    schnorr_keygen(&public, &private, &prng);
 
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
@@ -118,7 +119,7 @@ void schnorr_sign_benchmark()
     ECP_BN254 basepoint;
     ecp_BN254_set_to_generator(&basepoint);
     for (unsigned i = 0; i < rounds; i++) {
-        schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &rng);
+        schnorr_sign(&c, &s, msg, msg_len, &basepoint, &public, private, &prng);
     }
 
     struct timeval tv2;
@@ -130,7 +131,8 @@ void schnorr_sign_benchmark()
             elapsed,
             rounds * 1000000ULL / elapsed);
 
-    destroy_test_rng(&rng);
+    ecdaa_prng_free(&prng);
+
 }
 
 static void sign_benchmark()
@@ -148,7 +150,7 @@ static void sign_benchmark()
     gettimeofday(&tv1, NULL);
 
     for (unsigned i = 0; i < rounds; i++) {
-        TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
+        TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.prng));
     }
 
     struct timeval tv2;
@@ -174,7 +176,7 @@ static void verify_benchmark()
 
     struct ecdaa_signature_BN254 sig;
 
-    TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.rng));
+    TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.prng));
 
     struct timeval tv1;
     gettimeofday(&tv1, NULL);

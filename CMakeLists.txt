@@ -17,6 +17,10 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 find_package(AMCL REQUIRED QUIET)
 
+option(DISABLE_LIBSODIUM_RNG_SEED_FUNCTION
+        "Disable the default Libsodium-based seed function"
+        OFF)
+
 project(ecdaa
         LANGUAGES C
         VERSION "0.1.1")
@@ -38,6 +42,12 @@ find_program(MEMORYCHECK_COMMAND NAMES valgrind)
 set(MEMORYCHECK_COMMAND_OPTIONS
         "--error-exitcode=5 --leak-check=full -v --track-origins=yes --partial-loads-ok=no")
 
+if(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
+        SET(ECDAA_SEED_LINK_LIBRARY sodium)
+else(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
+        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDISABLE_LIBSODIUM_RNG_SEED_FUNCTION")
+endif(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
+
 set(ECDAA_SRC_DIR src)
 set(ECDAA_INTERNAL_SRC_DIR ${ECDAA_SRC_DIR}/internal/)
 set(ECDAA_AMCL_EXTENSIONS_SRC_DIR ${ECDAA_SRC_DIR}/amcl-extensions/)
@@ -47,6 +57,7 @@ set(ECDAA_SRCS
         ${ECDAA_SRC_DIR}/group_public_key_BN254.c
         ${ECDAA_SRC_DIR}/issuer_keypair_BN254.c
         ${ECDAA_SRC_DIR}/member_keypair_BN254.c
+        ${ECDAA_SRC_DIR}/prng.c
         ${ECDAA_SRC_DIR}/signature_BN254.c
         ${ECDAA_INTERNAL_SRC_DIR}/explicit_bzero.c
         ${ECDAA_INTERNAL_SRC_DIR}/schnorr.c
@@ -54,7 +65,6 @@ set(ECDAA_SRCS
         ${ECDAA_AMCL_EXTENSIONS_SRC_DIR}/ecp_BN254.c
         ${ECDAA_AMCL_EXTENSIONS_SRC_DIR}/ecp2_BN254.c
         ${ECDAA_AMCL_EXTENSIONS_SRC_DIR}/pairing_BN254.c
-        ${ECDAA_TEST_DIR}/ecdaa-test-utils.c
         )
 
 add_library(ecdaa ${ECDAA_SRCS})
@@ -66,7 +76,8 @@ target_include_directories(ecdaa
         PUBLIC ${AMCL_INCLUDE_DIRS})
 
 target_link_libraries(ecdaa
-        PUBLIC ${AMCL_LIBRARIES})
+        PRIVATE ${AMCL_LIBRARIES}
+        ${ECDAA_SEED_LINK_LIBRARY})
 
 enable_testing()
 add_subdirectory(${ECDAA_TEST_DIR})
