@@ -130,7 +130,8 @@ void ecdaa_credential_BN254_signature_serialize(uint8_t *buffer_out,
 int ecdaa_credential_BN254_deserialize_with_signature(struct ecdaa_credential_BN254 *credential_out,
                                                       struct ecdaa_member_public_key_BN254 *member_pk,
                                                       struct ecdaa_group_public_key_BN254 *gpk,
-                                                      uint8_t *buffer_in);
+                                                      uint8_t *cred_buffer_in,
+                                                      uint8_t *cred_sig_buffer_in);
 
 /*
  * De-serialize an `ecdaa_credential_BN254`, check its validity (signature _not_ checked).
