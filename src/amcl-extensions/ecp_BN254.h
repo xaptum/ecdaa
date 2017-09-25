@@ -38,15 +38,6 @@ size_t ecp_BN254_length(void);
 void ecp_BN254_set_to_generator(ECP_BN254 *point);
 
 /*
- * Check if the given ECP_BN254 point is a member of G1.
- *
- * Returns:
- * 0 on success
- * -1 if the point is _not_ in G1
- */
-int ecp_BN254_check_membership(ECP_BN254 *point);
-
-/*
  * Serialize an ECP_BN254 point.
  *
  * Format: ( 0x04 | x-coordinate | y-coordinate )
@@ -64,7 +55,7 @@ void ecp_BN254_serialize(uint8_t *buffer_out,
  * -1 if the point is not on the curve
  */
 int ecp_BN254_deserialize(ECP_BN254 *point_out,
-                          const uint8_t *buffer);
+                          uint8_t *buffer);
 
 #ifdef __cplusplus
 }
