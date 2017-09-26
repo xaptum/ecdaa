@@ -21,6 +21,10 @@ option(DISABLE_LIBSODIUM_RNG_SEED_FUNCTION
         "Disable the default Libsodium-based seed function"
         OFF)
 
+option(ECDAA_BUILD_EXAMPLE_PROGRAMS
+        "Build the top-level driver programs for running ECDAA task"
+        ON)
+
 project(ecdaa
         LANGUAGES C
         VERSION "0.1.1")
@@ -51,7 +55,6 @@ endif(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
 set(ECDAA_SRC_DIR src)
 set(ECDAA_INTERNAL_SRC_DIR ${ECDAA_SRC_DIR}/internal/)
 set(ECDAA_AMCL_EXTENSIONS_SRC_DIR ${ECDAA_SRC_DIR}/amcl-extensions/)
-set(ECDAA_TEST_DIR test)
 set(ECDAA_SRCS
         ${ECDAA_SRC_DIR}/credential_BN254.c
         ${ECDAA_SRC_DIR}/group_public_key_BN254.c
@@ -80,4 +83,10 @@ target_link_libraries(ecdaa
         ${ECDAA_SEED_LINK_LIBRARY})
 
 enable_testing()
+set(ECDAA_TEST_DIR test)
 add_subdirectory(${ECDAA_TEST_DIR})
+
+if(ECDAA_BUILD_EXAMPLE_PROGRAMS)
+        set(ECDAA_PROGRAMS_DIR examples)
+        add_subdirectory(${ECDAA_PROGRAMS_DIR})
+endif(ECDAA_BUILD_EXAMPLE_PROGRAMS)
