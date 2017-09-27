@@ -26,10 +26,12 @@ static int read_file_into_buffer(uint8_t *buffer, size_t bytes_to_read, const ch
     if (NULL == ptr)
         return -1;
 
-    if (fread(buffer, 1, bytes_to_read, ptr) != bytes_to_read)
-        return -1;
+    size_t bytes_read = fread(buffer, 1, bytes_to_read, ptr);
 
     (void)fclose(ptr);
+
+    if (bytes_read != bytes_to_read)
+        return -1;
 
     return 0;
 }
@@ -42,10 +44,12 @@ static int write_buffer_to_file(const char *filename, uint8_t *buffer, size_t by
     if (NULL == ptr)
         return -1;
 
-    if (fwrite(buffer, 1, bytes_to_write, ptr) != bytes_to_write)
-        return -1;
+    size_t bytes_written = fwrite(buffer, 1, bytes_to_write, ptr);
 
     (void)fclose(ptr);
+
+    if (bytes_written != bytes_to_write)
+        return -1;
 
     return 0;
 }
