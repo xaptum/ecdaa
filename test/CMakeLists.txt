@@ -52,3 +52,7 @@ foreach(case_file ${TEST_SRCS})
 
   add_dependencies(${case_name} ecdaa)
 endforeach()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/integration-tests.py ${CURRENT_TEST_BINARY_DIR}/integration-tests.py)
+add_test(NAME integration-tests
+        COMMAND python "${CURRENT_TEST_BINARY_DIR}/integration-tests.py" "${CMAKE_BINARY_DIR}/bin/")
