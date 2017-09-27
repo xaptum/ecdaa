@@ -36,6 +36,9 @@
 
 static void sign_then_verify_good();
 static void sign_then_verify_on_rev_list();
+static void lengths_same();
+static void serialize_deserialize();
+static void deserialize_garbage_fails();
 
 typedef struct sign_and_verify_fixture {
     struct ecdaa_prng prng;
@@ -56,6 +59,9 @@ int main()
 {
     sign_then_verify_good();
     sign_then_verify_on_rev_list();
+    lengths_same();
+    serialize_deserialize();
+    deserialize_garbage_fails();
 }
 
 static void setup(sign_and_verify_fixture* fixture)
@@ -78,7 +84,7 @@ static void setup(sign_and_verify_fixture* fixture)
     ecdaa_credential_BN254_generate(&fixture->cred, &cred_sig, &fixture->isk, &fixture->pk, &fixture->prng);
 
     fixture->msg = (uint8_t*) "Test message";
-    fixture->msg_len = strlen((char*)fixture->msg);
+    fixture->msg_len = (uint32_t)strlen((char*)fixture->msg);
 
     fixture->sk_rev_list.length=0;
     fixture->sk_rev_list.list=NULL;
@@ -91,7 +97,7 @@ static void teardown(sign_and_verify_fixture *fixture)
 
 static void sign_then_verify_good()
 {
-    printf("Starting sign-and-verify::sign_then_verify_good...\n");
+    printf("Starting signature::sign_then_verify_good...\n");
 
     sign_and_verify_fixture fixture;
     setup(&fixture);
@@ -108,7 +114,7 @@ static void sign_then_verify_good()
 
 static void sign_then_verify_on_rev_list()
 {
-    printf("Starting sign-and-verify::sign_then_verify_on_rev_list...\n");
+    printf("Starting signature::sign_then_verify_on_rev_list...\n");
 
     sign_and_verify_fixture fixture;
     setup(&fixture);
@@ -124,6 +130,49 @@ static void sign_then_verify_on_rev_list()
     TEST_ASSERT(0 != ecdaa_signature_BN254_verify(&sig, &fixture.ipk.gpk, &sk_rev_list_bad, fixture.msg, fixture.msg_len));
 
     teardown(&fixture);
+
+    printf("\tsuccess\n");
+}
+
+static void lengths_same()
+{
+    printf("Starting signature::lengths_same...\n");
+
+    TEST_ASSERT(ECDAA_SIGNATURE_BN254_LENGTH == ecdaa_signature_BN254_length());
+
+    printf("\tsuccess\n");
+}
+
+static void serialize_deserialize()
+{
+    printf("Starting signature::serialize_deserialize...\n");
+
+    sign_and_verify_fixture fixture;
+    setup(&fixture);
+
+    struct ecdaa_signature_BN254 sig;
+    TEST_ASSERT(0 == ecdaa_signature_BN254_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.prng));
+
+    TEST_ASSERT(0 == ecdaa_signature_BN254_verify(&sig, &fixture.ipk.gpk, &fixture.sk_rev_list, fixture.msg, fixture.msg_len));
+
+    uint8_t buffer[ECDAA_SIGNATURE_BN254_LENGTH];
+    ecdaa_signature_BN254_serialize(buffer, &sig);
+    struct ecdaa_signature_BN254 sig_deserialized;
+    TEST_ASSERT(0 == ecdaa_signature_BN254_deserialize(&sig_deserialized, buffer));
+    TEST_ASSERT(0 == ecdaa_signature_BN254_deserialize_and_verify(&sig_deserialized, &fixture.ipk.gpk, &fixture.sk_rev_list, buffer, fixture.msg, fixture.msg_len));
+
+    teardown(&fixture);
+
+    printf("\tsuccess\n");
+}
+
+static void deserialize_garbage_fails()
+{
+    printf("Starting signature::serialize_deserialize...\n");
+
+    uint8_t buffer[ECDAA_SIGNATURE_BN254_LENGTH] = {0};
+    struct ecdaa_signature_BN254 sig_deserialized;
+    TEST_ASSERT(0 != ecdaa_signature_BN254_deserialize(&sig_deserialized, buffer));
 
     printf("\tsuccess\n");
 }

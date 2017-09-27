@@ -46,10 +46,14 @@ static void setup(credential_test_fixture* fixture);
 static void teardown(credential_test_fixture* fixture);
 
 static void cred_generate_then_validate();
+static void lengths_same();
+static void cred_generate_then_serialize_deserialize();
 
 int main()
 {
     cred_generate_then_validate();
+    lengths_same();
+    cred_generate_then_serialize_deserialize();
 }
 
 static void setup(credential_test_fixture* fixture)
@@ -76,7 +80,7 @@ static void teardown(credential_test_fixture* fixture)
 
 static void cred_generate_then_validate()
 {
-    printf("Starting join-tests::cred_generate_validate...\n");
+    printf("Starting credential::cred_generate_validate...\n");
 
     credential_test_fixture fixture;
     setup(&fixture);
@@ -86,6 +90,43 @@ static void cred_generate_then_validate()
     TEST_ASSERT(0 == ecdaa_credential_BN254_generate(&cred, &cred_sig, &fixture.isk, &fixture.pk, &fixture.prng));
 
     TEST_ASSERT(0 == ecdaa_credential_BN254_validate(&cred, &cred_sig, &fixture.pk, &fixture.ipk.gpk));
+
+    teardown(&fixture);
+
+    printf("\tsuccess\n");
+}
+
+static void lengths_same()
+{
+    printf("Starting credential::lengths_same...\n");
+
+    TEST_ASSERT(ECDAA_CREDENTIAL_BN254_LENGTH == ecdaa_credential_BN254_length());
+
+    TEST_ASSERT(ECDAA_CREDENTIAL_BN254_SIGNATURE_LENGTH == ecdaa_credential_BN254_signature_length());
+
+    printf("\tsuccess\n");
+}
+
+static void cred_generate_then_serialize_deserialize()
+{
+    printf("Starting credential::cred_generate_then_serialize_deserialize...\n");
+
+    credential_test_fixture fixture;
+    setup(&fixture);
+
+    struct ecdaa_credential_BN254 cred;
+    struct ecdaa_credential_BN254_signature cred_sig;
+    TEST_ASSERT(0 == ecdaa_credential_BN254_generate(&cred, &cred_sig, &fixture.isk, &fixture.pk, &fixture.prng));
+
+    uint8_t cred_buffer[ECDAA_CREDENTIAL_BN254_LENGTH];
+    uint8_t sig_buffer[ECDAA_CREDENTIAL_BN254_SIGNATURE_LENGTH];
+
+    ecdaa_credential_BN254_serialize(cred_buffer, &cred);
+    ecdaa_credential_BN254_signature_serialize(sig_buffer, &cred_sig);
+
+    struct ecdaa_credential_BN254 cred_deserialized;
+    TEST_ASSERT(0 == ecdaa_credential_BN254_deserialize(&cred_deserialized, cred_buffer));
+    TEST_ASSERT(0 == ecdaa_credential_BN254_deserialize_with_signature(&cred_deserialized, &fixture.pk, &fixture.ipk.gpk, cred_buffer, sig_buffer));
 
     teardown(&fixture);
 

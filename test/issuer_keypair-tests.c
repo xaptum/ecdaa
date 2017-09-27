@@ -22,17 +22,21 @@
 #include <ecdaa/prng.h>
 
 static void issuer_secrets_are_valid();
-static void issuer_proof_checks();
+static void generated_validates();
+static void lengths_same();
+static void generate_then_serialize_deserialize();
 
 int main()
 {
     issuer_secrets_are_valid();
-    issuer_proof_checks();
+    generated_validates();
+    lengths_same();
+    generate_then_serialize_deserialize();
 }
 
 void issuer_secrets_are_valid()
 {
-    printf("Starting context::issuer_secrets_are_valid...\n");
+    printf("Starting issuer_keypair::issuer_secrets_are_valid...\n");
 
     struct ecdaa_prng prng;
     TEST_ASSERT(0 == ecdaa_prng_init(&prng));
@@ -56,8 +60,53 @@ void issuer_secrets_are_valid()
     printf("\tsuccess\n");
 }
 
-void issuer_proof_checks()
+static void generated_validates()
 {
-    // TODO: Check signature (c, sx, sy) in issuer's key
+    printf("Starting issuer_keypair::generated_validates...\n");
+
+    struct ecdaa_prng prng;
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
+
+    struct ecdaa_issuer_secret_key_BN254 isk;
+    struct ecdaa_issuer_public_key_BN254 ipk;
+    ecdaa_issuer_key_pair_BN254_generate(&ipk, &isk, &prng);
+
+    TEST_ASSERT(0 == ecdaa_issuer_public_key_BN254_validate(&ipk));
+
+    printf("\tsuccess\n");
 }
 
+static void lengths_same()
+{
+    printf("Starting issuer_keypair::lengths_same...\n");
+
+    TEST_ASSERT(ECDAA_ISSUER_PUBLIC_KEY_BN254_LENGTH == ecdaa_issuer_public_key_BN254_length());
+
+    TEST_ASSERT(ECDAA_ISSUER_SECRET_KEY_BN254_LENGTH == ecdaa_issuer_secret_key_BN254_length());
+
+    printf("\tsuccess\n");
+}
+
+static void generate_then_serialize_deserialize()
+{
+    printf("Starting issuer_keypair::generate_then_serialize_deserialize...\n");
+
+    struct ecdaa_prng prng;
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
+
+    struct ecdaa_issuer_secret_key_BN254 isk;
+    struct ecdaa_issuer_public_key_BN254 ipk;
+    ecdaa_issuer_key_pair_BN254_generate(&ipk, &isk, &prng);
+
+    uint8_t public_buffer[ECDAA_ISSUER_PUBLIC_KEY_BN254_LENGTH];
+    ecdaa_issuer_public_key_BN254_serialize(public_buffer, &ipk);
+    struct ecdaa_issuer_public_key_BN254 ipk_deserialized;
+    TEST_ASSERT(0 == ecdaa_issuer_public_key_BN254_deserialize(&ipk_deserialized, public_buffer));
+
+    uint8_t secret_buffer[ECDAA_ISSUER_SECRET_KEY_BN254_LENGTH];
+    struct ecdaa_issuer_secret_key_BN254 isk_deserialized;
+    ecdaa_issuer_secret_key_BN254_serialize(secret_buffer, &isk);
+    TEST_ASSERT(0 == ecdaa_issuer_secret_key_BN254_deserialize(&isk_deserialized, secret_buffer));
+
+    printf("\tsuccess\n");
+}

@@ -19,24 +19,35 @@
 #include "ecdaa-test-utils.h"
 
 #include "../src/amcl-extensions/ecp_BN254.h"
+#include "../src/amcl-extensions/big_256_56.h"
 
 #include <ecdaa/member_keypair_BN254.h>
 #include <ecdaa/prng.h>
 
 static void member_secret_is_valid();
 static void member_public_is_valid();
-static void member_proof_checks();
+static void generated_validates();
+static void zero_nonce_ok();
+static void lengths_same();
+static void serialize_deserialize_secret();
+static void serialize_deserialize_public_no_check();
+static void serialize_deserialize_public();
 
 int main()
 {
     member_secret_is_valid();
-    member_proof_checks();
     member_public_is_valid();
+    zero_nonce_ok();
+    lengths_same();
+    generated_validates();
+    serialize_deserialize_secret();
+    serialize_deserialize_public_no_check();
+    serialize_deserialize_public();
 }
 
 void member_secret_is_valid()
 {
-    printf("Starting context::member_secret_is_valid...\n");
+    printf("Starting member_keypair::member_secret_is_valid...\n");
 
     struct ecdaa_member_secret_key_BN254 sk1;
     struct ecdaa_member_public_key_BN254 pk1;
@@ -62,7 +73,7 @@ void member_secret_is_valid()
 
 void member_public_is_valid()
 {
-    printf("Starting context::member_public_is_valid...\n");
+    printf("Starting member_keypair::member_public_is_valid...\n");
 
     struct ecdaa_prng prng;
     TEST_ASSERT(0 == ecdaa_prng_init(&prng));
@@ -72,12 +83,132 @@ void member_public_is_valid()
     uint8_t nonce[32] = {0};
     ecdaa_member_key_pair_BN254_generate(&pk, &sk, nonce, sizeof(nonce), &prng);
 
+    ECP_BN254 verify_pub;
+    ecp_BN254_set_to_generator(&verify_pub);
+    ECP_BN254_mul(&verify_pub, sk.sk);
+
+    TEST_ASSERT(ECP_BN254_equals(&verify_pub, &pk.Q));
+
     ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
 
-void member_proof_checks()
+static void generated_validates()
 {
-    // TODO: Check signature (c, s) in member's key
+    printf("Starting member_keypair::generated_validates...\n");
+
+    struct ecdaa_prng prng;
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
+
+    struct ecdaa_member_secret_key_BN254 sk;
+    struct ecdaa_member_public_key_BN254 pk;
+    uint8_t nonce[32] = {0};
+    ecdaa_member_key_pair_BN254_generate(&pk, &sk, nonce, sizeof(nonce), &prng);
+
+    TEST_ASSERT(0 == ecdaa_member_public_key_BN254_validate(&pk, nonce, sizeof(nonce)));
+
+    // Test with bad nonces
+    TEST_ASSERT(0 != ecdaa_member_public_key_BN254_validate(&pk, NULL, 0));
+    uint8_t different_nonce[3] = {0x1, 0x2, 0x3};
+    TEST_ASSERT(0 != ecdaa_member_public_key_BN254_validate(&pk, different_nonce, sizeof(different_nonce)));
+
+    printf("\tsuccess\n");
+}
+
+static void zero_nonce_ok()
+{
+    printf("Starting member_keypair::zero_nonce_ok...\n");
+
+    struct ecdaa_prng prng;
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
+
+    struct ecdaa_member_secret_key_BN254 sk;
+    struct ecdaa_member_public_key_BN254 pk;
+    ecdaa_member_key_pair_BN254_generate(&pk, &sk, NULL, 0, &prng);
+
+    ecdaa_prng_free(&prng);
+
+    printf("\tsuccess\n");
+}
+
+static void lengths_same()
+{
+    printf("Starting member_keypair::lengths_same...\n");
+
+    TEST_ASSERT(ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH == ecdaa_member_public_key_BN254_length());
+
+    TEST_ASSERT(ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH == ecdaa_member_secret_key_BN254_length());
+
+    printf("\tsuccess\n");
+}
+
+static void serialize_deserialize_secret()
+{
+    printf("Starting member_keypair::serialize_deserialize_secret...\n");
+
+    struct ecdaa_prng prng;
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
+
+    struct ecdaa_member_secret_key_BN254 sk;
+    big_256_56_random_mod_order(&sk.sk, get_csprng(&prng));
+
+    uint8_t buffer[ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH];
+    ecdaa_member_secret_key_BN254_serialize(buffer, &sk);
+
+    struct ecdaa_member_secret_key_BN254 sk_deserialized;
+    TEST_ASSERT(0 == ecdaa_member_secret_key_BN254_deserialize(&sk_deserialized, buffer));
+
+    ecdaa_prng_free(&prng);
+
+    printf("\tsuccess\n");
+}
+
+static void serialize_deserialize_public_no_check()
+{
+    printf("Starting member_keypair::serialize_deserialize_public_no_check...\n");
+
+    struct ecdaa_prng prng;
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
+
+    BIG_256_56 sk;
+    big_256_56_random_mod_order(&sk, get_csprng(&prng));
+
+    struct ecdaa_member_public_key_BN254 pk;
+    ecp_BN254_set_to_generator(&pk.Q);
+    ECP_BN254_mul(&pk.Q, sk);
+
+    uint8_t buffer[ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH];
+    ecdaa_member_public_key_BN254_serialize(buffer, &pk);
+
+    struct ecdaa_member_public_key_BN254 pk_deserialized;
+    TEST_ASSERT(0 == ecdaa_member_public_key_BN254_deserialize_no_check(&pk_deserialized, buffer));
+
+    ecdaa_prng_free(&prng);
+
+    printf("\tsuccess\n");
+}
+
+static void serialize_deserialize_public()
+{
+    printf("Starting member_keypair::serialize_deserialize_public_no_check...\n");
+
+    struct ecdaa_member_secret_key_BN254 sk;
+    struct ecdaa_member_public_key_BN254 pk;
+    uint8_t nonce[32] = {0};
+
+    struct ecdaa_prng prng;
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
+
+    ecdaa_member_key_pair_BN254_generate(&pk, &sk, nonce, sizeof(nonce), &prng);
+
+    uint8_t buffer[ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH];
+    ecdaa_member_public_key_BN254_serialize(buffer, &pk);
+
+    struct ecdaa_member_public_key_BN254 pk_deserialized;
+    TEST_ASSERT(0 == ecdaa_member_public_key_BN254_deserialize(&pk_deserialized, buffer, nonce, sizeof(nonce)));
+
+    ecdaa_prng_free(&prng);
+
+    printf("\tsuccess\n");
 }

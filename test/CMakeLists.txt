@@ -19,7 +19,8 @@ include(CTest)
 set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/testBin/)
 
 set(TEST_SRCS
-        sign-and-verify-tests.c
+        group_public_key-tests.c
+        signature-tests.c
         issuer_keypair-tests.c
         credential-tests.c
         member_keypair-tests.c
@@ -51,3 +52,7 @@ foreach(case_file ${TEST_SRCS})
 
   add_dependencies(${case_name} ecdaa)
 endforeach()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/integration-tests.py ${CURRENT_TEST_BINARY_DIR}/integration-tests.py)
+add_test(NAME integration-tests
+        COMMAND python "${CURRENT_TEST_BINARY_DIR}/integration-tests.py" "${CMAKE_BINARY_DIR}/bin/")
