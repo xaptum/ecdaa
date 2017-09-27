@@ -29,6 +29,7 @@
 
 static void hash_not_zero();
 static void hash_two_not_zero();
+static void hash_two_same_messages();
 static void hash_ok_with_no_msg();
 static void hash_same_message();
 static void mul_and_add_all_zeros();
@@ -43,6 +44,7 @@ int main()
 {
     hash_not_zero();
     hash_two_not_zero();
+    hash_two_same_messages();
     hash_ok_with_no_msg();
     hash_same_message();
     mul_and_add_all_zeros();
