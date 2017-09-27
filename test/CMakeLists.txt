@@ -20,7 +20,7 @@ set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/testBin/)
 
 set(TEST_SRCS
         group_public_key-tests.c
-        sign-and-verify-tests.c
+        signature-tests.c
         issuer_keypair-tests.c
         credential-tests.c
         member_keypair-tests.c
