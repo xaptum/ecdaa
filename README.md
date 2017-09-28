@@ -40,7 +40,18 @@ ctest -V
 The only header that has to be included is `ecdaa.h`.
 The name of the library is `libecdaa`.
 
-TODO: CMake "find" inclusion, and options for building a dynamic library.
+A CMake file for "finding" this library is included to ease
+the work of including this project.
+To use this file, add the `contrib` directory to the `CMAKE_MODULE_PATH`
+and call `find_package(ECDAA)`.
+After that, to use `libecdaa`, just add `ecdaa` to the `target_link_libraries`.
+
+The pairing-friendly curves supported by the library are set using the CMake
+variable `ECDAA_CURVES`.
+The current options are `BN254`, `BN254CX`, and `BLS383`;
+so, to enable all three, pass the following command line parameter when invoking `cmake`:
+`-DECDAA_CURVES=BN254\;BN254CX\;BLS383`.
+If no `ECDAA_CURVES` is set, the default is to build all three curves: `BN254`, `BN254CX`, and `BLS383`.
 
 ## Random number generator
 

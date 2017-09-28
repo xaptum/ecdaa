@@ -14,6 +14,9 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
+list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/../contrib/)
+find_package(ECDAA REQUIRED QUIET)
+
 add_definitions("-Wno-unused-function")
 
 set(CURRENT_PROGRAMS_BINARY_DIR ${CMAKE_BINARY_DIR}/bin/)
@@ -35,10 +38,6 @@ foreach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
 
         target_link_libraries(${program_name}
                 PRIVATE ecdaa
-                )
-
-        target_include_directories(${program_name}
-                PRIVATE ${PROJECT_SOURCE_DIR}/include
                 )
 
         set_target_properties(${program_name} PROPERTIES

@@ -18,19 +18,29 @@ include(CTest)
 
 set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/testBin/)
 
-set(TEST_SRCS
-        group_public_key-tests.c
-        signature-tests.c
-        issuer_keypair-tests.c
-        credential-tests.c
-        member_keypair-tests.c
-        big_256_56-tests.c
-        ecp_BN254-tests.c
-        ecp2_BN254-tests.c
-        prng-tests.c
-        schnorr-tests.c
-        benchmarks.c
-        )
+file(GLOB_RECURSE TEST_FILES "*.c")
+
+foreach(template_file ${TEST_FILES})
+        execute_process(COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
+                                        --template ${template_file}
+                                        --curves ${ECDAA_CURVES}
+                                        --out-dir ${CMAKE_BINARY_DIR}
+                                        --top-level-dir ${PROJECT_SOURCE_DIR}
+                                        --names-only
+                OUTPUT_VARIABLE processed_file_names)
+
+        add_custom_command(OUTPUT ${processed_file_names}
+                COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
+                                --template ${template_file}
+                                --curves ${ECDAA_CURVES}
+                                --out-dir ${CMAKE_BINARY_DIR}
+                                --top-level-dir ${PROJECT_SOURCE_DIR}
+                DEPENDS ${template_file})
+
+        list(APPEND TEST_SRCS ${processed_file_names})
+endforeach(template_file ${FILES_TO_PROCESS})
+
+file(COPY ecdaa-test-utils.h DESTINATION ${CMAKE_BINARY_DIR}/test/)
 
 foreach(case_file ${TEST_SRCS})
   get_filename_component(case_name ${case_file} NAME_WE)
@@ -41,6 +51,7 @@ foreach(case_file ${TEST_SRCS})
     )
   target_include_directories(${case_name}
           PRIVATE ${PROJECT_SOURCE_DIR}/include/ecdaa/
+          PRIVATE ${CMAKE_BINARY_DIR}/
           )
   set_target_properties(${case_name} PROPERTIES
           RUNTIME_OUTPUT_DIRECTORY ${CURRENT_TEST_BINARY_DIR}

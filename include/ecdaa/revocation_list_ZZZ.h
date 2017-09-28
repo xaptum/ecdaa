@@ -16,16 +16,31 @@
  *
  *****************************************************************************/
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
+#ifndef ECDAA_REVOCATION_LIST_ZZZ_H
+#define ECDAA_REVOCATION_LIST_ZZZ_H
 #pragma once
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/prng.h>
-#include <ecdaa/revocation_list_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct ecdaa_member_secret_key_ZZZ;
+
+#include <stddef.h>
+
+/*
+ * Secret-key revocation list.
+ *
+ * `list` is an array of `ecdaa_member_secret_key_ZZZ`s.
+ * `length` is the size of `list`.
+ */
+struct ecdaa_revocation_list_ZZZ {
+    size_t length;
+    struct ecdaa_member_secret_key_ZZZ *list;
+};
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

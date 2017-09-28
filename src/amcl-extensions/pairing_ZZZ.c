@@ -16,16 +16,15 @@
  *
  *****************************************************************************/
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
-#pragma once
+#include "./pairing_ZZZ.h"
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/prng.h>
-#include <ecdaa/revocation_list_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
+#include <amcl/fp2_ZZZ.h>
+#include <amcl/pair_ZZZ.h>
 
-#endif
+void compute_pairing_ZZZ(FP12_YYY *pairing_out,
+                         ECP_ZZZ *g1_point,
+                         ECP2_ZZZ *g2_point)
+{
+    PAIR_ZZZ_ate(pairing_out, g2_point, g1_point);
+    PAIR_ZZZ_fexp(pairing_out);
+}

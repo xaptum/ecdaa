@@ -16,16 +16,30 @@
  *
  *****************************************************************************/
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
+#ifndef ECDAA_PAIRING_ZZZ_H
+#define ECDAA_PAIRING_ZZZ_H
 #pragma once
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/prng.h>
-#include <ecdaa/revocation_list_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <amcl/ecp_ZZZ.h>
+#include <amcl/ecp2_ZZZ.h>
+#include <amcl/fp12_ZZZ.h>
+
+#include <stddef.h>
+
+/*
+ * Compute the optimal Ate pairing.
+ */
+void compute_pairing_ZZZ(FP12_YYY *pairing_out,
+                         ECP_ZZZ *g1_point,
+                         ECP2_ZZZ *g2_point);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
+
