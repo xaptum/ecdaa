@@ -24,7 +24,7 @@ The project is self-contained, and provides all DAA functionality for Issuers, M
 git submodule update --init --recursive
 mkdir -p build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DECDAA_CURVES=BN254\;BN254CX\;BLS383
 cmake --build . -- -j4
 ```
 
@@ -94,6 +94,9 @@ Again, the format of the serialized length macro/function is
 The `examples` directory contains example code for using the library,
 where for simplicity communication between the Issuer, Member, and Verifier
 is done using regular files.
+
+The example programs use the BN254 curve type.
+
 These programs are built by default, though this can be disabled
 by setting the CMake option `ECDAA_BUILD_EXAMPLE_PROGRAMS=OFF`.
 The examples require Libsodium, and by default the binaries are placed
