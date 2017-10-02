@@ -37,6 +37,8 @@ jobs:
 
   # Debug build, to get code coverage with gcov
   - env: TYPE=DEBUG_WITH_COVERAGE
+    before_install:
+      - pip install --user cpp-coveralls
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - cmake . -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON
@@ -44,7 +46,7 @@ jobs:
       - cmake --build . -- -j2
       - ctest -VV
     after_success:
-      - .travis/upload-gcov-results.sh ${TRAVIS_BUILD_DIR}
+      - coveralls --exclude examples --exclude amcl --exclude ${LIBSODIUM_DIR}
 
   # Release build, clang
   - env: TYPE=RELEASE-WITH-CLANG
