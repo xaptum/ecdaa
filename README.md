@@ -7,7 +7,7 @@ The project is self-contained, and provides all DAA functionality for Issuers, M
 # Project Status
 
 [![Build Status](https://travis-ci.org/xaptum/ecdaa.svg?branch=master)](https://travis-ci.org/xaptum/ecdaa)
-[![codecov](https://codecov.io/gh/xaptum/ecdaa/branch/master/graph/badge.svg)](https://codecov.io/gh/xaptum/ecdaa)
+[![Coverage Status](https://coveralls.io/repos/github/xaptum/ecdaa/badge.svg?branch=master)](https://coveralls.io/github/xaptum/ecdaa?branch=master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/13775/badge.svg)](https://scan.coverity.com/projects/xaptum-ecdaa)
 
 # Requirements
@@ -188,7 +188,7 @@ verify message-text sig.bin gpk.bin sk_revocation_list.bin num-sks-in-sk_revocat
 # Testing and Analysis
 
 The unit-tests are contained in the `test` directory.
-Test code coverage is measured using `gcov`, and monitored via `codecov`.
+Test code coverage is measured using `gcov`, and monitored via `coveralls`.
 
 ## Valgrind
 
