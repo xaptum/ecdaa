@@ -20,6 +20,8 @@ fi
 
 version=1.0.13
 install_dir="$1"
+mkdir -p ${install_dir}
+cd ${install_dir}
 wget https://download.libsodium.org/libsodium/releases/libsodium-${version}.tar.gz
 tar xvfz libsodium-${version}.tar.gz
 cd libsodium-${version}
