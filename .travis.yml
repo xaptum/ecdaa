@@ -64,7 +64,11 @@ jobs:
       apt:
         packages:
           - cppcheck
+    before_script:
+      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
+      - cmake . -DCMAKE_BUILD_TYPE=Release
     script:
+      - cmake --build . -- -j2
       - .travis/run-cppcheck.sh
 
   # Memcheck
