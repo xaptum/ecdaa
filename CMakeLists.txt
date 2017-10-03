@@ -14,8 +14,9 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
-find_package(AMCL REQUIRED QUIET)
+project(ecdaa
+        LANGUAGES C
+        VERSION "0.1.1")
 
 option(DISABLE_LIBSODIUM_RNG_SEED_FUNCTION
         "Disable the default Libsodium-based seed function"
@@ -25,9 +26,19 @@ option(ECDAA_BUILD_EXAMPLE_PROGRAMS
         "Build the top-level driver programs for running ECDAA task"
         ON)
 
-project(ecdaa
-        LANGUAGES C
-        VERSION "0.1.1")
+set(CURVE_TYPES BN254 BN254CX BLS383)
+if(NOT ECDAA_CURVES)
+        set(ECDAA_CURVES ${CURVE_TYPES})
+endif(NOT ECDAA_CURVES)
+foreach(curve ${ECDAA_CURVES})
+        list(FIND CURVE_TYPES ${curve} curve_index)
+        if(${curve_index} EQUAL -1)
+                MESSAGE(ERROR ": Curve type ${curve} not supported")
+        endif(${curve_index} EQUAL -1)
+endforeach(curve ${ECDAA_CURVES})
+
+list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+find_package(AMCL REQUIRED QUIET)
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -std=c99")
 
@@ -52,41 +63,65 @@ else(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
         SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDISABLE_LIBSODIUM_RNG_SEED_FUNCTION")
 endif(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
 
-set(ECDAA_SRC_DIR src)
-set(ECDAA_INTERNAL_SRC_DIR ${ECDAA_SRC_DIR}/internal/)
-set(ECDAA_AMCL_EXTENSIONS_SRC_DIR ${ECDAA_SRC_DIR}/amcl-extensions/)
-set(ECDAA_SRCS
-        ${ECDAA_SRC_DIR}/credential_BN254.c
-        ${ECDAA_SRC_DIR}/group_public_key_BN254.c
-        ${ECDAA_SRC_DIR}/issuer_keypair_BN254.c
-        ${ECDAA_SRC_DIR}/member_keypair_BN254.c
-        ${ECDAA_SRC_DIR}/prng.c
-        ${ECDAA_SRC_DIR}/signature_BN254.c
-        ${ECDAA_INTERNAL_SRC_DIR}/explicit_bzero.c
-        ${ECDAA_INTERNAL_SRC_DIR}/schnorr.c
-        ${ECDAA_AMCL_EXTENSIONS_SRC_DIR}/big_256_56.c
-        ${ECDAA_AMCL_EXTENSIONS_SRC_DIR}/ecp_BN254.c
-        ${ECDAA_AMCL_EXTENSIONS_SRC_DIR}/ecp2_BN254.c
-        ${ECDAA_AMCL_EXTENSIONS_SRC_DIR}/pairing_BN254.c
+set(GENERATED_TOPLEVEL_INCLUDE_DIR "${CMAKE_BINARY_DIR}/include")
+
+file(GLOB PUBLIC_HEADERS "include/ecdaa/*.h")
+file(GLOB_RECURSE IMPLEMENTATION_H_FILES "src/*.h")
+file(GLOB_RECURSE IMPLEMENTATION_C_FILES "src/*.c")
+set(FILES_TO_PROCESS ${PUBLIC_HEADERS} ${IMPLEMENTATION_H_FILES} ${IMPLEMENTATION_C_FILES})
+
+foreach(template_file ${FILES_TO_PROCESS})
+        execute_process(COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
+                                        --template ${template_file}
+                                        --curves ${ECDAA_CURVES}
+                                        --out-dir ${CMAKE_BINARY_DIR}
+                                        --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
+                                        --names-only
+                OUTPUT_VARIABLE processed_file_names)
+
+        add_custom_command(OUTPUT ${processed_file_names}
+                COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
+                                --template ${template_file}
+                                --curves ${ECDAA_CURVES}
+                                --out-dir ${CMAKE_BINARY_DIR}
+                                --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
+                DEPENDS ${template_file})
+
+        list(APPEND SRCS ${processed_file_names})
+endforeach(template_file ${FILES_TO_PROCESS})
+
+set(TOPLEVEL_HEADER ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa.h)
+add_custom_target(toplevel_header
+        COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
+                        --template ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa.h 
+                        --curves ${ECDAA_CURVES}
+                        --out-dir ${CMAKE_BINARY_DIR}
+                        --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
+                        --top-level-header)
+
+add_custom_target(generate_sources DEPENDS ${SRCS} toplevel_header)
+
+add_library(ecdaa
+        ${SRCS}
         )
 
-add_library(ecdaa ${ECDAA_SRCS})
+target_include_directories(ecdaa
+        PUBLIC
+        ${AMCL_INCLUDE_DIRS}
+        ${GENERATED_TOPLEVEL_INCLUDE_DIR}
+        )
 
 add_dependencies(ecdaa AMCL)
-
-target_include_directories(ecdaa
-        PUBLIC include
-        PUBLIC ${AMCL_INCLUDE_DIRS})
+add_dependencies(ecdaa toplevel_header)
 
 target_link_libraries(ecdaa
         PRIVATE ${AMCL_LIBRARIES}
         ${ECDAA_SEED_LINK_LIBRARY})
 
-enable_testing()
-set(ECDAA_TEST_DIR test)
-add_subdirectory(${ECDAA_TEST_DIR})
-
 if(ECDAA_BUILD_EXAMPLE_PROGRAMS)
         set(ECDAA_PROGRAMS_DIR examples)
         add_subdirectory(${ECDAA_PROGRAMS_DIR})
 endif(ECDAA_BUILD_EXAMPLE_PROGRAMS)
+
+enable_testing()
+add_subdirectory(test)

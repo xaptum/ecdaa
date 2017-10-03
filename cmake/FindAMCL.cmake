@@ -20,8 +20,18 @@ set(AMCL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/amcl/)
 set(AMCL_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/../amcl/version3/c/)
 set(AMCL_HEADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/amcl/amcl/)
 
-# Set config options to build BN254 pairing-friendly curve, only
-set(AMCL_CONFIG_OPTIONS "17\\n0\\n")
+set(AMCL_CURVE_TYPES BN254 BN254CX BLS383)
+set(AMCL_CURVE_CONFIG_NUMBERS 17 18 19)
+
+set(AMCL_CONFIG_OPTIONS "")
+foreach(curve ${ECDAA_CURVES})
+        list(FIND AMCL_CURVE_TYPES ${curve} curve_index)
+        list(GET AMCL_CURVE_CONFIG_NUMBERS ${curve_index} curve_config_num)
+        list(APPEND AMCL_CONFIG_OPTIONS "${curve_config_num}")
+endforeach(curve ${ECDAA_CURVES})
+list(APPEND AMCL_CONFIG_OPTIONS "0\\n")
+string(REPLACE ";" "\\n" AMCL_CONFIG_OPTIONS "${AMCL_CONFIG_OPTIONS}")
+
 if (NOT TARGET AMCL)
         ExternalProject_Add(AMCL
                 PREFIX ${AMCL_PREFIX} 

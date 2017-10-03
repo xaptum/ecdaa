@@ -16,16 +16,32 @@
  *
  *****************************************************************************/
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
-#pragma once
-
-#include <ecdaa/credential_ZZZ.h>
 #include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/prng.h>
-#include <ecdaa/revocation_list_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
 
-#endif
+#include "./amcl-extensions/ecp2_ZZZ.h"
+
+size_t ecdaa_group_public_key_ZZZ_length(void)
+{
+    return ECDAA_GROUP_PUBLIC_KEY_ZZZ_LENGTH;
+}
+
+void ecdaa_group_public_key_ZZZ_serialize(uint8_t *buffer_out,
+                                          struct ecdaa_group_public_key_ZZZ *gpk)
+{
+    ecp2_ZZZ_serialize(buffer_out, &gpk->X);
+    ecp2_ZZZ_serialize(buffer_out + ECP2_ZZZ_LENGTH, &gpk->Y);
+}
+
+int ecdaa_group_public_key_ZZZ_deserialize(struct ecdaa_group_public_key_ZZZ *gpk_out,
+                                           uint8_t *buffer_in)
+{
+    int ret = 0;
+
+    if (0 != ecp2_ZZZ_deserialize(&gpk_out->X, buffer_in))
+        ret = -1;
+
+    if (0 != ecp2_ZZZ_deserialize(&gpk_out->Y, buffer_in + ECP2_ZZZ_LENGTH))
+        ret = -1;
+
+    return ret;
+}

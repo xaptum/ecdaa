@@ -24,7 +24,7 @@ The project is self-contained, and provides all DAA functionality for Issuers, M
 git submodule update --init --recursive
 mkdir -p build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DECDAA_CURVES=BN254\;BN254CX\;BLS383
 cmake --build . -- -j4
 ```
 
@@ -40,7 +40,18 @@ ctest -V
 The only header that has to be included is `ecdaa.h`.
 The name of the library is `libecdaa`.
 
-TODO: CMake "find" inclusion, and options for building a dynamic library.
+A CMake file for "finding" this library is included to ease
+the work of including this project.
+To use this file, add the `contrib` directory to the `CMAKE_MODULE_PATH`
+and call `find_package(ECDAA)`.
+After that, to use `libecdaa`, just add `ecdaa` to the `target_link_libraries`.
+
+The pairing-friendly curves supported by the library are set using the CMake
+variable `ECDAA_CURVES`.
+The current options are `BN254`, `BN254CX`, and `BLS383`;
+so, to enable all three, pass the following command line parameter when invoking `cmake`:
+`-DECDAA_CURVES=BN254\;BN254CX\;BLS383`.
+If no `ECDAA_CURVES` is set, the default is to build all three curves: `BN254`, `BN254CX`, and `BLS383`.
 
 ## Random number generator
 
@@ -83,6 +94,9 @@ Again, the format of the serialized length macro/function is
 The `examples` directory contains example code for using the library,
 where for simplicity communication between the Issuer, Member, and Verifier
 is done using regular files.
+
+The example programs use the BN254 curve type.
+
 These programs are built by default, though this can be disabled
 by setting the CMake option `ECDAA_BUILD_EXAMPLE_PROGRAMS=OFF`.
 The examples require Libsodium, and by default the binaries are placed
