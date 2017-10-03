@@ -101,10 +101,13 @@ int ecdaa_prng_init_custom(struct ecdaa_prng *prng_in, char *seed, size_t seed_s
 {
     prng_in->initialized = ECDAA_PRNG_INITIALIZED_NO;
 
-    if (AMCL_SEED_SIZE > seed_size)
+    if (AMCL_SEED_SIZE > seed_size) {
         return -1;
+    } else if (INT_MAX < seed_size) {
+        return -1;
+    }
 
-    RAND_seed(&prng_in->impl, seed_size, seed);
+    RAND_seed(&prng_in->impl, (int)seed_size, seed);
 
     prng_in->initialized = ECDAA_PRNG_INITIALIZED_YES;
 
