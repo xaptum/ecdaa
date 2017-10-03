@@ -98,7 +98,7 @@ void schnorr_sign_benchmark()
 {
     unsigned rounds = 2500;
 
-    printf("Starting schnorr::schnorr_sign_benchmark (%d iterations)...\n", rounds);
+    printf("Starting schnorr::schnorr_sign_benchmark (%u iterations)...\n", rounds);
 
     ECP_ZZZ public;
     BIG_XXX private;
@@ -139,7 +139,7 @@ static void sign_benchmark()
 {
     unsigned rounds = 250;
 
-    printf("Starting sign-and-verify::sign_benchmark (%d iterations)...\n", rounds);
+    printf("Starting sign-and-verify::sign_benchmark (%u iterations)...\n", rounds);
 
     sign_and_verify_fixture fixture;
     setup(&fixture);
@@ -169,7 +169,7 @@ static void verify_benchmark()
 {
     unsigned rounds = 250;
 
-    printf("Starting sign-and-verify::verify_benchmark (%d iterations)...\n", rounds);
+    printf("Starting sign-and-verify::verify_benchmark (%u iterations)...\n", rounds);
 
     sign_and_verify_fixture fixture;
     setup(&fixture);

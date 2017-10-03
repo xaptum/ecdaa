@@ -242,14 +242,11 @@ The `cppcheck` static analyzer is also available, and is run every build on `tra
 To run it do the following:
 
 ```bash
-cppcheck -v --std=c99 --error-exitcode=6 include/ src/ test/
+cppcheck --enable=all -v --std=c99 --error-exitcode=6 include/ src/ test/
 ```
 
 This tool is generally considered to have a lower false-positive rate than
 many other static analyzers, though with that comes a potential loss of strictness.
-
-TODO: Once we have tests that actually use all the defined functions, we should
-use `enable=all` in `cppcheck`.
 
 ## Address and Undefined Behavior Sanitizers
 

@@ -14,14 +14,13 @@
 #    limitations under the License
 
 if [[ $# -eq 0 ]]; then
-        toplevel_dir="`pwd`"
+        generated_sources_dir="`pwd`"
 elif [[ $# -eq 1 ]]; then
-        toplevel_dir="$1"
+        generated_sources_dir="$1"
 else
         echo "usage: $0 <path-to-toplevel-directory>"
         exit 1
 fi
 
 # "error-exitcode" makes bugs cause non-zero return code
-# TODO: Add enable=all once we have tests using _all_ functions
-cppcheck -v --std=c99 --error-exitcode=6 ${toplevel_dir}/include/ ${toplevel_dir}/src/ ${toplevel_dir}/test/
+cppcheck -v --std=c99 --error-exitcode=6 --enable=all --suppress=missingIncludeSystem -I ${generated_sources_dir}/include/ -I ${generated_sources_dir} ${generated_sources_dir}/src/ ${generated_sources_dir}/test/ ${generated_sources_dir}/examples/ --suppress=purgedConfiguration
