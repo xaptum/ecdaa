@@ -95,7 +95,19 @@ int ecp2_ZZZ_deserialize(ECP2_ZZZ *point_out,
         return -1;
     }
 
-    // TODO: How to check for subgroup attack? How get cofactor of G2?
+    // 6) Check that point is in the proper subgroup
+    //  (step 4 in X9.62 Sec 5.2.2)
+    //  (check order*point == inf).
+    ECP2_ZZZ point_copy;
+    ECP2_ZZZ_copy(&point_copy, point_out);
+
+    BIG_XXX curve_order;
+    BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
+    ECP2_ZZZ_mul(&point_copy, curve_order);
+
+    if (!ECP2_ZZZ_isinf(&point_copy)) {
+        return -1;
+    }
 
     return 0;
 }
