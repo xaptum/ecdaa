@@ -31,6 +31,8 @@
 #include <linux/random.h>
 #endif
 
+#include <limits.h>
+
 static int check_entropy()
 {
     int ret = 0;
