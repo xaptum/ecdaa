@@ -55,29 +55,29 @@ int main(int argc, char *argv[])
     }
 
     // Read member secret key from disk
-    struct ecdaa_member_secret_key_BN254 sk;
-    if (ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH, args.secret_key_file)) {
+    struct ecdaa_member_secret_key_FP256BN sk;
+    if (ECDAA_MEMBER_SECRET_KEY_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_MEMBER_SECRET_KEY_FP256BN_LENGTH, args.secret_key_file)) {
         fprintf(stderr, "Error reading member secret key file: \"%s\"\n", args.secret_key_file);
         return 1;
     }
-    if (0 != ecdaa_member_secret_key_BN254_deserialize(&sk, buffer)) {
+    if (0 != ecdaa_member_secret_key_FP256BN_deserialize(&sk, buffer)) {
         fputs("Error deserializing member secret key\n", stderr);
         return 1;
     }
 
     // Read member credential from disk
-    struct ecdaa_credential_BN254 cred;
-    if (ECDAA_CREDENTIAL_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_CREDENTIAL_BN254_LENGTH, args.credential_file)) {
+    struct ecdaa_credential_FP256BN cred;
+    if (ECDAA_CREDENTIAL_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_CREDENTIAL_FP256BN_LENGTH, args.credential_file)) {
         fprintf(stderr, "Error reading member credential file: \"%s\"\n", args.credential_file);
         return 1;
     }
-    if (0 != ecdaa_credential_BN254_deserialize(&cred, buffer)) {
+    if (0 != ecdaa_credential_FP256BN_deserialize(&cred, buffer)) {
         fputs("Error deserializing member credential\n", stderr);
         return 1;
     }
 
     // Create signature
-    struct ecdaa_signature_BN254 sig;
+    struct ecdaa_signature_FP256BN sig;
     uint8_t message[MAX_MESSAGE_SIZE];
     int read_ret = read_file_into_buffer(message, sizeof(message), args.message_file);
     if (read_ret < 0) {
@@ -85,14 +85,14 @@ int main(int argc, char *argv[])
         return 1;
     }
     uint32_t msg_len = (uint32_t)read_ret;
-    if (0 != ecdaa_signature_BN254_sign(&sig, message, msg_len, &sk, &cred, &rng)) {
+    if (0 != ecdaa_signature_FP256BN_sign(&sig, message, msg_len, &sk, &cred, &rng)) {
         fprintf(stderr, "Error signing message: \"%s\"\n", (char*)message);
         return 1;
     }
 
     // Write signature to file
-    ecdaa_signature_BN254_serialize(buffer, &sig);
-    if (ECDAA_SIGNATURE_BN254_LENGTH != write_buffer_to_file(args.sig_out_file, buffer, ECDAA_SIGNATURE_BN254_LENGTH)) {
+    ecdaa_signature_FP256BN_serialize(buffer, &sig);
+    if (ECDAA_SIGNATURE_FP256BN_LENGTH != write_buffer_to_file(args.sig_out_file, buffer, ECDAA_SIGNATURE_FP256BN_LENGTH)) {
         fprintf(stderr, "Error writing signature to file: \"%s\"\n", args.sig_out_file);
         return 1;
     }

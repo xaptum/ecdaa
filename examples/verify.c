@@ -39,7 +39,7 @@ void print_usage(const char *my_name);
 
 int parse_args(struct command_line_args *args_out, int argc, char *argv[]);
 
-int parse_sk_rev_list_file(struct ecdaa_revocation_list_BN254 *rev_list_out, const char *filename, unsigned num_revs);
+int parse_sk_rev_list_file(struct ecdaa_revocation_list_FP256BN *rev_list_out, const char *filename, unsigned num_revs);
 
 int main(int argc, char *argv[])
 {
@@ -51,29 +51,29 @@ int main(int argc, char *argv[])
         return 1;
 
     // Read signature from disk
-    struct ecdaa_signature_BN254 sig;
-    if (ECDAA_SIGNATURE_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_SIGNATURE_BN254_LENGTH, args.sig_file)) {
+    struct ecdaa_signature_FP256BN sig;
+    if (ECDAA_SIGNATURE_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_SIGNATURE_FP256BN_LENGTH, args.sig_file)) {
         fprintf(stderr, "Error reading signature file: \"%s\"\n", args.sig_file);
         return 1;
     }
-    if (0 != ecdaa_signature_BN254_deserialize(&sig, buffer)) {
+    if (0 != ecdaa_signature_FP256BN_deserialize(&sig, buffer)) {
         fputs("Error deserializing signature\n", stderr);
         return 1;
     }
 
     // Read group public key from disk
-    struct ecdaa_group_public_key_BN254 gpk;
-    if (ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH, args.gpk_file)) {
+    struct ecdaa_group_public_key_FP256BN gpk;
+    if (ECDAA_GROUP_PUBLIC_KEY_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_GROUP_PUBLIC_KEY_FP256BN_LENGTH, args.gpk_file)) {
         fprintf(stderr, "Error reading group public key file: \"%s\"\n", args.gpk_file);
         return 1;
     }
-    if (0 != ecdaa_group_public_key_BN254_deserialize(&gpk, buffer)) {
+    if (0 != ecdaa_group_public_key_FP256BN_deserialize(&gpk, buffer)) {
         fputs("Error deserializing group public key\n", stderr);
         return 1;
     }
 
     // Read in sk_rev_list from disk.
-    struct ecdaa_revocation_list_BN254 sk_rev_list;
+    struct ecdaa_revocation_list_FP256BN sk_rev_list;
     if (0 != parse_sk_rev_list_file(&sk_rev_list, args.sk_rev_list_file, args.number_of_sk_revs)) {
         fputs("Error parsing revocation list file\n", stderr);
         return 1;
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     uint32_t msg_len = (uint32_t)read_ret;
-    if (0 != ecdaa_signature_BN254_verify(&sig, &gpk, &sk_rev_list, message, msg_len)) {
+    if (0 != ecdaa_signature_FP256BN_verify(&sig, &gpk, &sk_rev_list, message, msg_len)) {
         fprintf(stderr, "Signature not valid!\n");
         return 1;
     }
@@ -138,7 +138,7 @@ int parse_args(struct command_line_args *args_out, int argc, char *argv[])
     return 0;
 }
 
-int parse_sk_rev_list_file(struct ecdaa_revocation_list_BN254 *rev_list_out, const char *filename, unsigned num_revs)
+int parse_sk_rev_list_file(struct ecdaa_revocation_list_FP256BN *rev_list_out, const char *filename, unsigned num_revs)
 {
     int ret = 0;
 
@@ -147,7 +147,7 @@ int parse_sk_rev_list_file(struct ecdaa_revocation_list_BN254 *rev_list_out, con
 
     if (NULL != filename && num_revs != 0) {
         // Allocate a buffer to hold the full file.
-        size_t file_length = num_revs * ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH;
+        size_t file_length = num_revs * ECDAA_MEMBER_SECRET_KEY_FP256BN_LENGTH;
         uint8_t *buffer = malloc(file_length);
         if (NULL == buffer) {
             ret = 1;
@@ -155,7 +155,7 @@ int parse_sk_rev_list_file(struct ecdaa_revocation_list_BN254 *rev_list_out, con
         }
 
         // Allocate the revocation list array.
-        rev_list_out->list = malloc(num_revs * sizeof(struct ecdaa_member_secret_key_BN254));
+        rev_list_out->list = malloc(num_revs * sizeof(struct ecdaa_member_secret_key_FP256BN));
         if (NULL == rev_list_out->list) {
             ret = 1;
             goto cleanup;
@@ -170,8 +170,8 @@ int parse_sk_rev_list_file(struct ecdaa_revocation_list_BN254 *rev_list_out, con
 
         // Deserialize each secret key and add it to the list.
         for (unsigned i = 0; i < num_revs; i++) {
-            int deserial_ret = ecdaa_member_secret_key_BN254_deserialize(&rev_list_out->list[i],
-                                                                         buffer + i*ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH);
+            int deserial_ret = ecdaa_member_secret_key_FP256BN_deserialize(&rev_list_out->list[i],
+                                                                         buffer + i*ECDAA_MEMBER_SECRET_KEY_FP256BN_LENGTH);
             rev_list_out->length++;
             if (0 != deserial_ret) {
                 ret = 1;

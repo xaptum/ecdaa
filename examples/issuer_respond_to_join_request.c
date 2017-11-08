@@ -63,12 +63,12 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Nonce seems too large (%zu bytes). Quitting\n", nonce_len);
         return 1;
     }
-    struct ecdaa_member_public_key_BN254 pk;
-    if (ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH, args.member_public_key_file)) {
+    struct ecdaa_member_public_key_FP256BN pk;
+    if (ECDAA_MEMBER_PUBLIC_KEY_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_MEMBER_PUBLIC_KEY_FP256BN_LENGTH, args.member_public_key_file)) {
         fprintf(stderr, "Error reading member public key file: \"%s\"\n", args.member_public_key_file);
         return 1;
     }
-    int deserialize_ret = ecdaa_member_public_key_BN254_deserialize(&pk, buffer, (uint8_t*)args.nonce, (uint32_t)nonce_len);
+    int deserialize_ret = ecdaa_member_public_key_FP256BN_deserialize(&pk, buffer, (uint8_t*)args.nonce, (uint32_t)nonce_len);
     if (-1 == deserialize_ret) {
         fputs("Error: member public key is mal-formed\n", stderr);
         return 1;
@@ -78,34 +78,34 @@ int main(int argc, char *argv[])
     }
 
     // Read issuer secret key from disk;
-    struct ecdaa_issuer_secret_key_BN254 isk;
-    if (ECDAA_ISSUER_SECRET_KEY_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_ISSUER_SECRET_KEY_BN254_LENGTH, args.issuer_secret_key_file)) {
+    struct ecdaa_issuer_secret_key_FP256BN isk;
+    if (ECDAA_ISSUER_SECRET_KEY_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_ISSUER_SECRET_KEY_FP256BN_LENGTH, args.issuer_secret_key_file)) {
         fprintf(stderr, "Error reading issuer secret key file: \"%s\"\n", args.issuer_secret_key_file);
         return 1;
     }
-    if (0 != ecdaa_issuer_secret_key_BN254_deserialize(&isk, buffer)) {
+    if (0 != ecdaa_issuer_secret_key_FP256BN_deserialize(&isk, buffer)) {
         fputs("Error deserializing issuer secret key\n", stderr);
         return 1;
     }
 
     // Generate new credential for this member, along with a credential signature.
-    struct ecdaa_credential_BN254 cred;
-    struct ecdaa_credential_BN254_signature cred_sig;
-    if (0 != ecdaa_credential_BN254_generate(&cred, &cred_sig, &isk, &pk, &rng)) {
+    struct ecdaa_credential_FP256BN cred;
+    struct ecdaa_credential_FP256BN_signature cred_sig;
+    if (0 != ecdaa_credential_FP256BN_generate(&cred, &cred_sig, &isk, &pk, &rng)) {
         fputs("Error generating credential\n", stderr);
         return 1;
     }
 
     // Write credential to file
-    ecdaa_credential_BN254_serialize(buffer, &cred);
-    if (ECDAA_CREDENTIAL_BN254_LENGTH != write_buffer_to_file(args.credential_out_file, buffer, ECDAA_CREDENTIAL_BN254_LENGTH)) {
+    ecdaa_credential_FP256BN_serialize(buffer, &cred);
+    if (ECDAA_CREDENTIAL_FP256BN_LENGTH != write_buffer_to_file(args.credential_out_file, buffer, ECDAA_CREDENTIAL_FP256BN_LENGTH)) {
         fprintf(stderr, "Error writing credential to file: \"%s\"\n", args.credential_out_file);
         return 1;
     }
 
     // Write credential signature to file
-    ecdaa_credential_BN254_signature_serialize(buffer, &cred_sig);
-    if (ECDAA_CREDENTIAL_BN254_SIGNATURE_LENGTH != write_buffer_to_file(args.credential_signature_out_file, buffer, ECDAA_CREDENTIAL_BN254_SIGNATURE_LENGTH)) {
+    ecdaa_credential_FP256BN_signature_serialize(buffer, &cred_sig);
+    if (ECDAA_CREDENTIAL_FP256BN_SIGNATURE_LENGTH != write_buffer_to_file(args.credential_signature_out_file, buffer, ECDAA_CREDENTIAL_FP256BN_SIGNATURE_LENGTH)) {
         fprintf(stderr, "Error writing credential signature to file: \"%s\"\n", args.credential_signature_out_file);
         return 1;
     }

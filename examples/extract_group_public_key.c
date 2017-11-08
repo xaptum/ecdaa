@@ -43,12 +43,12 @@ int main(int argc, char *argv[])
         return 1;
 
     // Read issuer public key from disk.
-    struct ecdaa_issuer_public_key_BN254 ipk;
-    if (ECDAA_ISSUER_PUBLIC_KEY_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_ISSUER_PUBLIC_KEY_BN254_LENGTH, args.issuer_public_key_file)) {
+    struct ecdaa_issuer_public_key_FP256BN ipk;
+    if (ECDAA_ISSUER_PUBLIC_KEY_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_ISSUER_PUBLIC_KEY_FP256BN_LENGTH, args.issuer_public_key_file)) {
         fprintf(stderr, "Error reading issuer public key file: \"%s\"\n", args.issuer_public_key_file);
         return 1;
     }
-    int deserialize_ret = ecdaa_issuer_public_key_BN254_deserialize(&ipk, buffer);
+    int deserialize_ret = ecdaa_issuer_public_key_FP256BN_deserialize(&ipk, buffer);
     if (-1 == deserialize_ret) {
         fputs("Error: issuer public key is mal-formed\n", stderr);
         return 1;
@@ -58,8 +58,8 @@ int main(int argc, char *argv[])
     }
 
     // Write group-public-key to file
-    ecdaa_group_public_key_BN254_serialize(buffer, &ipk.gpk);
-    if (ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH != write_buffer_to_file(args.group_public_key_file, buffer, ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH)) {
+    ecdaa_group_public_key_FP256BN_serialize(buffer, &ipk.gpk);
+    if (ECDAA_GROUP_PUBLIC_KEY_FP256BN_LENGTH != write_buffer_to_file(args.group_public_key_file, buffer, ECDAA_GROUP_PUBLIC_KEY_FP256BN_LENGTH)) {
         fprintf(stderr, "Error writing group public key to file: \"%s\"\n", args.group_public_key_file);
         return 1;
     }

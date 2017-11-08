@@ -51,23 +51,23 @@ int main(int argc, char *argv[])
     }
 
     // Create issuer key-pair
-    struct ecdaa_issuer_public_key_BN254 ipk;
-    struct ecdaa_issuer_secret_key_BN254 isk;
-    if (0 != ecdaa_issuer_key_pair_BN254_generate(&ipk, &isk, &rng)) {
+    struct ecdaa_issuer_public_key_FP256BN ipk;
+    struct ecdaa_issuer_secret_key_FP256BN isk;
+    if (0 != ecdaa_issuer_key_pair_FP256BN_generate(&ipk, &isk, &rng)) {
         fprintf(stderr, "Error generating issuer key-pair\n");
         return 1;
     }
 
     // Write public-key to file
-    ecdaa_issuer_public_key_BN254_serialize(buffer, &ipk);
-    if (ECDAA_ISSUER_PUBLIC_KEY_BN254_LENGTH != write_buffer_to_file(args.public_key_file, buffer, ECDAA_ISSUER_PUBLIC_KEY_BN254_LENGTH)) {
+    ecdaa_issuer_public_key_FP256BN_serialize(buffer, &ipk);
+    if (ECDAA_ISSUER_PUBLIC_KEY_FP256BN_LENGTH != write_buffer_to_file(args.public_key_file, buffer, ECDAA_ISSUER_PUBLIC_KEY_FP256BN_LENGTH)) {
         fprintf(stderr, "Error writing public key to file: \"%s\"\n", args.public_key_file);
         return 1;
     }
 
     // Write secret-key to file
-    ecdaa_issuer_secret_key_BN254_serialize(buffer, &isk);
-    if (ECDAA_ISSUER_SECRET_KEY_BN254_LENGTH != write_buffer_to_file(args.secret_key_file, buffer, ECDAA_ISSUER_SECRET_KEY_BN254_LENGTH)) {
+    ecdaa_issuer_secret_key_FP256BN_serialize(buffer, &isk);
+    if (ECDAA_ISSUER_SECRET_KEY_FP256BN_LENGTH != write_buffer_to_file(args.secret_key_file, buffer, ECDAA_ISSUER_SECRET_KEY_FP256BN_LENGTH)) {
         fprintf(stderr, "Error writing secret key to file: \"%s\"\n", args.secret_key_file);
         return 1;
     }
