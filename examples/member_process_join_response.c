@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
 
     // Read member public key from disk
     struct ecdaa_member_public_key_BN254 pk;
-    if (0 != read_file_into_buffer(buffer, ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH, args.member_public_key_file)) {
+    if (ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH, args.member_public_key_file)) {
         fprintf(stderr, "Error reading member public key file: \"%s\"\n", args.member_public_key_file);
         return 1;
     }
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
     // Read group public key from disk
     struct ecdaa_group_public_key_BN254 gpk;
-    if (0 != read_file_into_buffer(buffer, ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH, args.group_public_key_file)) {
+    if (ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH, args.group_public_key_file)) {
         fprintf(stderr, "Error reading group public key file: \"%s\"\n", args.group_public_key_file);
         return 1;
     }
@@ -68,11 +68,11 @@ int main(int argc, char *argv[])
 
     // Read credential and credential signature from disk.
     struct ecdaa_credential_BN254 cred;
-    if (0 != read_file_into_buffer(buffer, ECDAA_CREDENTIAL_BN254_LENGTH, args.credential_file)) {
+    if (ECDAA_CREDENTIAL_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_CREDENTIAL_BN254_LENGTH, args.credential_file)) {
         fprintf(stderr, "Error reading credential file: \"%s\"\n", args.credential_file);
         return 1;
     }
-    if (0 != read_file_into_buffer(buffer + ECDAA_CREDENTIAL_BN254_LENGTH,
+    if (ECDAA_CREDENTIAL_BN254_SIGNATURE_LENGTH != read_file_into_buffer(buffer + ECDAA_CREDENTIAL_BN254_LENGTH,
                                    ECDAA_CREDENTIAL_BN254_SIGNATURE_LENGTH,
                                    args.credential_signature_file)) {
         fprintf(stderr, "Error reading credential signature file: \"%s\"\n", args.credential_signature_file);
