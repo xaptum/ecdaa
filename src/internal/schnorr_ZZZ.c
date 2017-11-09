@@ -116,7 +116,7 @@ int schnorr_verify_ZZZ(BIG_XXX c,
     // Nb. No need to call ECP_ZZZ_affine here,
     // as R gets passed to ECP_ZZZ_toOctet in a minute (which implicitly converts to affine)
 
-    // 5) Compute c' = Hash( R | basepoint | msg_in )
+    // 5) Compute c' = Hash( R | basepoint | public_key | msg_in )
     //      (modular-reduce c', too).
     uint8_t hash_input_begin[THREE_ECP_LENGTH];
     assert(3*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
