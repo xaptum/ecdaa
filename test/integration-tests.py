@@ -38,7 +38,7 @@ class Issuer(object):
         self.sk_rev_list = []
 
     def GetNonce(self, pk_file):
-        nonce = ''.join([random.choice(string.lowercase) for i in range(32)])
+        nonce = ''.join([random.choice(string.ascii_lowercase) for i in range(32)])
         self.nonces[nonce] = pk_file
         return nonce
 
