@@ -30,10 +30,7 @@ static int read_file_into_buffer(uint8_t *buffer, size_t bytes_to_read, const ch
 
     (void)fclose(ptr);
 
-    if (bytes_read != bytes_to_read)
-        return -1;
-
-    return 0;
+    return (int)bytes_read;
 }
 
 static int write_buffer_to_file(const char *filename, uint8_t *buffer, size_t bytes_to_write)
@@ -48,8 +45,6 @@ static int write_buffer_to_file(const char *filename, uint8_t *buffer, size_t by
 
     (void)fclose(ptr);
 
-    if (bytes_written != bytes_to_write)
-        return -1;
 
-    return 0;
+    return (int)bytes_written;
 }

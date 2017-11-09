@@ -25,8 +25,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#define MAX_MESSAGE_SIZE 1024
+
 struct command_line_args {
-    char *message;
+    char *message_file;
     char *sig_file;
     char *gpk_file;
     char *sk_rev_list_file;
@@ -50,7 +52,7 @@ int main(int argc, char *argv[])
 
     // Read signature from disk
     struct ecdaa_signature_BN254 sig;
-    if (0 != read_file_into_buffer(buffer, ECDAA_SIGNATURE_BN254_LENGTH, args.sig_file)) {
+    if (ECDAA_SIGNATURE_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_SIGNATURE_BN254_LENGTH, args.sig_file)) {
         fprintf(stderr, "Error reading signature file: \"%s\"\n", args.sig_file);
         return 1;
     }
@@ -61,7 +63,7 @@ int main(int argc, char *argv[])
 
     // Read group public key from disk
     struct ecdaa_group_public_key_BN254 gpk;
-    if (0 != read_file_into_buffer(buffer, ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH, args.gpk_file)) {
+    if (ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH, args.gpk_file)) {
         fprintf(stderr, "Error reading group public key file: \"%s\"\n", args.gpk_file);
         return 1;
     }
@@ -78,12 +80,14 @@ int main(int argc, char *argv[])
     }
 
     // Verify signature
-    size_t msg_len = strlen(args.message);
-    if (msg_len > 1048576) {    // 1MiB
-        fprintf(stderr, "Message seems too large (%zu bytes). Quitting\n", msg_len);
+    uint8_t message[MAX_MESSAGE_SIZE];
+    int read_ret = read_file_into_buffer(message, sizeof(message), args.message_file);
+    if (read_ret < 0) {
+        fprintf(stderr, "Error reading message file: \"%s\"\n", args.message_file);
         return 1;
     }
-    if (0 != ecdaa_signature_BN254_verify(&sig, &gpk, &sk_rev_list, (uint8_t*)args.message, (uint32_t)msg_len)) {
+    uint32_t msg_len = (uint32_t)read_ret;
+    if (0 != ecdaa_signature_BN254_verify(&sig, &gpk, &sk_rev_list, message, msg_len)) {
         fprintf(stderr, "Signature not valid!\n");
         return 1;
     }
@@ -97,18 +101,19 @@ int main(int argc, char *argv[])
 void print_usage(const char *my_name)
 {
     printf("usage: %s "
-                    "<message> "
+                    "<message-file> "
                     "<signature-input-file> "
                     "<group-public-key-input-file> "
                     "[<secret-key-revocation-list-input-file>] "
-                    "[<number-of-secret-key-revocations-in-list>]\n",
-           my_name);
+                    "[<number-of-secret-key-revocations-in-list>]\n"
+                    "NOTE: message must be smaller than %dbytes\n",
+           my_name, MAX_MESSAGE_SIZE);
 }
 
 int parse_args(struct command_line_args *args_out, int argc, char *argv[])
 {
     if (6 == argc || 4 == argc) {
-        args_out->message = argv[1];
+        args_out->message_file = argv[1];
         args_out->sig_file = argv[2];
         args_out->gpk_file = argv[3];
 
@@ -157,7 +162,8 @@ int parse_sk_rev_list_file(struct ecdaa_revocation_list_BN254 *rev_list_out, con
         }
 
         // Read the revocation list in from disk.
-        if (0 != read_file_into_buffer(buffer, file_length, filename)) {
+        int read_ret = read_file_into_buffer(buffer, file_length, filename);
+        if (read_ret < 0 || file_length != (size_t)read_ret) {
             ret = 1;
             goto cleanup;
         }

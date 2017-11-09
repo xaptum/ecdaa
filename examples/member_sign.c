@@ -25,11 +25,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#define MAX_MESSAGE_SIZE 1024
+
 struct command_line_args {
     char *credential_file;
     char *secret_key_file;
     char *sig_out_file;
-    char *message;
+    char *message_file;
 };
 
 void print_usage(const char *my_name);
@@ -54,7 +56,7 @@ int main(int argc, char *argv[])
 
     // Read member secret key from disk
     struct ecdaa_member_secret_key_BN254 sk;
-    if (0 != read_file_into_buffer(buffer, ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH, args.secret_key_file)) {
+    if (ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH, args.secret_key_file)) {
         fprintf(stderr, "Error reading member secret key file: \"%s\"\n", args.secret_key_file);
         return 1;
     }
@@ -65,7 +67,7 @@ int main(int argc, char *argv[])
 
     // Read member credential from disk
     struct ecdaa_credential_BN254 cred;
-    if (0 != read_file_into_buffer(buffer, ECDAA_CREDENTIAL_BN254_LENGTH, args.credential_file)) {
+    if (ECDAA_CREDENTIAL_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_CREDENTIAL_BN254_LENGTH, args.credential_file)) {
         fprintf(stderr, "Error reading member credential file: \"%s\"\n", args.credential_file);
         return 1;
     }
@@ -76,19 +78,21 @@ int main(int argc, char *argv[])
 
     // Create signature
     struct ecdaa_signature_BN254 sig;
-    size_t msg_len = strlen(args.message);
-    if (msg_len > 1048576) {    // 1MiB
-        fprintf(stderr, "Message seems too large (%zu bytes). Quitting\n", msg_len);
+    uint8_t message[MAX_MESSAGE_SIZE];
+    int read_ret = read_file_into_buffer(message, sizeof(message), args.message_file);
+    if (read_ret < 0) {
+        fprintf(stderr, "Error reading message file: \"%s\"\n", args.message_file);
         return 1;
     }
-    if (0 != ecdaa_signature_BN254_sign(&sig, (uint8_t*)args.message, (uint32_t)msg_len, &sk, &cred, &rng)) {
-        fprintf(stderr, "Error signing message: \"%s\"\n", args.message);
+    uint32_t msg_len = (uint32_t)read_ret;
+    if (0 != ecdaa_signature_BN254_sign(&sig, message, msg_len, &sk, &cred, &rng)) {
+        fprintf(stderr, "Error signing message: \"%s\"\n", (char*)message);
         return 1;
     }
 
     // Write signature to file
     ecdaa_signature_BN254_serialize(buffer, &sig);
-    if (0 != write_buffer_to_file(args.sig_out_file, buffer, ECDAA_SIGNATURE_BN254_LENGTH)) {
+    if (ECDAA_SIGNATURE_BN254_LENGTH != write_buffer_to_file(args.sig_out_file, buffer, ECDAA_SIGNATURE_BN254_LENGTH)) {
         fprintf(stderr, "Error writing signature to file: \"%s\"\n", args.sig_out_file);
         return 1;
     }
@@ -102,8 +106,9 @@ void print_usage(const char *my_name)
                     "<secret-key-input-file> "
                     "<credential-input-file> "
                     "<signature-output-file> "
-                    "<message>\n",
-           my_name);
+                    "<message-file>\n"
+                    "NOTE: message must be smaller than %dbytes\n",
+           my_name, MAX_MESSAGE_SIZE);
 }
 
 int parse_args(struct command_line_args *args_out, int argc, char *argv[])
@@ -116,7 +121,7 @@ int parse_args(struct command_line_args *args_out, int argc, char *argv[])
     args_out->secret_key_file = argv[1];
     args_out->credential_file = argv[2];
     args_out->sig_out_file = argv[3];
-    args_out->message = argv[4];
+    args_out->message_file = argv[4];
 
     return 0;
 }

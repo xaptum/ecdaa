@@ -65,14 +65,14 @@ int main(int argc, char *argv[])
 
     // Write public key to file
     ecdaa_member_public_key_BN254_serialize(buffer, &pk);
-    if (0 != write_buffer_to_file(args.public_key_file, buffer, ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH)) {
+    if (ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH != write_buffer_to_file(args.public_key_file, buffer, ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH)) {
         fprintf(stderr, "Error writing public key to file: \"%s\"\n", args.public_key_file);
         return 1;
     }
 
     // Write secret key to file
     ecdaa_member_secret_key_BN254_serialize(buffer, &sk);
-    if (0 != write_buffer_to_file(args.secret_key_file, buffer, ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH)) {
+    if (ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH != write_buffer_to_file(args.secret_key_file, buffer, ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH)) {
         fprintf(stderr, "Error writing secret key to file: \"%s\"\n", args.secret_key_file);
         return 1;
     }

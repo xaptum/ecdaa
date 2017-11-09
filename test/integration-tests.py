@@ -103,15 +103,21 @@ class Member(object):
             exit(1)
 
     def Sign(self, message, sig_file):
-        if 0 != subprocess.call([examples_dir + 'member_sign', self.sk_file, self.cred_file, sig_file, message]):
+        message_filename = examples_dir + '/msg_sign.tmp.bin'
+        with open(message_filename, 'w') as message_file:
+            message_file.write(message)
+        if 0 != subprocess.call([examples_dir + 'member_sign', self.sk_file, self.cred_file, sig_file, message_filename]):
             raise SignException('****Member in directory \'' + self.directory + '\' unable to sign message: ' + message)
 
 def Verify(message, sig_file, gpk_file, sk_rev_list_file, sk_rev_list_length):
+    message_filename = examples_dir + '/msg_verify.tmp.bin'
+    with open(message_filename, 'w') as message_file:
+        message_file.write(message)
     if 0 == sk_rev_list_length:
-        if 0 != subprocess.call([examples_dir + 'verify', message, sig_file, gpk_file]):
+        if 0 != subprocess.call([examples_dir + 'verify', message_filename, sig_file, gpk_file]):
             raise VerifyException('****Unable to verify message: ' + message)
     else:
-        if 0 != subprocess.call([examples_dir + 'verify', message, sig_file, gpk_file, sk_rev_list_file, str(sk_rev_list_length)]):
+        if 0 != subprocess.call([examples_dir + 'verify', message_filename, sig_file, gpk_file, sk_rev_list_file, str(sk_rev_list_length)]):
             raise VerifyException('****Unable to verify message: ' + message)
 
 def TestNoRevoked():
