@@ -45,40 +45,40 @@ int main(int argc, char *argv[])
         return 1;
 
     // Read member public key from disk
-    struct ecdaa_member_public_key_BN254 pk;
-    if (ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH, args.member_public_key_file)) {
+    struct ecdaa_member_public_key_FP256BN pk;
+    if (ECDAA_MEMBER_PUBLIC_KEY_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_MEMBER_PUBLIC_KEY_FP256BN_LENGTH, args.member_public_key_file)) {
         fprintf(stderr, "Error reading member public key file: \"%s\"\n", args.member_public_key_file);
         return 1;
     }
-    if (0 != ecdaa_member_public_key_BN254_deserialize_no_check(&pk, buffer)) {
+    if (0 != ecdaa_member_public_key_FP256BN_deserialize_no_check(&pk, buffer)) {
         fputs("Error deserializing member public key\n", stderr);
         return 1;
     }
 
     // Read group public key from disk
-    struct ecdaa_group_public_key_BN254 gpk;
-    if (ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_GROUP_PUBLIC_KEY_BN254_LENGTH, args.group_public_key_file)) {
+    struct ecdaa_group_public_key_FP256BN gpk;
+    if (ECDAA_GROUP_PUBLIC_KEY_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_GROUP_PUBLIC_KEY_FP256BN_LENGTH, args.group_public_key_file)) {
         fprintf(stderr, "Error reading group public key file: \"%s\"\n", args.group_public_key_file);
         return 1;
     }
-    if (0 != ecdaa_group_public_key_BN254_deserialize(&gpk, buffer)) {
+    if (0 != ecdaa_group_public_key_FP256BN_deserialize(&gpk, buffer)) {
         fputs("Error deserializing group public key\n", stderr);
         return 1;
     }
 
     // Read credential and credential signature from disk.
-    struct ecdaa_credential_BN254 cred;
-    if (ECDAA_CREDENTIAL_BN254_LENGTH != read_file_into_buffer(buffer, ECDAA_CREDENTIAL_BN254_LENGTH, args.credential_file)) {
+    struct ecdaa_credential_FP256BN cred;
+    if (ECDAA_CREDENTIAL_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_CREDENTIAL_FP256BN_LENGTH, args.credential_file)) {
         fprintf(stderr, "Error reading credential file: \"%s\"\n", args.credential_file);
         return 1;
     }
-    if (ECDAA_CREDENTIAL_BN254_SIGNATURE_LENGTH != read_file_into_buffer(buffer + ECDAA_CREDENTIAL_BN254_LENGTH,
-                                   ECDAA_CREDENTIAL_BN254_SIGNATURE_LENGTH,
+    if (ECDAA_CREDENTIAL_FP256BN_SIGNATURE_LENGTH != read_file_into_buffer(buffer + ECDAA_CREDENTIAL_FP256BN_LENGTH,
+                                   ECDAA_CREDENTIAL_FP256BN_SIGNATURE_LENGTH,
                                    args.credential_signature_file)) {
         fprintf(stderr, "Error reading credential signature file: \"%s\"\n", args.credential_signature_file);
         return 1;
     }
-    int deserialize_ret = ecdaa_credential_BN254_deserialize_with_signature(&cred, &pk, &gpk, buffer, buffer + ECDAA_CREDENTIAL_BN254_LENGTH);
+    int deserialize_ret = ecdaa_credential_FP256BN_deserialize_with_signature(&cred, &pk, &gpk, buffer, buffer + ECDAA_CREDENTIAL_FP256BN_LENGTH);
     if (-1 == deserialize_ret) {
         fputs("Error: credential or its signature is mal-formed\n", stderr);
         return 1;

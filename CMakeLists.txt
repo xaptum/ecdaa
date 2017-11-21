@@ -26,7 +26,7 @@ option(ECDAA_BUILD_EXAMPLE_PROGRAMS
         "Build the top-level driver programs for running ECDAA task"
         ON)
 
-set(CURVE_TYPES BN254 BN254CX BLS383)
+set(CURVE_TYPES BN254 BN254CX BLS383 FP256BN)
 if(NOT ECDAA_CURVES)
         set(ECDAA_CURVES ${CURVE_TYPES})
 endif(NOT ECDAA_CURVES)

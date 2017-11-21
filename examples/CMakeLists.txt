@@ -19,7 +19,7 @@ find_package(ECDAA REQUIRED QUIET)
 
 add_definitions("-Wno-unused-function")
 
-set(ECDAA_CURVES BN254)
+set(ECDAA_CURVES FP256BN)
 
 set(CURRENT_PROGRAMS_BINARY_DIR ${CMAKE_BINARY_DIR}/bin/)
 

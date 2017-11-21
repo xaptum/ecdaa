@@ -11,13 +11,15 @@ curve_pattern = 'ZZZ'
 big_replacements = {
         'BN254': '256_56',
         'BN254CX': '256_56',
-        'BLS383': '384_56'
+        'BLS383': '384_56',
+        'FP256BN': '256_56',
         }
 
 fp_replacements = {
         'BN254': 'BN254',
         'BN254CX': 'BN254CX',
-        'BLS383': 'BLS383'
+        'BLS383': 'BLS383',
+        'FP256BN': 'FP256BN',
         }
 
 def translate_file_name(original_file_name, curve, output_directory):

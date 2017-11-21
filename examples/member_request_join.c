@@ -56,23 +56,23 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Nonce seems too large (%zu bytes). Quitting\n", nonce_len);
         return 1;
     }
-    struct ecdaa_member_public_key_BN254 pk;
-    struct ecdaa_member_secret_key_BN254 sk;
-    if (0 != ecdaa_member_key_pair_BN254_generate(&pk, &sk, (uint8_t*)args.nonce, (uint32_t)nonce_len, &rng)) {
+    struct ecdaa_member_public_key_FP256BN pk;
+    struct ecdaa_member_secret_key_FP256BN sk;
+    if (0 != ecdaa_member_key_pair_FP256BN_generate(&pk, &sk, (uint8_t*)args.nonce, (uint32_t)nonce_len, &rng)) {
         fprintf(stderr, "Error generating member key-pair\n");
         return 1;
     }
 
     // Write public key to file
-    ecdaa_member_public_key_BN254_serialize(buffer, &pk);
-    if (ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH != write_buffer_to_file(args.public_key_file, buffer, ECDAA_MEMBER_PUBLIC_KEY_BN254_LENGTH)) {
+    ecdaa_member_public_key_FP256BN_serialize(buffer, &pk);
+    if (ECDAA_MEMBER_PUBLIC_KEY_FP256BN_LENGTH != write_buffer_to_file(args.public_key_file, buffer, ECDAA_MEMBER_PUBLIC_KEY_FP256BN_LENGTH)) {
         fprintf(stderr, "Error writing public key to file: \"%s\"\n", args.public_key_file);
         return 1;
     }
 
     // Write secret key to file
-    ecdaa_member_secret_key_BN254_serialize(buffer, &sk);
-    if (ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH != write_buffer_to_file(args.secret_key_file, buffer, ECDAA_MEMBER_SECRET_KEY_BN254_LENGTH)) {
+    ecdaa_member_secret_key_FP256BN_serialize(buffer, &sk);
+    if (ECDAA_MEMBER_SECRET_KEY_FP256BN_LENGTH != write_buffer_to_file(args.secret_key_file, buffer, ECDAA_MEMBER_SECRET_KEY_FP256BN_LENGTH)) {
         fprintf(stderr, "Error writing secret key to file: \"%s\"\n", args.secret_key_file);
         return 1;
     }
