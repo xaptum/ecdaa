@@ -55,7 +55,7 @@ def expand_template(input_file, curve_list, output_directory):
         with open(output_file_name, 'w') as output_file:
             output_file.write(expanded_string)
 
-def generate_top_level_header(input_file, curve_list, output_directory):
+def generate_top_level_header(input_file, curve_list, output_directory, use_tpm):
     with open(input_file, 'r') as template_file:
         input_lines = template_file.readlines()
 
@@ -71,6 +71,8 @@ def generate_top_level_header(input_file, curve_list, output_directory):
                     output_file.write(line.replace(big_pattern, big_replace) \
                                           .replace(fp_pattern, fp_replace) \
                                           .replace(curve_pattern, curve))
+            elif not use_tpm and ('tpm' in line or 'TPM' in line):
+                pass
             else:
                 output_file.write(line)
 
@@ -86,6 +88,7 @@ if __name__ == '__main__':
     parser.add_argument('--out-dir', help='directory to move expanded files')
     parser.add_argument('--top-level-dir', help='top-level directory of project')
     parser.add_argument('--top-level-header', action='store_true', help='the given template is the top-level header file')
+    parser.add_argument('--use-tpm', action='store_true', help='use tpm-enabled functions')
     args = parser.parse_args()
 
     input_file = args.template
@@ -97,7 +100,7 @@ if __name__ == '__main__':
         if not args.top_level_header:
             expand_template(input_file, curve_list, output_directory)
         else:
-            generate_top_level_header(input_file, curve_list, output_directory)
+            generate_top_level_header(input_file, curve_list, output_directory, args.use_tpm)
 
     file_name_list = get_processed_file_names(input_file, curve_list, output_directory, toplevel_dir)
     print_file_names(file_name_list)

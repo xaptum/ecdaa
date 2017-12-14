@@ -16,18 +16,25 @@
  *
  *****************************************************************************/
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
+#ifndef ECDAA_RANDOMIZE_CREDENTIAL_H
+#define ECDAA_RANDOMIZE_CREDENTIAL_H
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
 #include <ecdaa/prng.h>
-#include <ecdaa/revocation_list_ZZZ.h>
 #include <ecdaa/signature_ZZZ.h>
-#include <ecdaa/signature_TPM.h>
-#include <ecdaa/tpm_context.h>
+
+void randomize_credential_ZZZ(struct ecdaa_credential_ZZZ *cred,
+                              struct ecdaa_prng *prng,
+                              struct ecdaa_signature_ZZZ *signature_out);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
+

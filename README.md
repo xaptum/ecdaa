@@ -18,6 +18,8 @@ The project is self-contained, and provides all DAA functionality for Issuers, M
   - The milagro library must be built with support for the necessary curves
   - Currently, the fork available [here](https://github.com/zanebeckwith/milagro-crypto-c/tree/headers-under-directory) must be used
 - libsodium >= 1.0.11 (optionally, see below)
+- xaptum-tpm >= 0.3.0
+  - If building with TPM support
 
 ## Milagro-Crypto-C Dependency
 
@@ -26,6 +28,15 @@ in the local directory `./milagro-crypto-c/install`, under the directories `incl
 Next, the usual system installation locations will be searched.
 To override the local search location, set the `AMCL_LOCAL_DIR` cmake variable to the correct path.
 To force only the system installation locations to be used, set the `FORCE_SYSTEM_AMCL_LIB` cmake option to `On`.
+
+## Xaptum-TPM Dependency
+
+If building with TPM support, the `xaptum-tpm` package is required.
+By default, cmake will look for the `xaptum-tpm project` first in the local directory
+`./xaptum-tpm`, under the directories `include` for headers and `build` for libraries.
+Next, the usual system installation locations will be searched.
+To override the local search location, set the `XAPTUMTPM_LOCAL_DIR` cmake variable to the correct path.
+To force only the system installation locations to be used, set the FORCE_SYSTEM_XAPTUMTPM_LIB cmake option to On.
 
 # Building
 
@@ -40,9 +51,18 @@ cd milagro-crypto-c
 mkdir -p build
 mkdir -p install
 cd build
-cmake .. -DAMCL_CURVE=FP256BN -DBUILD_SHARED_LIBS=Off
+cmake .. -DAMCL_CURVE=FP256BN -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On
 cmake --build .
 make install
+cd ../..
+
+# Build a local copy of xaptum-tpm
+git clone https://github.com/xaptum/xaptum-tpm
+cd xaptum-tpm
+mkdir -p build
+cd build
+cmake .. -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On
+cmake --build .
 cd ../..
 
 # Create a subdirectory to hold the build
@@ -72,6 +92,12 @@ name.  For example,
 ```bash
 cmake .. -DBUILD_STATIC_LIBS=ON -DSTATIC_SUFFIX=_static
 cmake --build .
+cd ../..
+
+mkdir -p build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DECDAA_CURVES=BN254\;BN254CX\;BLS383\;FP256BN
+cmake --build . -- -j4
 ```
 
 will create a static library named `libecdaa_static.a`.
@@ -113,6 +139,43 @@ The pairing-friendly curves supported by the library are set using the CMake
 variable `ECDAA_CURVES`, a comma-separated list of curve names.
 All curves supported by the `milagro-crypto-c` pairing-based-crypto library are supported.
 If no `ECDAA_CURVES` is set, the default is to build `FP256BN`.
+
+## Using a TPM
+
+Signatures can be created with the help of a Trusted Platform Module (TPM).
+
+To do so, a signing key must first be created and loaded in the TPM.
+This key must be created with the following properties
+(consult a TPM TSS for explanation of how to create an asymmetric signing key):
+- `sign` attribute must be set
+- `userWithAuth` attribute must be set
+  - The authorization must be a (possibly empty) password
+- `scheme = TPM_ALG_ECDAA`
+- `hashAlg = TPM_ALG_SHA256`
+- `curveID = TPM_ECC_BN_P256`
+
+Then, a connection to the TPM is established by, for example, connecting
+to a TPM simulator listening locally on TCP port 2321.
+This creates an `ecdaa_tpm_context` object as follows:
+```
+struct ecdaa_tpm_context tpm_context;
+ecdaa_tpm_context_init_socket(&tpm_context, &public_key, key_handle, localhost, 2321, password, password_length);
+```
+where `public_key` and `key_handle` are the public key (as an elliptic curve point) and TPM handle of
+the TPM signing key, and `password` is the TPM authorization associated with that key.
+
+An ECDAA signature using this TPM-generated secret key is then created using:
+```
+struct ecdaa_signature_FP256BN signature;
+ecdaa_signature_TPM_sign(&signature, msg, msg_length, &credential, &prng, &tpm_context);
+```
+where `credential` is an ECDAA credential obtained earlier and `prng` is an `ecdaa_prng`, both created as usual.
+
+Notice that the signature thus created is not TPM-specific.
+This means that verification of a TPM-generated signature proceeds as usual, using `ecdaa_signature_FP256BN_verify`.
+
+By default, the library builds with support for using a TPM.
+If this isn't desired, set the `cmake` option `ECDAA_TPM_SUPPORT=Off`.
 
 ## Random number generator
 

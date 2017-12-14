@@ -40,6 +40,10 @@ if (NOT DEFINED BUILD_SHARED_LIBS OR NOT  "${BUILD_SHARED_LIBS}")
   set(BUILD_STATIC_LIBS ON CACHE BOOL "Build as a static library" FORCE)
 endif ()
 
+option(ECDAA_TPM_SUPPORT
+        "Include ECDAA functions that require a TPM"
+        ON)
+
 if(NOT ECDAA_CURVES)
         set(ECDAA_CURVES FP256BN)
 endif()
@@ -49,8 +53,11 @@ set(ECDAA_SOVERSION ${PROJECT_VERSION_MAJOR})
 
 list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(AMCL REQUIRED QUIET)
+if(ECDAA_TPM_SUPPORT)
+        find_package(XaptumTPM REQUIRED QUIET)
+endif()
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -std=c99")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -std=c99 -Wno-missing-field-initializers")
 
 SET(CMAKE_C_FLAGS_DEBUGWITHCOVERAGE "${CMAKE_C_FLAGS_DEBUGWITHCOVERAGE} -O0 -fprofile-arcs -ftest-coverage")
 
@@ -80,6 +87,15 @@ file(GLOB_RECURSE IMPLEMENTATION_H_FILES "src/*.h")
 file(GLOB_RECURSE IMPLEMENTATION_C_FILES "src/*.c")
 set(FILES_TO_PROCESS ${PUBLIC_HEADERS} ${IMPLEMENTATION_H_FILES} ${IMPLEMENTATION_C_FILES})
 
+if(NOT ECDAA_TPM_SUPPORT)
+        foreach(file ${FILES_TO_PROCESS})
+                string(REGEX MATCH ".*tpm.*|.*TPM.*" match ${file})
+                if(match)
+                        list(REMOVE_ITEM FILES_TO_PROCESS ${match})
+                endif()
+        endforeach()
+endif()
+
 foreach(template_file ${FILES_TO_PROCESS})
         execute_process(COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
                                         --template ${template_file}
@@ -101,13 +117,17 @@ foreach(template_file ${FILES_TO_PROCESS})
 endforeach(template_file ${FILES_TO_PROCESS})
 
 set(TOPLEVEL_HEADER ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa.h)
+if (ECDAA_TPM_SUPPORT)
+        set(USE_TPM_PYTHON_OPTION "--use-tpm")
+endif ()
 add_custom_target(toplevel_header
         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
                         --template ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa.h 
                         --curves ${ECDAA_CURVES}
                         --out-dir ${CMAKE_BINARY_DIR}
                         --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
-                        --top-level-header)
+                        --top-level-header
+                        ${USE_TPM_PYTHON_OPTION})
 
 add_custom_target(generate_sources DEPENDS ${ECDAA_SRCS} toplevel_header)
 
@@ -125,13 +145,14 @@ if (BUILD_SHARED_LIBS)
         target_include_directories(ecdaa PUBLIC
                 $<BUILD_INTERFACE:${GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${AMCL_INCLUDE_DIRS}>
+                $<BUILD_INTERFACE:${XAPTUM_TPM_INCLUDE_DIRS}>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
         target_link_libraries(ecdaa
                 PRIVATE ${AMCL_LIBRARIES}
-                ${ECDAA_SEED_LINK_LIBRARY}
-        )
+                ${XAPTUM_TPM_LIBRARIES}
+                ${ECDAA_SEED_LINK_LIBRARY})
 
         install(TARGETS ecdaa
                 EXPORT ${CMAKE_PROJECT_NAME}Targets
@@ -158,11 +179,13 @@ if (BUILD_STATIC_LIBS)
         target_include_directories(ecdaa_static PUBLIC
                 $<BUILD_INTERFACE:${GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${AMCL_INCLUDE_DIRS}>
+                $<BUILD_INTERFACE:${XAPTUM_TPM_INCLUDE_DIRS}>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
         target_link_libraries(ecdaa_static
                 PRIVATE ${AMCL_LIBRARIES}
+                ${XAPTUM_TPM_LIBRARIES}
                 ${ECDAA_SEED_LINK_LIBRARY})
 
         install(TARGETS ecdaa_static

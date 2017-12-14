@@ -25,6 +25,7 @@
 #include <ecdaa/prng.h>
 
 #include "./internal/schnorr_ZZZ.h"
+#include "./internal/randomize_credential_ZZZ.h"
 #include "./amcl-extensions/big_XXX.h"
 #include "./amcl-extensions/ecp_ZZZ.h"
 #include "./amcl-extensions/ecp2_ZZZ.h"
@@ -45,30 +46,10 @@ int ecdaa_signature_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
                              struct ecdaa_credential_ZZZ *cred,
                              struct ecdaa_prng *prng)
 {
-    // 1) Choose random l <- Z_p
-    BIG_XXX l;
-    big_XXX_random_mod_order(&l, get_csprng(prng));
+    // 1) Randomize credential
+    randomize_credential_ZZZ(cred, prng, signature_out);
 
-    // 2) Multiply the four points in the credential by l,
-    //  and save to the four points in the signature
-
-    // 2i) Multiply cred->A by l and save to sig->R (R = l*A)
-    ECP_ZZZ_copy(&signature_out->R, &cred->A);
-    ECP_ZZZ_mul(&signature_out->R, l);
-
-    // 2ii) Multiply cred->B by l and save to sig->S (S = l*B)
-    ECP_ZZZ_copy(&signature_out->S, &cred->B);
-    ECP_ZZZ_mul(&signature_out->S, l);
-
-    // 2iii) Multiply cred->C by l and save to sig->T (T = l*C)
-    ECP_ZZZ_copy(&signature_out->T, &cred->C);
-    ECP_ZZZ_mul(&signature_out->T, l);
-
-    // 2iv) Multiply cred->D by l and save to sig->W (W = l*D)
-    ECP_ZZZ_copy(&signature_out->W, &cred->D);
-    ECP_ZZZ_mul(&signature_out->W, l);
-
-    // 3) Create a Schnorr-like signature on W concatenated with the message,
+    // 2) Create a Schnorr-like signature on W concatenated with the message,
     //  where the basepoint is S.
     int sign_ret = schnorr_sign_ZZZ(&signature_out->c,
                                     &signature_out->s,
@@ -79,9 +60,6 @@ int ecdaa_signature_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
                                     sk->sk,
                                     prng);
     
-    // Clear sensitive intermediate memory.
-    BIG_XXX_zero(l);
-
     return sign_ret;
 }
 
@@ -200,3 +178,4 @@ int ecdaa_signature_ZZZ_deserialize_and_verify(struct ecdaa_signature_ZZZ *signa
 
     return ret;
 }
+
