@@ -19,6 +19,8 @@ compiler: gcc
 env:
   global:
     - LIBSODIUM_DIR=${TRAVIS_BUILD_DIR}/libsodium
+    - AMCL_DIR=${TRAVIS_BUILD_DIR}/milagro-crypto-c/install
+    - ECDAA_CURVES=FP256BN,BN254
     - CFLAGS=-I${LIBSODIUM_DIR}/include/
     - LDFLAGS=-L${LIBSODIUM_DIR}/lib/
     - LD_LIBRARY_PATH=${LIBSODIUM_DIR}/lib/
@@ -30,7 +32,8 @@ jobs:
   - env: TYPE=RELEASE
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
-      - cmake . -DCMAKE_BUILD_TYPE=Release
+      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+      - cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES}
     script:
       - cmake --build . -- -j2
       - ctest -VV
@@ -41,7 +44,8 @@ jobs:
       - pip install --user cpp-coveralls
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
-      - cmake . -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON
+      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+      - cmake . -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON -DECDAA_CURVES=${ECDAA_CURVES}
     script:
       - cmake --build . -- -j2
       - ctest -VV
@@ -53,7 +57,8 @@ jobs:
     compiler: clang
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
-      - cmake . -DCMAKE_BUILD_TYPE=Release
+      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+      - cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES}
     script:
       - cmake --build . -- -j2
       - ctest -VV
@@ -66,7 +71,8 @@ jobs:
           - cppcheck
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
-      - cmake . -DCMAKE_BUILD_TYPE=Release
+      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+      - cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES}
     script:
       - cmake --build . -- -j2
       - .travis/run-cppcheck.sh
@@ -79,7 +85,8 @@ jobs:
           - valgrind
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
-      - cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+      - cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DECDAA_CURVES=${ECDAA_CURVES}
     script:
       - cmake --build . -- -j2
       - ctest -VV -E benchmarks -T memcheck
@@ -90,6 +97,7 @@ jobs:
   - env: TYPE=SCAN_BUILD
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
+      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
     script:
       - .travis/run-scanbuild.sh ${TRAVIS_BUILD_DIR} ${TRAVIS_BUILD_DIR}
 
@@ -98,7 +106,8 @@ jobs:
     compiler: clang
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
-      - cmake . -DCMAKE_BUILD_TYPE=RelWithSanitize
+      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+      - cmake . -DCMAKE_BUILD_TYPE=RelWithSanitize -DECDAA_CURVES=${ECDAA_CURVES}
     script:
       - cmake --build . -- -j2
       - ctest -VV -E benchmarks
@@ -114,7 +123,7 @@ jobs:
           name: "xaptum/ecdaa"
           description: "A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures"
         notification_email: ecdaa-coverity-reports@xaptum.com
-        build_command_prepend: ".travis/install-libsodium.sh ${LIBSODIUM_DIR} && cmake . -DCMAKE_BUILD_TYPE=Release"
+        build_command_prepend: ".travis/install-libsodium.sh ${LIBSODIUM_DIR} && .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES} && cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES}"
         build_command:   "cmake --build ."
         branch_pattern: coverity_scan
 
