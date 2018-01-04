@@ -14,13 +14,7 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-include(CTest)
-
-set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/testBin/)
-
-file(GLOB_RECURSE TEST_FILES "*.c")
-
-foreach(template_file ${TEST_FILES})
+macro(expand_test_case template_file)
         execute_process(COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
                                         --template ${template_file}
                                         --curves ${ECDAA_CURVES}
@@ -37,22 +31,29 @@ foreach(template_file ${TEST_FILES})
                                 --top-level-dir ${PROJECT_SOURCE_DIR}
                 DEPENDS ${template_file})
 
-        list(APPEND TEST_SRCS ${processed_file_names})
-endforeach(template_file ${FILES_TO_PROCESS})
+        list(APPEND ECDAA_TEST_SRCS ${processed_file_names})
+endmacro()
 
-file(COPY ecdaa-test-utils.h DESTINATION ${CMAKE_BINARY_DIR}/test/)
-
-foreach(case_file ${TEST_SRCS})
+macro(add_test_case case_file)
   get_filename_component(case_name ${case_file} NAME_WE)
 
   add_executable(${case_name} ${case_file})
-  target_link_libraries(${case_name}
-    PRIVATE ecdaa
-    )
+
+  if(BUILD_SHARED_LIBS)
+          target_link_libraries(${case_name} PRIVATE ecdaa ${AMCL_LIBRARIES} ${ECDAA_SEED_LINK_LIBRARY})
+          add_dependencies(${case_name} ecdaa)
+  else()
+          target_link_libraries(${case_name} PRIVATE ecdaa_static ${AMCL_LIBRARIES} ${ECDAA_SEED_LINK_LIBRARY})
+          add_dependencies(${case_name} ecdaa_static)
+  endif()
+
   target_include_directories(${case_name}
+          PRIVATE ${AMCL_INCLUDE_DIRS}
+          PRIVATE ${GENERATED_TOPLEVEL_INCLUDE_DIR}
           PRIVATE ${PROJECT_SOURCE_DIR}/include/ecdaa/
           PRIVATE ${CMAKE_BINARY_DIR}/
           )
+
   set_target_properties(${case_name} PROPERTIES
           RUNTIME_OUTPUT_DIRECTORY ${CURRENT_TEST_BINARY_DIR}
           )
@@ -60,10 +61,23 @@ foreach(case_file ${TEST_SRCS})
   add_test(NAME ${case_name}
           COMMAND ${CURRENT_TEST_BINARY_DIR}/${case_name}
           )
+endmacro()
 
-  add_dependencies(${case_name} ecdaa)
+set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/testBin/)
+
+file(GLOB_RECURSE ECDAA_TEST_FILES "*.c")
+
+foreach(template_file ${ECDAA_TEST_FILES})
+        expand_test_case(${template_file})
 endforeach()
 
+file(COPY ecdaa-test-utils.h DESTINATION ${CMAKE_BINARY_DIR}/test/)
+
+foreach(case_file ${ECDAA_TEST_SRCS})
+        add_test_case(${case_file})
+endforeach()
+
+# Add the integration-tests python script
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/integration-tests.py ${CURRENT_TEST_BINARY_DIR}/integration-tests.py)
 add_test(NAME integration-tests
         COMMAND python "${CURRENT_TEST_BINARY_DIR}/integration-tests.py" "${CMAKE_BINARY_DIR}/bin/")

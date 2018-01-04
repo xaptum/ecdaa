@@ -33,7 +33,7 @@ jobs:
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES}
+      - cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
     script:
       - cmake --build . -- -j2
       - ctest -VV
@@ -45,7 +45,7 @@ jobs:
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - cmake . -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON -DECDAA_CURVES=${ECDAA_CURVES}
+      - cmake . -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
     script:
       - cmake --build . -- -j2
       - ctest -VV
@@ -58,7 +58,7 @@ jobs:
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES}
+      - cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
     script:
       - cmake --build . -- -j2
       - ctest -VV
@@ -86,7 +86,7 @@ jobs:
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DECDAA_CURVES=${ECDAA_CURVES}
+      - cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
     script:
       - cmake --build . -- -j2
       - ctest -VV -E benchmarks -T memcheck
@@ -107,7 +107,7 @@ jobs:
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - cmake . -DCMAKE_BUILD_TYPE=RelWithSanitize -DECDAA_CURVES=${ECDAA_CURVES}
+      - cmake . -DCMAKE_BUILD_TYPE=RelWithSanitize -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
     script:
       - cmake --build . -- -j2
       - ctest -VV -E benchmarks
@@ -123,7 +123,7 @@ jobs:
           name: "xaptum/ecdaa"
           description: "A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures"
         notification_email: ecdaa-coverity-reports@xaptum.com
-        build_command_prepend: ".travis/install-libsodium.sh ${LIBSODIUM_DIR} && .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES} && cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES}"
+        build_command_prepend: ".travis/install-libsodium.sh ${LIBSODIUM_DIR} && .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES} && cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON"
         build_command:   "cmake --build ."
         branch_pattern: coverity_scan
 

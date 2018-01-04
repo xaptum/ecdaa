@@ -18,17 +18,34 @@ project(ecdaa
         LANGUAGES C
         VERSION "0.2.0")
 
+include(GNUInstallDirs)
+include(CTest)
+
 option(DISABLE_LIBSODIUM_RNG_SEED_FUNCTION
         "Disable the default Libsodium-based seed function"
         OFF)
 
-option(ECDAA_BUILD_EXAMPLE_PROGRAMS
-        "Build the top-level driver programs for running ECDAA task"
-        ON)
+option(BUILD_SHARED_LIBS
+       "Build as a shared library"
+       ON)
+
+option(BUILD_STATIC_LIBS
+       "Build as a static library"
+       OFF)
+
+# If not building as a shared library, force build as a static.  This
+# is to match the CMake default semantics of using
+# BUILD_SHARED_LIBS = OFF to indicate a static build.
+if (NOT DEFINED BUILD_SHARED_LIBS OR NOT  "${BUILD_SHARED_LIBS}")
+  set(BUILD_STATIC_LIBS ON CACHE BOOL "Build as a static library" FORCE)
+endif ()
 
 if(NOT ECDAA_CURVES)
         set(ECDAA_CURVES FP256BN)
-endif(NOT ECDAA_CURVES)
+endif()
+
+set(ECDAA_VERSION ${PROJECT_VERSION})
+set(ECDAA_SOVERSION ${PROJECT_VERSION_MAJOR})
 
 list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(AMCL REQUIRED QUIET)
@@ -52,9 +69,9 @@ set(MEMORYCHECK_COMMAND_OPTIONS
 
 if(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
         SET(ECDAA_SEED_LINK_LIBRARY sodium)
-else(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
+else()
         SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDISABLE_LIBSODIUM_RNG_SEED_FUNCTION")
-endif(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
+endif()
 
 set(GENERATED_TOPLEVEL_INCLUDE_DIR "${CMAKE_BINARY_DIR}/include")
 
@@ -80,7 +97,7 @@ foreach(template_file ${FILES_TO_PROCESS})
                                 --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
                 DEPENDS ${template_file})
 
-        list(APPEND SRCS ${processed_file_names})
+        list(APPEND ECDAA_SRCS ${processed_file_names})
 endforeach(template_file ${FILES_TO_PROCESS})
 
 set(TOPLEVEL_HEADER ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa.h)
@@ -92,28 +109,102 @@ add_custom_target(toplevel_header
                         --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
                         --top-level-header)
 
-add_custom_target(generate_sources DEPENDS ${SRCS} toplevel_header)
+add_custom_target(generate_sources DEPENDS ${ECDAA_SRCS} toplevel_header)
 
-add_library(ecdaa
-        ${SRCS}
+################################################################################
+# Shared Libary
+################################################################################
+if (BUILD_SHARED_LIBS)
+        add_library(ecdaa SHARED ${ECDAA_SRCS})
+
+        set_target_properties(ecdaa PROPERTIES
+                VERSION "${ECDAA_VERSION}"
+                SOVERSION "${ECDAA_SOVERSION}"
         )
 
-target_include_directories(ecdaa
-        PUBLIC
-        ${AMCL_INCLUDE_DIRS}
-        ${GENERATED_TOPLEVEL_INCLUDE_DIR}
+        target_include_directories(ecdaa PUBLIC
+                $<BUILD_INTERFACE:${GENERATED_TOPLEVEL_INCLUDE_DIR}>
+                $<BUILD_INTERFACE:${AMCL_INCLUDE_DIRS}>
+                $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
-add_dependencies(ecdaa toplevel_header)
+        target_link_libraries(ecdaa
+                PRIVATE ${AMCL_LIBRARIES}
+                ${ECDAA_SEED_LINK_LIBRARY}
+        )
 
-target_link_libraries(ecdaa
-        PRIVATE ${AMCL_LIBRARIES}
-        ${ECDAA_SEED_LINK_LIBRARY})
+        install(TARGETS ecdaa
+                EXPORT ${CMAKE_PROJECT_NAME}Targets
+                RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+                LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
 
-if(ECDAA_BUILD_EXAMPLE_PROGRAMS)
-        set(ECDAA_PROGRAMS_DIR examples)
-        add_subdirectory(${ECDAA_PROGRAMS_DIR})
-endif(ECDAA_BUILD_EXAMPLE_PROGRAMS)
+        add_dependencies(ecdaa toplevel_header)
+endif ()
 
-enable_testing()
-add_subdirectory(test)
+################################################################################
+# Static Libary
+################################################################################
+if (BUILD_STATIC_LIBS)
+        add_library(ecdaa_static STATIC ${ECDAA_SRCS})
+
+        set_target_properties(ecdaa_static PROPERTIES
+                OUTPUT_NAME "ecdaa${STATIC_SUFFIX}"
+                VERSION "${ECDAA_VERSION}"
+                SOVERSION "${ECDAA_SOVERSION}"
+        )
+
+        target_include_directories(ecdaa_static PUBLIC
+                $<BUILD_INTERFACE:${GENERATED_TOPLEVEL_INCLUDE_DIR}>
+                $<BUILD_INTERFACE:${AMCL_INCLUDE_DIRS}>
+                $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        )
+
+        target_link_libraries(ecdaa_static
+                PRIVATE ${AMCL_LIBRARIES}
+                ${ECDAA_SEED_LINK_LIBRARY})
+
+        install(TARGETS ecdaa_static
+                EXPORT ${CMAKE_PROJECT_NAME}Targets
+                RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+                LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+
+        add_dependencies(ecdaa_static toplevel_header)
+endif ()
+
+################################################################################
+# Headers
+################################################################################
+install(DIRECTORY ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+install(FILES ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa.h DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
+################################################################################
+# pkgconfig
+################################################################################
+configure_file(ecdaa.pc.in ecdaa.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ecdaa.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+################################################################################
+# CMake export
+################################################################################
+install(EXPORT ${CMAKE_PROJECT_NAME}Targets
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}
+        FILE        ${CMAKE_PROJECT_NAME}Config.cmake
+)
+
+################################################################################
+# Examples
+################################################################################
+if(BUILD_EXAMPLES)
+        add_subdirectory(examples)
+endif()
+
+################################################################################
+# Tests
+################################################################################
+if (BUILD_TESTING)
+        add_subdirectory(test)
+endif()
