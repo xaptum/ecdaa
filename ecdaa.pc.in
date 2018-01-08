@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: ecdaa
+Description: Library for Elliptic Curve Direct Anonymous Attestation
+Version: @ECDAA_VERSION@
+Libs: -L{libdir} -lecdaa
+Cflags: -I${includedir}

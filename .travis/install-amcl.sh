@@ -26,6 +26,6 @@ git clone -b $tag "${repo_url}"
 cd milagro-crypto-c
 mkdir -p build
 cd build
-cmake .. -DAMCL_CURVE=${curves} -DBUILD_MPIN=Off -DBUILD_WCC=Off -DBUILD_DOXYGEN=Off -DUSE_PATENTS=Off -DCMAKE_INSTALL_PREFIX=${install_dir}
+cmake .. -DAMCL_CURVE=${curves} -DBUILD_MPIN=Off -DBUILD_WCC=Off -DBUILD_DOXYGEN=Off -DUSE_PATENTS=Off -DCMAKE_INSTALL_PREFIX=${install_dir} -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On
 make
 make install

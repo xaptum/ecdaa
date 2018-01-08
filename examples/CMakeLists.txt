@@ -14,12 +14,7 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/../contrib/)
-find_package(ECDAA REQUIRED QUIET)
-
 add_definitions("-Wno-unused-function")
-
-set(ECDAA_CURVES FP256BN)
 
 set(CURRENT_PROGRAMS_BINARY_DIR ${CMAKE_BINARY_DIR}/bin/)
 
@@ -38,13 +33,19 @@ foreach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
 
         add_executable(${program_name} ${main_file})
 
-        target_link_libraries(${program_name}
-                PRIVATE ecdaa
-                )
+        target_include_directories(${program_name}
+                PRIVATE
+                ${GENERATED_TOPLEVEL_INCLUDE_DIR})
+
+        if(BUILD_SHARED_LIBS)
+              target_link_libraries(${program_name} PRIVATE ecdaa)
+              add_dependencies(${program_name} ecdaa)
+        else()
+              target_link_libraries(${program_name} PRIVATE ecdaa_static)
+              add_dependencies(${program_name} ecdaa_static)
+        endif()
 
         set_target_properties(${program_name} PROPERTIES
                 RUNTIME_OUTPUT_DIRECTORY ${CURRENT_PROGRAMS_BINARY_DIR}
                 )
-
-        add_dependencies(${program_name} ecdaa)
 endforeach(main_file ${ECDAA_PROGRAM_MAIN_FILES})

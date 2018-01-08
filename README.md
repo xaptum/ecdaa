@@ -29,24 +29,73 @@ To force only the system installation locations to be used, set the `FORCE_SYSTE
 
 # Building
 
+`ecdaa` uses CMake as its build system:
+
 In the following, it is assumed that libsodium has been installed.
 
 ```bash
+# Build a local copy of milagro-crypto-c
 git clone -b headers-under-directory https://github.com/zanebeckwith/milagro-crypto-c
 cd milagro-crypto-c
 mkdir -p build
 mkdir -p install
 cd build
-cmake .. -DAMCL_CURVE=FP256BN
+cmake .. -DAMCL_CURVE=FP256BN -DBUILD_SHARED_LIBS=Off
 cmake --build .
 make install
 cd ../..
 
+# Create a subdirectory to hold the build
 mkdir -p build
 cd build
+
+# Configure the build
 cmake ..
+
+# Build the library
 cmake --build .
 ```
+
+In addition to the standard CMake options the following configuration
+options and variables are supported.
+
+### Static vs Shared Libary
+If `BUILD_SHARED_LIBS` is set, the shared library is built. If
+`BUILD_STATIC_LIBS` is set, the static library is built. If both are
+set, both libraries will be built.  If neither is set, the static
+library will be built.
+
+### Static Library Name
+`STATIC_SUFFIX`, if defined, will be appended to the static library
+name.  For example,
+
+```bash
+cmake .. -DBUILD_STATIC_LIBS=ON -DSTATIC_SUFFIX=_static
+cmake --build .
+```
+
+will create a static library named `libecdaa_static.a`.
+
+### Force Position Independent Code (-fPIC)
+Set the standard CMake variable `CMAKE_POSITION_INDEPENDENT_CODE` to
+`ON` to force compilation with `-fPIC` for static libraries.  The
+default is `OFF` for static libraries and `ON` for shared libraries.
+
+### Disable Building of Tests
+Set the standard CMake variable `BUILD_TESTING` to `OFF` to disable
+the building of tests.  The default value is `ON`.
+
+## Installation
+
+CMake creates a target for installation.
+
+```bash
+cd build
+cmake --build . --target install
+```
+
+Set the `CMAKE_INSTALL_PREFIX` variable when configuring the build to
+modify the installation location.
 
 ## Running the tests
 
@@ -59,12 +108,6 @@ ctest -V
 
 The only header that has to be included is `ecdaa.h`.
 The name of the library is `libecdaa`.
-
-A CMake file for "finding" this library is included to ease
-the work of including this project.
-To use this file, add the `contrib` directory to the `CMAKE_MODULE_PATH`
-and call `find_package(ECDAA)`.
-After that, to use `libecdaa`, just add `ecdaa` to the `target_link_libraries`.
 
 The pairing-friendly curves supported by the library are set using the CMake
 variable `ECDAA_CURVES`, a comma-separated list of curve names.
@@ -113,10 +156,10 @@ The `examples` directory contains example code for using the library,
 where for simplicity communication between the Issuer, Member, and Verifier
 is done using regular files.
 
-The example programs use the BN254 curve type.
+The example programs use the FP256BN curve type.
 
-These programs are built by default, though this can be disabled
-by setting the CMake option `ECDAA_BUILD_EXAMPLE_PROGRAMS=OFF`.
+These programs are not built by default, though they can be enabled
+by setting the CMake option `BUILD_EXAMPLES=ON`.
 The examples require Libsodium, and by default the binaries are placed
 in the `${CMAKE_BINARY_DIR}/bin` directory.
 
