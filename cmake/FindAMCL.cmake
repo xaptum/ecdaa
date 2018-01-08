@@ -12,44 +12,34 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License
 
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+if (NOT TARGET amcl)
+        if (NOT AMCL_LOCAL_DIR)
+                set(AMCL_LOCAL_DIR "${CMAKE_CURRENT_LIST_DIR}/../milagro-crypto-c/install/")
+        endif (NOT AMCL_LOCAL_DIR)
 
-include(ExternalProject)
+        if (NOT FORCE_SYSTEM_AMCL_LIB)
+                set(AMCL_INCLUDE_DIRS "${AMCL_LOCAL_DIR}/include/")
+                set(AMCL_LIB_DIRS "${AMCL_LOCAL_DIR}/lib/")
+        endif (NOT FORCE_SYSTEM_AMCL_LIB)
 
-set(AMCL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/amcl/)
-set(AMCL_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/../amcl/version3/c/)
-set(AMCL_HEADER_DIR ${CMAKE_CURRENT_BINARY_DIR}/amcl/amcl/)
+        string(REPLACE "," ";" curves "${ECDAA_CURVES}")
+        foreach(curve ${curves})
+                find_library(AMCL_CURVE_${curve}_LIBRARY
+                             NAMES amcl_curve_${curve}
+                             HINTS ${AMCL_LIB_DIRS})
+                list(APPEND AMCL_CURVE_LIBRARIES ${AMCL_CURVE_${curve}_LIBRARY})
 
-set(AMCL_CURVE_TYPES BN254 BN254CX BLS383 FP256BN)
-set(AMCL_CURVE_CONFIG_NUMBERS 17 18 19 20)
+                find_library(AMCL_PAIRING_${curve}_LIBRARY
+                             NAMES amcl_pairing_${curve}
+                             HINTS ${AMCL_LIB_DIRS})
+                list(APPEND AMCL_CURVE_LIBRARIES ${AMCL_PAIRING_${curve}_LIBRARY})
+        endforeach(curve ${curves})
 
-set(AMCL_CONFIG_OPTIONS "")
-foreach(curve ${ECDAA_CURVES})
-        list(FIND AMCL_CURVE_TYPES ${curve} curve_index)
-        list(GET AMCL_CURVE_CONFIG_NUMBERS ${curve_index} curve_config_num)
-        list(APPEND AMCL_CONFIG_OPTIONS "${curve_config_num}")
-endforeach(curve ${ECDAA_CURVES})
-list(APPEND AMCL_CONFIG_OPTIONS "0\\n")
-string(REPLACE ";" "\\n" AMCL_CONFIG_OPTIONS "${AMCL_CONFIG_OPTIONS}")
+        find_library(AMCL_CORE_LIBRARY
+                     NAMES amcl_core
+                     HINTS ${AMCL_LIB_DIRS})
 
-if (NOT TARGET AMCL)
-        ExternalProject_Add(AMCL
-                PREFIX ${AMCL_PREFIX} 
+        set(AMCL_LIBRARIES ${AMCL_CURVE_LIBRARIES} ${AMCL_CORE_LIBRARY})
 
-                SOURCE_DIR ${AMCL_SOURCE_DIR}
-
-                PATCH_COMMAND sh -c "cp ${AMCL_SOURCE_DIR}/* ${AMCL_PREFIX}/"
-
-                CONFIGURE_COMMAND cd ${AMCL_PREFIX} && printf "${AMCL_CONFIG_OPTIONS}" | python3 config64.py
-
-                # The python config script also does the building
-                BUILD_COMMAND ""
-
-                INSTALL_COMMAND sh -c "mkdir -p ${AMCL_HEADER_DIR} && cp ${AMCL_PREFIX}/*.h ${AMCL_HEADER_DIR}"
-        )
-endif()
-
-set(AMCL_INCLUDE_DIRS "${CMAKE_CURRENT_BINARY_DIR}/amcl/")
-set(AMCL_LIBRARIES "${CMAKE_CURRENT_BINARY_DIR}/amcl/amcl.a")
-
-set(AMCL_FOUND TRUE)
+        set(AMCL_FOUND TRUE)
+endif (NOT TARGET amcl)

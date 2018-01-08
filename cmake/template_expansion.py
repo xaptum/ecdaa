@@ -81,7 +81,7 @@ def print_file_names(file_name_list):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Expand a given template source file')
     parser.add_argument('--template', help='template file to process')
-    parser.add_argument('--curves', nargs='*', help='curves to use')
+    parser.add_argument('--curves', type=str, help='comma-separated list of curves to use')
     parser.add_argument('--names-only', action='store_true', help="don't process the files, just output the new names")
     parser.add_argument('--out-dir', help='directory to move expanded files')
     parser.add_argument('--top-level-dir', help='top-level directory of project')
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     input_file = args.template
-    curve_list = args.curves
+    curve_list = args.curves.split(',')
     output_directory = args.out_dir
     toplevel_dir = args.top_level_dir
 

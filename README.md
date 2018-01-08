@@ -12,20 +12,40 @@ The project is self-contained, and provides all DAA functionality for Issuers, M
 
 # Requirements
 
-- The CMake build system is used for building.
-- gcc
+- cmake version >= 3.0
+- A C99-compliant compiler
+- milagro-crypto-c
+  - The milagro library must be built with support for the necessary curves
+  - Currently, the fork available [here](https://github.com/zanebeckwith/milagro-crypto-c/tree/headers-under-directory) must be used
 - libsodium >= 1.0.11 (optionally, see below)
-- For building the AMCL dependency:
-  - python3
+
+## Milagro-Crypto-C Dependency
+
+By default, `cmake` will look for the `milagro-crypto-c` project first 
+in the local directory `./milagro-crypto-c/install`, under the directories `include` for headers and `lib` for libraries.
+Next, the usual system installation locations will be searched.
+To override the local search location, set the `AMCL_LOCAL_DIR` cmake variable to the correct path.
+To force only the system installation locations to be used, set the `FORCE_SYSTEM_AMCL_LIB` cmake option to `On`.
 
 # Building
 
+In the following, it is assumed that libsodium has been installed.
+
 ```bash
-git submodule update --init --recursive
+git clone -b headers-under-directory https://github.com/zanebeckwith/milagro-crypto-c
+cd milagro-crypto-c
+mkdir -p build
+mkdir -p install
+cd build
+cmake .. -DAMCL_CURVE=FP256BN
+cmake --build .
+make install
+cd ../..
+
 mkdir -p build
 cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug -DECDAA_CURVES=BN254\;BN254CX\;BLS383
-cmake --build . -- -j4
+cmake ..
+cmake --build .
 ```
 
 ## Running the tests
@@ -47,11 +67,9 @@ and call `find_package(ECDAA)`.
 After that, to use `libecdaa`, just add `ecdaa` to the `target_link_libraries`.
 
 The pairing-friendly curves supported by the library are set using the CMake
-variable `ECDAA_CURVES`.
-The current options are `BN254`, `BN254CX`, and `BLS383`;
-so, to enable all three, pass the following command line parameter when invoking `cmake`:
-`-DECDAA_CURVES=BN254\;BN254CX\;BLS383`.
-If no `ECDAA_CURVES` is set, the default is to build all three curves: `BN254`, `BN254CX`, and `BLS383`.
+variable `ECDAA_CURVES`, a comma-separated list of curve names.
+All curves supported by the `milagro-crypto-c` pairing-based-crypto library are supported.
+If no `ECDAA_CURVES` is set, the default is to build `FP256BN`.
 
 ## Random number generator
 
@@ -276,8 +294,9 @@ for this project can be found by clicking the Coverity link at the top of this R
 # Pairing-based Cryptography Library
 
 For the elliptic curve bilinear pairing primitives, this project
-uses Miracl's AMCL library version3.
-AMCL is available on github [here](https://github.com/miracl/amcl).
+uses the Milagro Crypto C library.
+The fork currently required by this project is available on github [here](https://github.com/zanebeckwith/milagro-crypto-c).
+The upstream repository can be found [here](https://github.com/milagro-crypto/milagro-crypto-c).
 
 # License
 Copyright 2017 Xaptum, Inc.

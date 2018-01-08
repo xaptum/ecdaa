@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(ecdaa
         LANGUAGES C
-        VERSION "0.1.1")
+        VERSION "0.2.0")
 
 option(DISABLE_LIBSODIUM_RNG_SEED_FUNCTION
         "Disable the default Libsodium-based seed function"
@@ -26,16 +26,9 @@ option(ECDAA_BUILD_EXAMPLE_PROGRAMS
         "Build the top-level driver programs for running ECDAA task"
         ON)
 
-set(CURVE_TYPES BN254 BN254CX BLS383 FP256BN)
 if(NOT ECDAA_CURVES)
-        set(ECDAA_CURVES ${CURVE_TYPES})
+        set(ECDAA_CURVES FP256BN)
 endif(NOT ECDAA_CURVES)
-foreach(curve ${ECDAA_CURVES})
-        list(FIND CURVE_TYPES ${curve} curve_index)
-        if(${curve_index} EQUAL -1)
-                MESSAGE(ERROR ": Curve type ${curve} not supported")
-        endif(${curve_index} EQUAL -1)
-endforeach(curve ${ECDAA_CURVES})
 
 list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(AMCL REQUIRED QUIET)
@@ -111,7 +104,6 @@ target_include_directories(ecdaa
         ${GENERATED_TOPLEVEL_INCLUDE_DIR}
         )
 
-add_dependencies(ecdaa AMCL)
 add_dependencies(ecdaa toplevel_header)
 
 target_link_libraries(ecdaa
