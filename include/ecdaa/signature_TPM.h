@@ -16,18 +16,37 @@
  *
  *****************************************************************************/
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
+#ifndef ECDAA_SIGNATURE_TPM_SIGN_H
+#define ECDAA_SIGNATURE_TPM_SIGN_H
 #pragma once
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/prng.h>
-#include <ecdaa/revocation_list_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
-#include <ecdaa/signature_TPM.h>
-#include <ecdaa/tpm_context.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <ecdaa/signature_FP256BN.h>
+
+#include <stdint.h>
+
+struct ecdaa_tpm_context;
+
+/*
+ * Create an ECDAA signature, using a TPM.
+ *
+ * Returns:
+ * 0 on success
+ * -1 if unable to create signature
+ */
+int ecdaa_signature_TPM_sign(struct ecdaa_signature_FP256BN *signature_out,
+                             const uint8_t* message,
+                             uint32_t message_len,
+                             struct ecdaa_credential_FP256BN *cred,
+                             struct ecdaa_prng *prng,
+                             struct ecdaa_tpm_context *tpm_ctx);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
+

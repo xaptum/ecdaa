@@ -23,4 +23,4 @@ else
 fi
 
 # "error-exitcode" makes bugs cause non-zero return code
-cppcheck -v --std=c99 --error-exitcode=6 --enable=all --suppress=missingIncludeSystem -I ${generated_sources_dir}/include/ -I ${generated_sources_dir} ${generated_sources_dir}/src/ ${generated_sources_dir}/test/ ${generated_sources_dir}/examples/ --suppress=purgedConfiguration
+cppcheck -v --std=c99 --error-exitcode=6 --enable=all --suppress=missingIncludeSystem -I ${generated_sources_dir}/include/ -I ${generated_sources_dir} -I ${generated_sources_dir}/src/ -I ${generated_sources_dir}/src/tpm-utils/ -I ${generated_sources_dir}/src/internal/ -I ${generated_sources_dir}/src/amcl-extensions/ ${generated_sources_dir}/src/ ${generated_sources_dir}/test/ ${generated_sources_dir}/examples/ --suppress=purgedConfiguration

@@ -24,6 +24,8 @@ env:
     - CFLAGS=-I${LIBSODIUM_DIR}/include/
     - LDFLAGS=-L${LIBSODIUM_DIR}/lib/
     - LD_LIBRARY_PATH=${LIBSODIUM_DIR}/lib/
+    - XAPTUM_TPM_DIR=${TRAVIS_BUILD_DIR}/xaptum-tpm/
+    - IBM_TPM_DIR=${TRAVIS_BUILD_DIR}/ibm-tpm-simulator
 
 jobs:
   include:
@@ -33,8 +35,10 @@ jobs:
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
       - cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
     script:
+      - .travis/run-tpm-simulator.sh ${XAPTUM_TPM_DIR} ${IBM_TPM_DIR} test/
       - cmake --build . -- -j2
       - ctest -VV
 
@@ -45,8 +49,10 @@ jobs:
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
       - cmake . -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
     script:
+      - .travis/run-tpm-simulator.sh ${XAPTUM_TPM_DIR} ${IBM_TPM_DIR} test/
       - cmake --build . -- -j2
       - ctest -VV
     after_success:
@@ -58,8 +64,10 @@ jobs:
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
       - cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
     script:
+      - .travis/run-tpm-simulator.sh ${XAPTUM_TPM_DIR} ${IBM_TPM_DIR} test/
       - cmake --build . -- -j2
       - ctest -VV
 
@@ -72,10 +80,16 @@ jobs:
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES}
+      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
+      - mkdir -p build
+      - cd build
+      - cmake .. -DCMAKE_BUILD_TYPE=Release -DXAPTUMTPM_LOCAL_DIR=${XAPTUM_TPM_DIR} -DECDAA_CURVES=FP256BN
+      - cd ..
     script:
+      - cd build
       - cmake --build . -- -j2
-      - .travis/run-cppcheck.sh
+      - cd ..
+      - .travis/run-cppcheck.sh build
 
   # Memcheck
   - env: TYPE=MEMCHECK
@@ -86,8 +100,10 @@ jobs:
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
       - cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
     script:
+      - .travis/run-tpm-simulator.sh ${XAPTUM_TPM_DIR} ${IBM_TPM_DIR} test/
       - cmake --build . -- -j2
       - ctest -VV -E benchmarks -T memcheck
     after_failure:
@@ -98,6 +114,7 @@ jobs:
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
     script:
       - .travis/run-scanbuild.sh ${TRAVIS_BUILD_DIR} ${TRAVIS_BUILD_DIR}
 
@@ -107,8 +124,10 @@ jobs:
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
       - cmake . -DCMAKE_BUILD_TYPE=RelWithSanitize -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
     script:
+      - .travis/run-tpm-simulator.sh ${XAPTUM_TPM_DIR} ${IBM_TPM_DIR} test/
       - cmake --build . -- -j2
       - ctest -VV -E benchmarks
 
@@ -123,7 +142,7 @@ jobs:
           name: "xaptum/ecdaa"
           description: "A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures"
         notification_email: ecdaa-coverity-reports@xaptum.com
-        build_command_prepend: ".travis/install-libsodium.sh ${LIBSODIUM_DIR} && .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES} && cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON"
+        build_command_prepend: ".travis/install-libsodium.sh ${LIBSODIUM_DIR} && .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} && .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES} && cmake . -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON"
         build_command:   "cmake --build ."
         branch_pattern: coverity_scan
 

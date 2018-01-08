@@ -49,6 +49,7 @@ macro(add_test_case case_file)
 
   target_include_directories(${case_name}
           PRIVATE ${AMCL_INCLUDE_DIRS}
+          PRIVATE ${XAPTUM_TPM_INCLUDE_DIRS}
           PRIVATE ${GENERATED_TOPLEVEL_INCLUDE_DIR}
           PRIVATE ${PROJECT_SOURCE_DIR}/include/ecdaa/
           PRIVATE ${CMAKE_BINARY_DIR}/
@@ -66,6 +67,17 @@ endmacro()
 set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/testBin/)
 
 file(GLOB_RECURSE ECDAA_TEST_FILES "*.c")
+
+if(NOT ECDAA_TPM_SUPPORT)
+        foreach(file ${ECDAA_TEST_FILES})
+                string(REGEX MATCH ".*tpm.*|.*TPM.*" match ${file})
+                if(match)
+                        list(REMOVE_ITEM ECDAA_TEST_FILES ${match})
+                endif()
+        endforeach()
+else()
+        file(COPY tpm-test-utils.h DESTINATION ${CMAKE_BINARY_DIR}/test/)
+endif()
 
 foreach(template_file ${ECDAA_TEST_FILES})
         expand_test_case(${template_file})
