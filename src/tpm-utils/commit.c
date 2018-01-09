@@ -64,12 +64,14 @@ int tpm_commit(struct ecdaa_tpm_context *tpm_ctx,
                 break;
             }
 
-            if (s2_length > sizeof(s2_tpm.buffer)) {
+            int32_t g2_hash_ret;
+
+            if (s2_length > (sizeof(s2_tpm.buffer) - sizeof(g2_hash_ret))) {
                 ret = -3;
                 break;
             }
 
-            int32_t g2_hash_ret = g2_hash(&y2, s2, s2_length);
+            g2_hash_ret = g2_hash(&y2, s2, s2_length);
             if (g2_hash_ret < 0) {
                 ret = -3;
                 break;
@@ -77,7 +79,7 @@ int tpm_commit(struct ecdaa_tpm_context *tpm_ctx,
             ecp_to_tpm_format(&y2_tpm, &y2);
 
             // Concatenate (g2_hash_ret | s2) (cf. g2_hash below)
-            s2_tpm.size = s2_length + sizeof(g2_hash_ret);
+            s2_tpm.size = (uint16_t)(s2_length + sizeof(g2_hash_ret));
             memcpy(s2_tpm.buffer, &g2_hash_ret, sizeof(g2_hash_ret));
             memcpy(s2_tpm.buffer + sizeof(g2_hash_ret), s2, s2_length);
         }
