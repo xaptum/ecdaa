@@ -20,11 +20,6 @@
 
 #include <ecdaa/tpm_context.h>
 
-const char *pub_key_filename = "pub_key.txt";
-const char *handle_filename = "handle.txt";
-const char *hostname = "localhost";
-const char *port = "2321";
-
 static
 int read_public_key_from_files(ECP_FP256BN *public_key,
                                TPM_HANDLE *key_handle,
@@ -38,6 +33,11 @@ struct tpm_test_context {
 static
 int tpm_initialize(struct tpm_test_context *ctx)
 {
+    const char *pub_key_filename = "pub_key.txt";
+    const char *handle_filename = "handle.txt";
+    const char *hostname = "localhost";
+    const char *port = "2321";
+
     int ret = 0;
 
     ECP_FP256BN public_key;
@@ -82,13 +82,14 @@ int read_public_key_from_files(ECP_FP256BN *public_key,
                 ret = -1;
                 break;
             }
-            public_key_as_bytes[i] = byte;
+            public_key_as_bytes[i] = (uint8_t)byte;
         }
     } while(0);
     (void)fclose(pub_key_file_ptr);
     if (0 != ret)
         return -1;
-    ecp_FP256BN_deserialize(public_key, public_key_as_bytes);
+    if (0 != ecp_FP256BN_deserialize(public_key, public_key_as_bytes))
+        return -1;
 
     FILE *handle_file_ptr = fopen(handle_filename, "r");
     if (NULL == handle_file_ptr)
