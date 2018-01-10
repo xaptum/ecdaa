@@ -49,11 +49,14 @@ int ecdaa_member_key_pair_ZZZ_generate(struct ecdaa_member_public_key_ZZZ *pk,
     ecp_ZZZ_set_to_generator(&basepoint);
     int sign_ret = schnorr_sign_ZZZ(&pk->c,
                                     &pk->s,
+                                    NULL,
                                     nonce,
                                     nonce_length,
                                     &basepoint,
                                     &pk->Q,
                                     sk->sk,
+                                    NULL,
+                                    0,
                                     prng);
 
     return sign_ret;
@@ -69,10 +72,13 @@ int ecdaa_member_public_key_ZZZ_validate(struct ecdaa_member_public_key_ZZZ *pk,
     ecp_ZZZ_set_to_generator(&basepoint);
     int sign_ret = schnorr_verify_ZZZ(pk->c,
                                       pk->s,
+                                      NULL,
                                       nonce_in,
                                       nonce_length,
                                       &basepoint,
-                                      &pk->Q);
+                                      &pk->Q,
+                                      NULL,
+                                      0);
     if (0 != sign_ret)
         ret = -1;
 

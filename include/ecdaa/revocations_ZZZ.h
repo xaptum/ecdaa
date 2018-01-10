@@ -16,8 +16,8 @@
  *
  *****************************************************************************/
 
-#ifndef ECDAA_REVOCATION_LIST_ZZZ_H
-#define ECDAA_REVOCATION_LIST_ZZZ_H
+#ifndef ECDAA_REVOCATIONS_ZZZ_H
+#define ECDAA_REVOCATIONS_ZZZ_H
 #pragma once
 
 #ifdef __cplusplus
@@ -26,17 +26,22 @@ extern "C" {
 
 struct ecdaa_member_secret_key_ZZZ;
 
+#include <amcl/ecp_ZZZ.h>
+
 #include <stddef.h>
 
 /*
- * Secret-key revocation list.
+ * Secret-key revocation list and
+ * basename-signature revocation list.
  *
  * `list` is an array of `ecdaa_member_secret_key_ZZZ`s.
  * `length` is the size of `list`.
  */
-struct ecdaa_revocation_list_ZZZ {
-    size_t length;
-    struct ecdaa_member_secret_key_ZZZ *list;
+struct ecdaa_revocations_ZZZ {
+    size_t sk_length;
+    struct ecdaa_member_secret_key_ZZZ *sk_list;
+    size_t bsn_length;
+    ECP_ZZZ *bsn_list;
 };
 
 #ifdef __cplusplus

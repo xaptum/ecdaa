@@ -51,6 +51,17 @@ void big_XXX_from_two_message_hash(BIG_XXX *big_out,
                                    uint32_t msg2_len);
 
 /*
+ * Same as big_XXX_from_hash, but with three input messages.
+ */
+void big_XXX_from_three_message_hash(BIG_XXX *big_out,
+                                     const uint8_t *msg1_in,
+                                     uint32_t msg1_len,
+                                     const uint8_t *msg2_in,
+                                     uint32_t msg2_len,
+                                     const uint8_t *msg3_in,
+                                     uint32_t msg3_len);
+
+/*
  * Multiply two BIG_XXX's, then add the product to a third BIG_XXX, all modulo a given modulus.
  *
  * BIG_XXX_out = [ summand + (multiplicand1 * multiplicand2) ] mod modulus

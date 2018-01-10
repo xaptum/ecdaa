@@ -40,6 +40,8 @@ struct ecdaa_tpm_context;
 int ecdaa_signature_TPM_sign(struct ecdaa_signature_FP256BN *signature_out,
                              const uint8_t* message,
                              uint32_t message_len,
+                             const uint8_t* basename,
+                             uint32_t basename_len,
                              struct ecdaa_credential_FP256BN *cred,
                              struct ecdaa_prng *prng,
                              struct ecdaa_tpm_context *tpm_ctx);

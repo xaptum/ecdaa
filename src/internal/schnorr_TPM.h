@@ -37,8 +37,12 @@ struct ecdaa_prng;
 /*
  * Perform TPM2_Commit/TPM2_Sign signature of msg_in, allowing for a non-standard basepoint.
  *
- * c_out = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | msg_in )
- * s_out = s = RAND(Z_p) + c * private_key,
+ * if basename:
+ *  c_out = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | RAND(Z_p)*P2 | P2 | [private_key]P2 | basename | msg_in )
+ *      where P2 = the curve point hashed from basename (cf. `ecp_ZZZ_fromhash`)
+ * else:
+ *  c_out = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | msg_in )
+ * s_out = RAND(Z_p) + c_out * private_key,
  *
  * Note: All random numbers are chosen by the TPM.
  *
@@ -52,10 +56,13 @@ struct ecdaa_prng;
  */
 int schnorr_sign_TPM(BIG_256_56 *c_out,
                      BIG_256_56 *s_out,
+                     ECP_FP256BN *K_out,
                      const uint8_t *msg_in,
                      uint32_t msg_len,
                      ECP_FP256BN *basepoint,
                      ECP_FP256BN *public_key,
+                     const uint8_t *basename,
+                     uint32_t basename_length,
                      struct ecdaa_tpm_context *tpm_ctx);
 
 #ifdef __cplusplus

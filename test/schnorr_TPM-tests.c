@@ -28,15 +28,19 @@
 #include <string.h>
 
 static void full_test();
+static void schnorr_TPM_basename();
+static void schnorr_TPM_wrong_basename_fails();
 
 int main()
 {
     full_test();
+    schnorr_TPM_basename();
+    schnorr_TPM_wrong_basename_fails();
 }
 
 void full_test()
 {
-    printf("Starting tpm-test::null_point_same_as_generator...\n");
+    printf("Starting tpm-test::full_test...\n");
 
     int ret = 0;
 
@@ -52,17 +56,20 @@ void full_test()
     BIG_256_56 c, s;
     ret = schnorr_sign_TPM(&c,
                            &s,
+                           NULL,
                            msg,
                            msg_len,
                            &G1,
                            &ctx.tpm_ctx.public_key,
+                           NULL,
+                           0,
                            &ctx.tpm_ctx);
     if (0 != ret) {
         printf("Error in schnorr_sign_TPM, ret=%d, tpm_rc=0x%x\n", ret, ctx.tpm_ctx.last_return_code);
         TEST_ASSERT(0==1);
     }
 
-    ret = schnorr_verify_FP256BN(c, s, msg, msg_len, &G1, &ctx.tpm_ctx.public_key);
+    ret = schnorr_verify_FP256BN(c, s, NULL, msg, msg_len, &G1, &ctx.tpm_ctx.public_key, NULL, 0);
     if (0 != ret) {
         printf("Error in schnorr_verify_TPM, ret=%d, tpm_rc=0x%x\n", ret, ctx.tpm_ctx.last_return_code);
         TEST_ASSERT(0==1);
@@ -72,3 +79,92 @@ void full_test()
 
     printf("\tsuccess\n");
 }
+
+static void schnorr_TPM_basename()
+{
+    printf("Starting schnorr::schnorr_TPM_basename...\n");
+
+    int ret = 0;
+
+    struct tpm_test_context ctx;
+    TEST_ASSERT(0 == tpm_initialize(&ctx));
+
+    ECP_FP256BN G1;
+    ecp_FP256BN_set_to_generator(&G1);
+
+    uint8_t *msg = (uint8_t*) "Test message";
+    uint32_t msg_len = strlen((char*)msg);
+
+    uint8_t *basename = (uint8_t*) "BASENAME";
+    uint32_t basename_len = strlen((char*)basename);
+
+    BIG_256_56 c, s;
+    ECP_FP256BN K;
+
+    ret = schnorr_sign_TPM(&c,
+                           &s,
+                           &K,
+                           msg,
+                           msg_len,
+                           &G1,
+                           &ctx.tpm_ctx.public_key,
+                           basename,
+                           basename_len,
+                           &ctx.tpm_ctx);
+    if (0 != ret) {
+        printf("Error in schnorr_sign_TPM, ret=%d, tpm_rc=0x%x\n", ret, ctx.tpm_ctx.last_return_code);
+        TEST_ASSERT(0==1);
+    }
+
+    TEST_ASSERT(0 == schnorr_verify_FP256BN(c, s, &K, msg, msg_len, &G1, &ctx.tpm_ctx.public_key, basename, basename_len));
+
+    tpm_cleanup(&ctx);
+
+    printf("\tsuccess\n");
+}
+
+static void schnorr_TPM_wrong_basename_fails()
+{
+    printf("Starting schnorr::schnorr_TPM_wrong_basename_fails...\n");
+
+    int ret = 0;
+
+    struct tpm_test_context ctx;
+    TEST_ASSERT(0 == tpm_initialize(&ctx));
+
+    ECP_FP256BN G1;
+    ecp_FP256BN_set_to_generator(&G1);
+
+    uint8_t *msg = (uint8_t*) "Test message";
+    uint32_t msg_len = strlen((char*)msg);
+
+    uint8_t *basename = (uint8_t*) "BASENAME";
+    uint32_t basename_len = strlen((char*)basename);
+    uint8_t *wrong_basename = (uint8_t*) "WRONGBASENAME";
+    uint32_t wrong_basename_len = strlen((char*)wrong_basename);
+
+    BIG_256_56 c, s;
+    ECP_FP256BN K;
+
+    ret = schnorr_sign_TPM(&c,
+                           &s,
+                           &K,
+                           msg,
+                           msg_len,
+                           &G1,
+                           &ctx.tpm_ctx.public_key,
+                           basename,
+                           basename_len,
+                           &ctx.tpm_ctx);
+    if (0 != ret) {
+        printf("Error in schnorr_sign_TPM, ret=%d, tpm_rc=0x%x\n", ret, ctx.tpm_ctx.last_return_code);
+        TEST_ASSERT(0==1);
+    }
+
+    TEST_ASSERT(0 != schnorr_verify_FP256BN(c, s, &K, msg, msg_len, &G1, &ctx.tpm_ctx.public_key, wrong_basename, wrong_basename_len));
+
+    tpm_cleanup(&ctx);
+
+    printf("\tsuccess\n");
+}
+

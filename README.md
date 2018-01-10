@@ -323,6 +323,14 @@ If the signature is valid, this command returns success.
 verify message-text sig.bin gpk.bin sk_revocation_list.bin num-sks-in-sk_revocation_list
 ```
 
+# Algorithm
+
+The signature algorithm is that of
+[Camenisch et al., 2016](https://doi.org/10.1007/978-3-662-49387-8_10),
+with the exception that the "fix by Xi et al." discussed in Section 5.2 is NOT used
+when creating TPM-enabled signatures (the current TPM2.0 specification doesn't allow
+such signatures to be created).
+
 # Testing and Analysis
 
 The unit-tests are contained in the `test` directory.

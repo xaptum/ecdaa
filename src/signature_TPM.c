@@ -27,6 +27,8 @@
 int ecdaa_signature_TPM_sign(struct ecdaa_signature_FP256BN *signature_out,
                              const uint8_t* message,
                              uint32_t message_len,
+                             const uint8_t* basename,
+                             uint32_t basename_len,
                              struct ecdaa_credential_FP256BN *cred,
                              struct ecdaa_prng *prng,
                              struct ecdaa_tpm_context *tpm_ctx)
@@ -38,10 +40,13 @@ int ecdaa_signature_TPM_sign(struct ecdaa_signature_FP256BN *signature_out,
     //  where the basepoint is S.
     int sign_ret = schnorr_sign_TPM(&signature_out->c,
                                     &signature_out->s,
+                                    &signature_out->K,
                                     message,
                                     message_len,
                                     &signature_out->S,
                                     &signature_out->W,
+                                    basename,
+                                    basename_len,
                                     tpm_ctx);
     
     return sign_ret;

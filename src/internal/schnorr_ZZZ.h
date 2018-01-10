@@ -43,10 +43,14 @@ void schnorr_keygen_ZZZ(ECP_ZZZ *public_out,
                         struct ecdaa_prng *prng);
 
 /*
- * Perform Schnorr signature of msg_in, allowing for a non-standard basepoint.
+ * Perform Schnorr signature of msg_in, allowing for a non-standard basepoint and basename.
  *
- * c_out = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | msg_in )
- * s_out = s = RAND(Z_p) + c_out * private_key
+ * if basename:
+ *  c_out = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | RAND(Z_p)*P2 | P2 | [private_key]P2 | basename | msg_in )
+ *      where P2 = the curve point hashed from basename (cf. `ecp_ZZZ_fromhash`)
+ * else:
+ *  c_out = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | msg_in )
+ * s_out = RAND(Z_p) + c_out * private_key
  *
  * public_key = private_key * basepoint
  *
@@ -58,11 +62,14 @@ void schnorr_keygen_ZZZ(ECP_ZZZ *public_out,
  */
 int schnorr_sign_ZZZ(BIG_XXX *c_out,
                      BIG_XXX *s_out,
+                     ECP_ZZZ *K_out,
                      const uint8_t *msg_in,
                      uint32_t msg_len,
                      ECP_ZZZ *basepoint,
                      ECP_ZZZ *public_key,
                      BIG_XXX private_key,
+                     const uint8_t *basename,
+                     uint32_t basename_len,
                      struct ecdaa_prng *prng);
 
 /*
@@ -80,10 +87,13 @@ int schnorr_sign_ZZZ(BIG_XXX *c_out,
  */
 int schnorr_verify_ZZZ(BIG_XXX c,
                        BIG_XXX s,
+                       ECP_ZZZ *K,
                        const uint8_t *msg_in,
                        uint32_t msg_len,
                        ECP_ZZZ *basepoint,
-                       ECP_ZZZ *public_key);
+                       ECP_ZZZ *public_key,
+                       const uint8_t *basename,
+                       uint32_t basename_len);
 
 /*
  * Perform an 'credential-Schnorr' signature, used by an Issuer when signing credentials.

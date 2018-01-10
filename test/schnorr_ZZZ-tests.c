@@ -39,6 +39,8 @@ static void schnorr_verify_wrong_msg();
 static void schnorr_verify_bad_sig();
 static void schnorr_sign_integration();
 static void schnorr_sign_integration_other_basepoint();
+static void schnorr_basename();
+static void schnorr_wrong_basename_fails();
 static void schnorr_credential_sign_sane();
 static void schnorr_credential_sign_integration();
 static void schnorr_issuer_sign_sane();
@@ -53,6 +55,8 @@ int main()
     schnorr_verify_bad_sig();
     schnorr_sign_integration();
     schnorr_sign_integration_other_basepoint();
+    schnorr_basename();
+    schnorr_wrong_basename_fails();
     schnorr_credential_sign_sane();
     schnorr_credential_sign_integration();
     schnorr_issuer_sign_sane();
@@ -105,7 +109,7 @@ void schnorr_sign_sane()
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, msg, msg_len, &basepoint, &public, private, &prng));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, &prng));
 
     TEST_ASSERT(0 == BIG_XXX_iszilch(c));
     TEST_ASSERT(0 == BIG_XXX_iszilch(s));
@@ -137,9 +141,9 @@ void schnorr_verify_wrong_key()
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, msg, msg_len, &basepoint, &public, private, &prng));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, &prng));
 
-    TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, msg, msg_len, &basepoint, &public_wrong));
+    TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, NULL, msg, msg_len, &basepoint, &public_wrong, NULL, 0));
 
     ecdaa_prng_free(&prng);
 
@@ -167,9 +171,9 @@ void schnorr_verify_wrong_msg()
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, msg, msg_len, &basepoint, &public, private, &prng));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, &prng));
 
-    TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, msg_wrong, msg_len_wrong, &basepoint, &public));
+    TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, NULL, msg_wrong, msg_len_wrong, &basepoint, &public, NULL, 0));
 
     ecdaa_prng_free(&prng);
 
@@ -195,7 +199,7 @@ void schnorr_verify_bad_sig()
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, msg, msg_len, &basepoint, &public));
+    TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, NULL, msg, msg_len, &basepoint, &public, NULL, 0));
 
     ecdaa_prng_free(&prng);
 
@@ -221,9 +225,9 @@ void schnorr_sign_integration()
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, msg, msg_len, &basepoint, &public, private, &prng));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, &prng));
 
-    TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, msg, msg_len, &basepoint, &public));
+    TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, NULL, msg, msg_len, &basepoint, &public, NULL, 0));
 
     ecdaa_prng_free(&prng);
 
@@ -254,9 +258,75 @@ void schnorr_sign_integration_other_basepoint()
     ECP_ZZZ_copy(&public, &basepoint);
     ECP_ZZZ_mul(&public, private);
 
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, msg, msg_len, &basepoint, &public, private, &prng));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, &prng));
 
-    TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, msg, msg_len, &basepoint, &public));
+    TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, NULL, msg, msg_len, &basepoint, &public, NULL, 0));
+
+    ecdaa_prng_free(&prng);
+
+    printf("\tsuccess\n");
+}
+
+static void schnorr_basename()
+{
+    printf("Starting schnorr::schnorr_basename...\n");
+
+    struct ecdaa_prng prng;
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
+
+    ECP_ZZZ public;
+    BIG_XXX private;
+
+    schnorr_keygen_ZZZ(&public, &private, &prng);
+
+    uint8_t *msg = (uint8_t*) "Test message";
+    uint32_t msg_len = strlen((char*)msg);
+
+    uint8_t *basename = (uint8_t*) "BASENAME";
+    uint32_t basename_len = strlen((char*)basename);
+
+    BIG_XXX c, s;
+    ECP_ZZZ K;
+
+    ECP_ZZZ basepoint;
+    ecp_ZZZ_set_to_generator(&basepoint);
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &K, msg, msg_len, &basepoint, &public, private, basename, basename_len, &prng));
+
+    TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, &K, msg, msg_len, &basepoint, &public, basename, basename_len));
+
+    ecdaa_prng_free(&prng);
+
+    printf("\tsuccess\n");
+}
+
+static void schnorr_wrong_basename_fails()
+{
+    printf("Starting schnorr::schnorr_wrong_basename_fails...\n");
+
+    struct ecdaa_prng prng;
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
+
+    ECP_ZZZ public;
+    BIG_XXX private;
+
+    schnorr_keygen_ZZZ(&public, &private, &prng);
+
+    uint8_t *msg = (uint8_t*) "Test message";
+    uint32_t msg_len = strlen((char*)msg);
+
+    uint8_t *basename = (uint8_t*) "BASENAME";
+    uint32_t basename_len = strlen((char*)basename);
+    uint8_t *wrong_basename = (uint8_t*) "WRONGBASENAME";
+    uint32_t wrong_basename_len = strlen((char*)wrong_basename);
+
+    BIG_XXX c, s;
+    ECP_ZZZ K;
+
+    ECP_ZZZ basepoint;
+    ecp_ZZZ_set_to_generator(&basepoint);
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &K, msg, msg_len, &basepoint, &public, private, basename, basename_len, &prng));
+
+    TEST_ASSERT(0 != schnorr_verify_ZZZ(c, s, &K, msg, msg_len, &basepoint, &public, wrong_basename, wrong_basename_len));
 
     ecdaa_prng_free(&prng);
 
@@ -401,3 +471,4 @@ void schnorr_issuer_sign_integration()
 
     printf("\tsuccess\n");
 }
+

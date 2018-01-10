@@ -57,6 +57,23 @@ void ecp_ZZZ_serialize(uint8_t *buffer_out,
 int ecp_ZZZ_deserialize(ECP_ZZZ *point_out,
                         uint8_t *buffer);
 
+/*
+ * Hash a message into an ECP_ZZZ point.
+ *
+ * The curve point generated from the message m is found as follows (cf. Chen and Li, 2013):
+ *  1. Set i := 0 be a 32-bit unsigned integer.
+ *  2. Compute x := H(i, m).
+ *  3. Compute z := x3 + ax + b mod q.
+ *  4. Compute y := √z mod q. If y does not exist, set i := i + 1,
+ *      repeat step 2 if i < 232, otherwise, report failure.
+ *  5. Set y := min(y, q − y).
+ *
+ * Returns:
+ *  i on success (i is 32-bit unsigned integer used in construction above)
+ *  -1 on failure
+ */
+int32_t ecp_ZZZ_fromhash(ECP_ZZZ *point_out, const uint8_t *message, uint32_t message_length);
+
 #ifdef __cplusplus
 }
 #endif
