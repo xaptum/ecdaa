@@ -43,40 +43,49 @@ int parse_sk_rev_list_file(struct ecdaa_revocation_list_FP256BN *rev_list_out, c
 
 int main(int argc, char *argv[])
 {
+    int ret = 0;
+
     uint8_t buffer[1024];
 
     // Parse command line
     struct command_line_args args;
-    if (0 != parse_args(&args, argc, argv))
-        return 1;
+    if (0 != parse_args(&args, argc, argv)) {
+        ret = 1;
+        goto cleanup;
+    }
 
     // Read signature from disk
     struct ecdaa_signature_FP256BN sig;
     if (ECDAA_SIGNATURE_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_SIGNATURE_FP256BN_LENGTH, args.sig_file)) {
         fprintf(stderr, "Error reading signature file: \"%s\"\n", args.sig_file);
-        return 1;
+        ret = 1;
+        goto cleanup;
     }
     if (0 != ecdaa_signature_FP256BN_deserialize(&sig, buffer)) {
         fputs("Error deserializing signature\n", stderr);
-        return 1;
+        ret = 1;
+        goto cleanup;
     }
 
     // Read group public key from disk
     struct ecdaa_group_public_key_FP256BN gpk;
     if (ECDAA_GROUP_PUBLIC_KEY_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_GROUP_PUBLIC_KEY_FP256BN_LENGTH, args.gpk_file)) {
         fprintf(stderr, "Error reading group public key file: \"%s\"\n", args.gpk_file);
-        return 1;
+        ret = 1;
+        goto cleanup;
     }
     if (0 != ecdaa_group_public_key_FP256BN_deserialize(&gpk, buffer)) {
         fputs("Error deserializing group public key\n", stderr);
-        return 1;
+        ret = 1;
+        goto cleanup;
     }
 
     // Read in sk_rev_list from disk.
     struct ecdaa_revocation_list_FP256BN sk_rev_list;
     if (0 != parse_sk_rev_list_file(&sk_rev_list, args.sk_rev_list_file, args.number_of_sk_revs)) {
         fputs("Error parsing revocation list file\n", stderr);
-        return 1;
+        ret = 1;
+        goto cleanup;
     }
 
     // Verify signature
@@ -84,14 +93,17 @@ int main(int argc, char *argv[])
     int read_ret = read_file_into_buffer(message, sizeof(message), args.message_file);
     if (read_ret < 0) {
         fprintf(stderr, "Error reading message file: \"%s\"\n", args.message_file);
-        return 1;
+        ret = 1;
+        goto cleanup;
     }
     uint32_t msg_len = (uint32_t)read_ret;
     if (0 != ecdaa_signature_FP256BN_verify(&sig, &gpk, &sk_rev_list, message, msg_len)) {
         fprintf(stderr, "Signature not valid!\n");
-        return 1;
+        ret = 1;
+        goto cleanup;
     }
 
+cleanup:
     if (NULL != sk_rev_list.list)
         free(sk_rev_list.list);
 
