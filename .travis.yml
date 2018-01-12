@@ -120,6 +120,7 @@ jobs:
 
   # Sanitizers
   - env: TYPE=SANITIZE
+    sudo: true
     compiler: clang
     before_script:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
