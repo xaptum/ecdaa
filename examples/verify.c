@@ -108,6 +108,8 @@ cleanup:
         free(sk_rev_list.list);
 
     printf("Signature successfully verified!\n");
+
+    return ret;
 }
 
 void print_usage(const char *my_name)

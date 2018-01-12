@@ -124,7 +124,11 @@ int tpm_context_init_common(struct ecdaa_tpm_context *tpm_ctx,
     tpm_ctx->key_authentication.nonce.size = 0; // TODO: Does a nonce ever make sense for password authentication?
     tpm_ctx->key_authentication.sessionAttributes = empty_session_attributes;
     tpm_ctx->key_authentication.hmac.size = key_password_length;
-    memcpy(tpm_ctx->key_authentication.hmac.buffer, key_password, key_password_length);
+    if (0 != key_password_length) {
+        if (NULL == key_password)
+            return -1;
+        memcpy(tpm_ctx->key_authentication.hmac.buffer, key_password, key_password_length);
+    }
     tpm_ctx->key_authentication_array[0] = &tpm_ctx->key_authentication;
     tpm_ctx->key_authentication_cmd.cmdAuths = &tpm_ctx->key_authentication_array[0];
     tpm_ctx->key_authentication_cmd.cmdAuthsCount = 1;
