@@ -19,6 +19,7 @@
 #include "commit.h"
 
 #include "../amcl-extensions/big_256_56.h"
+#include "../amcl-extensions/ecp_FP256BN.h"
 #include "../internal/explicit_bzero.h"
 
 #include <tss2/tss2_sys.h>
@@ -31,12 +32,9 @@ void ecp_to_tpm_format(TPM2B_ECC_POINT *tpm_out, ECP_FP256BN *point_in);
 static
 int ecp_to_amcl_format(ECP_FP256BN *point_out, TPM2B_ECC_POINT *tpm_in);
 
-static
-int32_t g2_hash(ECP_FP256BN *point_out, uint8_t *message, uint32_t message_length);
-
 int tpm_commit(struct ecdaa_tpm_context *tpm_ctx,
                ECP_FP256BN *P1,
-               uint8_t *s2,
+               const uint8_t *s2,
                uint32_t s2_length,
                ECP_FP256BN *K,
                ECP_FP256BN *L,
@@ -58,30 +56,30 @@ int tpm_commit(struct ecdaa_tpm_context *tpm_ctx,
 
     do {
         if (NULL != s2 || 0 != s2_length) {
-            // If either of these is non-zero, BOTH must be non-zero.
-            if (NULL == s2 || 0 == s2_length) {
+            // If any of these is non-zero, ALL must be non-zero.
+            if (NULL == s2 || 0 == s2_length || NULL == K || NULL == L) {
                 ret = -3;
                 break;
             }
 
-            int32_t g2_hash_ret;
+            int32_t hash_ret;
 
-            if (s2_length > (sizeof(s2_tpm.buffer) - sizeof(g2_hash_ret))) {
+            if (s2_length > (sizeof(s2_tpm.buffer) - sizeof(hash_ret))) {
                 ret = -3;
                 break;
             }
 
-            g2_hash_ret = g2_hash(&y2, s2, s2_length);
-            if (g2_hash_ret < 0) {
+            hash_ret = ecp_FP256BN_fromhash(&y2, s2, s2_length);
+            if (hash_ret < 0) {
                 ret = -3;
                 break;
             }
             ecp_to_tpm_format(&y2_tpm, &y2);
 
-            // Concatenate (g2_hash_ret | s2) (cf. g2_hash below)
-            s2_tpm.size = (uint16_t)(s2_length + sizeof(g2_hash_ret));
-            memcpy(s2_tpm.buffer, &g2_hash_ret, sizeof(g2_hash_ret));
-            memcpy(s2_tpm.buffer + sizeof(g2_hash_ret), s2, s2_length);
+            // Concatenate (hash_ret | s2)
+            s2_tpm.size = (uint16_t)s2_length + sizeof(hash_ret);
+            memcpy(s2_tpm.buffer, &hash_ret, sizeof(hash_ret));
+            memcpy(s2_tpm.buffer + sizeof(hash_ret), s2, s2_length);
         }
 
         tpm_ctx->last_return_code = Tss2_Sys_Commit(tpm_ctx->sapi_context,
@@ -102,18 +100,30 @@ int tpm_commit(struct ecdaa_tpm_context *tpm_ctx,
         }
 
         if (K_tpm.size > 4) {
+            if (NULL == K) {
+                ret = -2;
+                break;
+            }
             if (0 != ecp_to_amcl_format(K, &K_tpm)) {
                 ret = -2;
                 break;
             }
         }
         if (L_tpm.size > 4) {
+            if (NULL == L) {
+                ret = -2;
+                break;
+            }
             if (0 != ecp_to_amcl_format(L, &L_tpm)) {
                 ret = -2;
                 break;
             }
         }
         if (E_tpm.size > 4) {
+            if (NULL == E) {
+                ret = -2;
+                break;
+            }
             if (0 != ecp_to_amcl_format(E, &E_tpm)) {
                 ret = -2;
                 break;
@@ -163,23 +173,4 @@ int ecp_to_amcl_format(ECP_FP256BN *point_out, TPM2B_ECC_POINT *tpm_in)
     } else {
         return -1;
     }
-}
-
-int32_t g2_hash(ECP_FP256BN *point_out, uint8_t *message, uint32_t message_length)
-{
-    // Following the Appendix of Chen and Li, 2013
-
-    BIG_256_56 curve_order;
-    BIG_256_56_rcopy(curve_order, CURVE_Order_FP256BN);
-
-    for (int32_t i=0; i < 232; i++) {
-        BIG_256_56 x;
-        big_256_56_from_two_message_hash(&x, (uint8_t*)&i, sizeof(i), message, message_length);
-        BIG_256_56_mod(x, curve_order);
-        if (ECP_FP256BN_setx(point_out, x, 0))
-            return i;
-    }
-
-    // If we reach here, we ran out of tries, so return error.
-    return -1;
 }

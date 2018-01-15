@@ -29,7 +29,7 @@
 #include <ecdaa/issuer_keypair_ZZZ.h>
 #include <ecdaa/signature_ZZZ.h>
 #include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/revocation_list_ZZZ.h>
+#include <ecdaa/revocations_ZZZ.h>
 #include <ecdaa/prng.h>
 
 #include <sys/time.h>
@@ -44,7 +44,9 @@ typedef struct sign_and_verify_fixture {
     struct ecdaa_prng prng;
     uint8_t *msg;
     uint32_t msg_len;
-    struct ecdaa_revocation_list_ZZZ sk_rev_list;
+    uint8_t *basename;
+    uint32_t basename_len;
+    struct ecdaa_revocations_ZZZ revocations;
     struct ecdaa_member_public_key_ZZZ pk;
     struct ecdaa_member_secret_key_ZZZ sk;
     struct ecdaa_issuer_public_key_ZZZ ipk;
@@ -85,8 +87,13 @@ static void setup(sign_and_verify_fixture* fixture)
     fixture->msg = (uint8_t*) "Test message";
     fixture->msg_len = strlen((char*)fixture->msg);
 
-    fixture->sk_rev_list.length=0;
-    fixture->sk_rev_list.list=NULL;
+    fixture->basename = (uint8_t*) "BASENAME";
+    fixture->basename_len = (uint32_t)strlen((char*)fixture->basename);
+
+    fixture->revocations.sk_length=0;
+    fixture->revocations.sk_list=NULL;
+    fixture->revocations.bsn_length=0;
+    fixture->revocations.bsn_list=NULL;
 }
 
 static void teardown(sign_and_verify_fixture* fixture)
@@ -119,7 +126,7 @@ void schnorr_sign_benchmark()
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
     for (unsigned i = 0; i < rounds; i++) {
-        schnorr_sign_ZZZ(&c, &s, msg, msg_len, &basepoint, &public, private, &prng);
+        schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, &prng);
     }
 
     struct timeval tv2;
@@ -150,7 +157,7 @@ static void sign_benchmark()
     gettimeofday(&tv1, NULL);
 
     for (unsigned i = 0; i < rounds; i++) {
-        TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.prng));
+        TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.sk, &fixture.cred, &fixture.prng));
     }
 
     struct timeval tv2;
@@ -176,13 +183,13 @@ static void verify_benchmark()
 
     struct ecdaa_signature_ZZZ sig;
 
-    TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, &fixture.sk, &fixture.cred, &fixture.prng));
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.sk, &fixture.cred, &fixture.prng));
 
     struct timeval tv1;
     gettimeofday(&tv1, NULL);
 
     for (unsigned i = 0; i < rounds; i++) {
-        TEST_ASSERT(0 == ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.sk_rev_list, fixture.msg, fixture.msg_len));
+        TEST_ASSERT(0 == ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len));
     }
 
     struct timeval tv2;

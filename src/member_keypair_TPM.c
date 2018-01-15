@@ -38,10 +38,13 @@ int ecdaa_member_key_pair_TPM_generate(struct ecdaa_member_public_key_FP256BN *p
     ecp_FP256BN_set_to_generator(&basepoint);
     ret = schnorr_sign_TPM(&pk->c,
                            &pk->s,
+                           NULL,
                            nonce,
                            nonce_length,
                            &basepoint,
                            &pk->Q,
+                           NULL,
+                           0,
                            tpm_ctx);
 
     return ret;

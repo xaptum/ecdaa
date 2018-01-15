@@ -63,6 +63,35 @@ void big_XXX_from_two_message_hash(BIG_XXX *big_out,
     convert_hash_to_big_XXX(big_out, &hash);
 }
 
+void big_XXX_from_three_message_hash(BIG_XXX *big_out,
+                                     const uint8_t *msg1_in,
+                                     uint32_t msg1_len,
+                                     const uint8_t *msg2_in,
+                                     uint32_t msg2_len,
+                                     const uint8_t *msg3_in,
+                                     uint32_t msg3_len)
+{
+    hash256 hash;
+    HASH256_init(&hash);
+
+    // Process msg1 one-byte-at-a-time.
+    for (uint32_t i=0; i < msg1_len; ++i) {
+        HASH256_process(&hash, msg1_in[i]);
+    }
+
+    // Process msg2 one-byte-at-a-time.
+    for (uint32_t i=0; i < msg2_len; ++i) {
+        HASH256_process(&hash, msg2_in[i]);
+    }
+
+    // Process msg3 one-byte-at-a-time.
+    for (uint32_t i=0; i < msg3_len; ++i) {
+        HASH256_process(&hash, msg3_in[i]);
+    }
+
+    convert_hash_to_big_XXX(big_out, &hash);
+}
+
 void big_XXX_mod_mul_and_add(BIG_XXX *big_out,
                              BIG_XXX summand,
                              BIG_XXX multiplicand1,

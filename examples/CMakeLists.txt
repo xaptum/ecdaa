@@ -40,10 +40,10 @@ foreach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
                 ${GENERATED_TOPLEVEL_INCLUDE_DIR})
 
         if(BUILD_SHARED_LIBS)
-              target_link_libraries(${program_name} PRIVATE ecdaa)
+              target_link_libraries(${program_name} PRIVATE ecdaa ${AMCL_LIBRARIES})
               add_dependencies(${program_name} ecdaa)
         else()
-              target_link_libraries(${program_name} PRIVATE ecdaa_static)
+              target_link_libraries(${program_name} PRIVATE ecdaa_static ${AMCL_LIBRARIES})
               add_dependencies(${program_name} ecdaa_static)
         endif()
 

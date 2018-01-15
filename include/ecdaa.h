@@ -25,7 +25,7 @@
 #include <ecdaa/issuer_keypair_ZZZ.h>
 #include <ecdaa/member_keypair_ZZZ.h>
 #include <ecdaa/prng.h>
-#include <ecdaa/revocation_list_ZZZ.h>
+#include <ecdaa/revocations_ZZZ.h>
 #include <ecdaa/signature_ZZZ.h>
 #include <ecdaa/signature_TPM.h>
 #include <ecdaa/tpm_context.h>

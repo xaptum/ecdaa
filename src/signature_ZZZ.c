@@ -20,7 +20,7 @@
 
 #include <ecdaa/member_keypair_ZZZ.h>
 #include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/revocation_list_ZZZ.h>
+#include <ecdaa/revocations_ZZZ.h>
 #include <ecdaa/credential_ZZZ.h>
 #include <ecdaa/prng.h>
 
@@ -39,9 +39,16 @@ size_t ecdaa_signature_ZZZ_length(void)
     return ECDAA_SIGNATURE_ZZZ_LENGTH;
 }
 
+size_t ecdaa_signature_ZZZ_with_nym_length(void)
+{
+    return ECDAA_SIGNATURE_ZZZ_WITH_NYM_LENGTH;
+}
+
 int ecdaa_signature_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
                              const uint8_t* message,
                              uint32_t message_len,
+                             const uint8_t* basename,
+                             uint32_t basename_len,
                              struct ecdaa_member_secret_key_ZZZ *sk,
                              struct ecdaa_credential_ZZZ *cred,
                              struct ecdaa_prng *prng)
@@ -53,21 +60,26 @@ int ecdaa_signature_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
     //  where the basepoint is S.
     int sign_ret = schnorr_sign_ZZZ(&signature_out->c,
                                     &signature_out->s,
+                                    &signature_out->K,
                                     message,
                                     message_len,
                                     &signature_out->S,
                                     &signature_out->W,
                                     sk->sk,
+                                    basename,
+                                    basename_len,
                                     prng);
-    
+
     return sign_ret;
 }
 
 int ecdaa_signature_ZZZ_verify(struct ecdaa_signature_ZZZ *signature,
                                struct ecdaa_group_public_key_ZZZ *gpk,
-                               struct ecdaa_revocation_list_ZZZ *sk_rev_list,
+                               struct ecdaa_revocations_ZZZ *revocations,
                                uint8_t* message,
-                               uint32_t message_len)
+                               uint32_t message_len,
+                               uint8_t *basename,
+                               uint32_t basename_len)
 {
     int ret = 0;
 
@@ -78,10 +90,13 @@ int ecdaa_signature_ZZZ_verify(struct ecdaa_signature_ZZZ *signature,
     // 2) Check Schnorr-type signature
     int schnorr_ret = schnorr_verify_ZZZ(signature->c,
                                          signature->s,
+                                         &signature->K,
                                          message,
                                          message_len,
                                          &signature->S,
-                                         &signature->W);
+                                         &signature->W,
+                                         basename,
+                                         basename_len);
     if (0 != schnorr_ret)
         ret = -1;
 
@@ -113,17 +128,24 @@ int ecdaa_signature_ZZZ_verify(struct ecdaa_signature_ZZZ *signature,
 
     // 6) Check W against sk_revocation_list
     ECP_ZZZ Wcheck;
-    for (size_t i = 0; i < sk_rev_list->length; ++i) {
+    for (size_t i = 0; i < revocations->sk_length; ++i) {
         ECP_ZZZ_copy(&Wcheck, &signature->S);
-        ECP_ZZZ_mul(&Wcheck, sk_rev_list->list[i].sk);
+        ECP_ZZZ_mul(&Wcheck, revocations->sk_list[i].sk);
         if (ECP_ZZZ_equals(&Wcheck, &signature->W))
+            ret = -1;
+    }
+
+    // 7) Check K against bsn_revocation_list
+    for (size_t i = 0; i < revocations->bsn_length; ++i) {
+        if (ECP_ZZZ_equals(&revocations->bsn_list[i], &signature->K))
             ret = -1;
     }
 
     return ret;
 }
 void ecdaa_signature_ZZZ_serialize(uint8_t *buffer_out,
-                                   struct ecdaa_signature_ZZZ *signature)
+                                   struct ecdaa_signature_ZZZ *signature,
+                                   int has_nym)
 {
     BIG_XXX_toBytes((char*)buffer_out, signature->c);
     BIG_XXX_toBytes((char*)(buffer_out + MODBYTES_XXX), signature->s);
@@ -132,10 +154,15 @@ void ecdaa_signature_ZZZ_serialize(uint8_t *buffer_out,
     ecp_ZZZ_serialize(buffer_out + 2*MODBYTES_XXX + ECP_ZZZ_LENGTH, &signature->S);
     ecp_ZZZ_serialize(buffer_out + 2*MODBYTES_XXX + 2*ECP_ZZZ_LENGTH, &signature->T);
     ecp_ZZZ_serialize(buffer_out + 2*MODBYTES_XXX + 3*ECP_ZZZ_LENGTH, &signature->W);
+
+    if (has_nym) {
+        ecp_ZZZ_serialize(buffer_out + 2*MODBYTES_XXX + 4*ECP_ZZZ_LENGTH, &signature->K);
+    }
 }
 
 int ecdaa_signature_ZZZ_deserialize(struct ecdaa_signature_ZZZ *signature_out,
-                                    uint8_t *buffer_in)
+                                    uint8_t *buffer_in,
+                                    int has_nym)
 {
     int ret = 0;
 
@@ -154,24 +181,34 @@ int ecdaa_signature_ZZZ_deserialize(struct ecdaa_signature_ZZZ *signature_out,
     if (0 != ecp_ZZZ_deserialize(&signature_out->W, buffer_in + 2*MODBYTES_XXX + 3*ECP_ZZZ_LENGTH))
         ret = -1;
 
+    if (has_nym) {
+        if (0 != ecp_ZZZ_deserialize(&signature_out->K, buffer_in + 2*MODBYTES_XXX + 4*ECP_ZZZ_LENGTH))
+            ret = -1;
+    } else {
+        ecp_ZZZ_set_to_generator(&signature_out->K);
+    }
+
     return ret;
 }
 
 int ecdaa_signature_ZZZ_deserialize_and_verify(struct ecdaa_signature_ZZZ *signature_out,
                                                struct ecdaa_group_public_key_ZZZ *gpk,
-                                               struct ecdaa_revocation_list_ZZZ *sk_rev_list,
+                                               struct ecdaa_revocations_ZZZ *revocations,
                                                uint8_t *signature_buffer,
                                                uint8_t* message_buffer,
-                                               uint32_t message_len)
+                                               uint32_t message_len,
+                                               uint8_t *basename,
+                                               uint32_t basename_len,
+                                               int has_nym)
 {
     int ret = 0;
 
     // 1) De-serialize the signature
-    ret = ecdaa_signature_ZZZ_deserialize(signature_out, signature_buffer);
+    ret = ecdaa_signature_ZZZ_deserialize(signature_out, signature_buffer, has_nym);
 
     // 2) Verify the signature
     if (0 == ret) {
-        int valid_ret = ecdaa_signature_ZZZ_verify(signature_out, gpk, sk_rev_list, message_buffer, message_len);
+        int valid_ret = ecdaa_signature_ZZZ_verify(signature_out, gpk, revocations, message_buffer, message_len, basename, basename_len);
         if (0 != valid_ret)
             ret = -2;
     }

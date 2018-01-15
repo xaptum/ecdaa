@@ -33,14 +33,6 @@ extern "C" {
 /*
  * Call TPM2_Commit, using the key handle in tpm_ctx.
  *
- * The curve point generated from the message s2 is found as follows (cf. Chen and Li, 2013):
- *  1. Set i := 0 be a 32-bit unsigned integer.
- *  2. Compute x := H(i, m).
- *  3. Compute z := x3 + ax + b mod q.
- *  4. Compute y := √z mod q. If y does not exist, set i :=
- *  i + 1, repeat step 2 if i < 232, otherwise, report failure.
- *  5. Set y := min(y, q − y).
- *
  * Returns:
  * 0 on success
  * -1 if TPM2_Commit fails (check tpm-ctx->last_return_code)
@@ -52,7 +44,7 @@ extern "C" {
  */
 int tpm_commit(struct ecdaa_tpm_context *tpm_ctx,
                ECP_FP256BN *P1,
-               uint8_t *s2,
+               const uint8_t *s2,
                uint32_t s2_length,
                ECP_FP256BN *K,
                ECP_FP256BN *L,

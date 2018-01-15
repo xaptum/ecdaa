@@ -36,6 +36,18 @@ enum {
     FIVE_ECP2_LENGTH = 5*ECP2_ZZZ_LENGTH
 };
 
+static
+int commit(ECP_ZZZ *P1,
+           BIG_XXX private_key,
+           const uint8_t *s2,
+           uint32_t s2_length,
+           BIG_XXX *k,
+           ECP_ZZZ *P2,
+           ECP_ZZZ *K,
+           ECP_ZZZ *L,
+           ECP_ZZZ *E,
+           struct ecdaa_prng *prng);
+
 void schnorr_keygen_ZZZ(ECP_ZZZ *public_out,
                         BIG_XXX *private_out,
                         struct ecdaa_prng *prng)
@@ -49,35 +61,46 @@ void schnorr_keygen_ZZZ(ECP_ZZZ *public_out,
 
 int schnorr_sign_ZZZ(BIG_XXX *c_out,
                      BIG_XXX *s_out,
+                     ECP_ZZZ *K_out,
                      const uint8_t *msg_in,
                      uint32_t msg_len,
                      ECP_ZZZ *basepoint,
                      ECP_ZZZ *public_key,
                      BIG_XXX private_key,
+                     const uint8_t *basename,
+                     uint32_t basename_len,
                      struct ecdaa_prng *prng)
 {
-    // 1) (Commit 1) Verify basepoint belongs to group
-    // NOTE: We assume the basepoint was obtained from a call to set_to_generator,
-    //  which means it's valid.
-
-    // 2) (Commit 2) Choose random k <- Z_n
+    // 1) (Commit)
+    ECP_ZZZ R, L, P2;
     BIG_XXX k;
-    big_XXX_random_mod_order(&k, get_csprng(prng));
+    int commit_ret = commit(basepoint, private_key, basename, basename_len, &k, &P2, K_out, &L, &R, prng);
+    if (0 != commit_ret)
+        return -1;
+    
+    // 2) (Sign 1) Compute hash
+    if (basename_len != 0) {
+        // Compute c = Hash( R | basepoint | public_key | L | P2 | K_out | basename | msg_in )
+        uint8_t hash_input_begin[SIX_ECP_LENGTH];
+        assert(6*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
+        ecp_ZZZ_serialize(hash_input_begin, &R);
+        ecp_ZZZ_serialize(hash_input_begin+ECP_ZZZ_LENGTH, basepoint);
+        ecp_ZZZ_serialize(hash_input_begin+2*ECP_ZZZ_LENGTH, public_key);
+        ecp_ZZZ_serialize(hash_input_begin+3*ECP_ZZZ_LENGTH, &L);
+        ecp_ZZZ_serialize(hash_input_begin+4*ECP_ZZZ_LENGTH, &P2);
+        ecp_ZZZ_serialize(hash_input_begin+5*ECP_ZZZ_LENGTH, K_out);
+        big_XXX_from_three_message_hash(c_out, hash_input_begin, sizeof(hash_input_begin), basename, basename_len, msg_in, msg_len);
+    } else {
+        // Compute c = Hash( R | basepoint | public_key | msg_in )
+        uint8_t hash_input_begin[THREE_ECP_LENGTH];
+        assert(3*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
+        ecp_ZZZ_serialize(hash_input_begin, &R);
+        ecp_ZZZ_serialize(hash_input_begin+ECP_ZZZ_LENGTH, basepoint);
+        ecp_ZZZ_serialize(hash_input_begin+2*ECP_ZZZ_LENGTH, public_key);
+        big_XXX_from_two_message_hash(c_out, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
+    }
 
-    // 3) (Commit 3) Multiply basepoint by k: R = k*basepoint
-    ECP_ZZZ R;
-    ECP_ZZZ_copy(&R, basepoint);
-    ECP_ZZZ_mul(&R, k);
-
-    // 4) (Sign 1) Compute c = Hash( R | basepoint | public_key | msg_in )
-    uint8_t hash_input_begin[THREE_ECP_LENGTH];
-    assert(3*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
-    ecp_ZZZ_serialize(hash_input_begin, &R);
-    ecp_ZZZ_serialize(hash_input_begin+ECP_ZZZ_LENGTH, basepoint);
-    ecp_ZZZ_serialize(hash_input_begin+2*ECP_ZZZ_LENGTH, public_key);
-    big_XXX_from_two_message_hash(c_out, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
-
-    // 5) (Sign 2) Compute s = k + c * private_key
+    // 3) (Sign 2) Compute s = k + c * private_key
     BIG_XXX curve_order;
     BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
     big_XXX_mod_mul_and_add(s_out, k, *c_out, private_key, curve_order);    // normalizes and mod-reduces s_out and c_out
@@ -90,10 +113,13 @@ int schnorr_sign_ZZZ(BIG_XXX *c_out,
 
 int schnorr_verify_ZZZ(BIG_XXX c,
                        BIG_XXX s,
+                       ECP_ZZZ *K,
                        const uint8_t *msg_in,
                        uint32_t msg_len,
                        ECP_ZZZ *basepoint,
-                       ECP_ZZZ *public_key)
+                       ECP_ZZZ *public_key,
+                       const uint8_t *basename,
+                       uint32_t basename_len)
 {
     int ret = 0;
 
@@ -116,18 +142,55 @@ int schnorr_verify_ZZZ(BIG_XXX c,
     // Nb. No need to call ECP_ZZZ_affine here,
     // as R gets passed to ECP_ZZZ_toOctet in a minute (which implicitly converts to affine)
 
-    // 5) Compute c' = Hash( R | basepoint | public_key | msg_in )
+    // 5) Compute hash
     //      (modular-reduce c', too).
-    uint8_t hash_input_begin[THREE_ECP_LENGTH];
-    assert(3*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
-    ecp_ZZZ_serialize(hash_input_begin, &R);
-    ecp_ZZZ_serialize(hash_input_begin+ECP_ZZZ_LENGTH, basepoint);
-    ecp_ZZZ_serialize(hash_input_begin+2*ECP_ZZZ_LENGTH, public_key);
     BIG_XXX c_prime;
-    big_XXX_from_two_message_hash(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
-    BIG_XXX curve_order;
-    BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
-    BIG_XXX_mod(c_prime, curve_order);
+    if (0 != basename_len) {
+        // 1,2,3,4 part ii) If checking a basename signature:
+        ECP_ZZZ P2;
+        ECP_ZZZ L;
+        // 1ii) Find P2 by hashing basename
+        int32_t hash_ret = ecp_ZZZ_fromhash(&P2, basename, basename_len);
+        if (hash_ret < 0)
+            return -1;
+
+        // 2ii) Multiply P2 by s (L = s*P)
+        ECP_ZZZ_copy(&L, &P2);
+        ECP_ZZZ_mul(&L, s);
+
+        // 3) Multiply K by c (K_c = c *K)
+        ECP_ZZZ K_c;
+        ECP_ZZZ_copy(&K_c, K);
+        ECP_ZZZ_mul(&K_c, c);
+
+        // 4) Compute difference of L and c*K, and save to L (L = s*P2 - c*K)
+        ECP_ZZZ_sub(&L, &K_c);
+
+        // c' = Hash( R | basepoint | public_key | L | P2 | K_out | basename | msg_in )
+        uint8_t hash_input_begin[SIX_ECP_LENGTH];
+        assert(6*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
+        ecp_ZZZ_serialize(hash_input_begin, &R);
+        ecp_ZZZ_serialize(hash_input_begin+ECP_ZZZ_LENGTH, basepoint);
+        ecp_ZZZ_serialize(hash_input_begin+2*ECP_ZZZ_LENGTH, public_key);
+        ecp_ZZZ_serialize(hash_input_begin+3*ECP_ZZZ_LENGTH, &L);
+        ecp_ZZZ_serialize(hash_input_begin+4*ECP_ZZZ_LENGTH, &P2);
+        ecp_ZZZ_serialize(hash_input_begin+5*ECP_ZZZ_LENGTH, K);
+        big_XXX_from_three_message_hash(&c_prime, hash_input_begin, sizeof(hash_input_begin), basename, basename_len, msg_in, msg_len);
+        BIG_XXX curve_order;
+        BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
+        BIG_XXX_mod(c_prime, curve_order);
+    } else {
+        // c' = Hash( R | basepoint | public_key | msg_in )
+        uint8_t hash_input_begin[THREE_ECP_LENGTH];
+        assert(3*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
+        ecp_ZZZ_serialize(hash_input_begin, &R);
+        ecp_ZZZ_serialize(hash_input_begin+ECP_ZZZ_LENGTH, basepoint);
+        ecp_ZZZ_serialize(hash_input_begin+2*ECP_ZZZ_LENGTH, public_key);
+        big_XXX_from_two_message_hash(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
+        BIG_XXX curve_order;
+        BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
+        BIG_XXX_mod(c_prime, curve_order);
+    }
 
     // 6) Compare c' and c
     if (0 != BIG_XXX_comp(c_prime, c)) {
@@ -372,4 +435,48 @@ int issuer_schnorr_verify_ZZZ(BIG_XXX c,
     }
 
     return ret;
+}
+
+int commit(ECP_ZZZ *P1,
+           BIG_XXX private_key,
+           const uint8_t *s2,
+           uint32_t s2_length,
+           BIG_XXX *k,
+           ECP_ZZZ *P2,
+           ECP_ZZZ *K,
+           ECP_ZZZ *L,
+           ECP_ZZZ *E,
+           struct ecdaa_prng *prng)
+{
+    // 1) Verify P1 belongs to group
+    // NOTE: We assume the P1 was obtained from a call to set_to_generator,
+    //  which means it's valid.
+
+    // 2) Choose random k <- Z_n
+    big_XXX_random_mod_order(k, get_csprng(prng));
+
+    // 3) If s2 is provided,
+    //  3i) Do K = [private_key](x2,y2),
+    //  3ii) Do [k](x2,y2)
+    if (NULL != s2 || 0 != s2_length) {
+        // If any of these is non-zero, ALL must be non-zero.
+        if (NULL == s2 || 0 == s2_length || NULL == K)
+            return -1;
+
+        int32_t hash_ret = ecp_ZZZ_fromhash(P2, s2, s2_length);
+        if (hash_ret < 0)
+            return -1;
+        ECP_ZZZ_copy(L, P2);
+        ECP_ZZZ_copy(K, P2);
+
+        ECP_ZZZ_mul(K, private_key);
+
+        ECP_ZZZ_mul(L, *k);
+    }
+
+    // 4) Multiply P1 by k: E = k*P1
+    ECP_ZZZ_copy(E, P1);
+    ECP_ZZZ_mul(E, *k);
+
+    return 0;
 }

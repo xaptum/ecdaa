@@ -17,6 +17,7 @@
  *****************************************************************************/
 
 #include "./ecp_ZZZ.h"
+#include "./big_XXX.h"
 
 size_t ecp_ZZZ_length(void)
 {
@@ -90,4 +91,23 @@ int ecp_ZZZ_deserialize(ECP_ZZZ *point_out,
     }
 
     return 0;
+}
+
+int32_t ecp_ZZZ_fromhash(ECP_ZZZ *point_out, const uint8_t *message, uint32_t message_length)
+{
+    // Following the Appendix of Chen and Li, 2013
+
+    BIG_XXX curve_order;
+    BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
+
+    for (int32_t i=0; i < 232; i++) {
+        BIG_XXX x;
+        big_XXX_from_two_message_hash(&x, (uint8_t*)&i, sizeof(i), message, message_length);
+        BIG_XXX_mod(x, curve_order);
+        if (ECP_ZZZ_setx(point_out, x, 0))
+            return i;
+    }
+
+    // If we reach here, we ran out of tries, so return error.
+    return -1;
 }

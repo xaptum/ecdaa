@@ -28,7 +28,7 @@
 #include <ecdaa/issuer_keypair_FP256BN.h>
 #include <ecdaa/signature_TPM.h>
 #include <ecdaa/group_public_key_FP256BN.h>
-#include <ecdaa/revocation_list_FP256BN.h>
+#include <ecdaa/revocations_FP256BN.h>
 #include <ecdaa/prng.h>
 #include <ecdaa/tpm_context.h>
 #include "src/internal/schnorr_TPM.h"
@@ -39,12 +39,16 @@
 #include <sys/time.h>
 
 static void sign_then_verify_good();
+static void sign_then_verify_bad_basename_fails();
+static void sign_then_verify_no_basename();
 
 typedef struct sign_and_verify_fixture {
     struct ecdaa_prng prng;
     uint8_t *msg;
     uint32_t msg_len;
-    struct ecdaa_revocation_list_FP256BN sk_rev_list;
+    uint8_t *basename;
+    uint32_t basename_len;
+    struct ecdaa_revocations_FP256BN revocations;
     struct ecdaa_member_public_key_FP256BN pk;
     struct ecdaa_member_secret_key_FP256BN sk;
     struct ecdaa_issuer_public_key_FP256BN ipk;
@@ -59,6 +63,8 @@ static void teardown(sign_and_verify_fixture *fixture);
 int main()
 {
     sign_then_verify_good();
+    sign_then_verify_bad_basename_fails();
+    sign_then_verify_no_basename();
 }
 
 static void setup(sign_and_verify_fixture* fixture)
@@ -85,8 +91,13 @@ static void setup(sign_and_verify_fixture* fixture)
     fixture->msg = (uint8_t*) "Test message";
     fixture->msg_len = (uint32_t)strlen((char*)fixture->msg);
 
-    fixture->sk_rev_list.length=0;
-    fixture->sk_rev_list.list=NULL;
+    fixture->basename = (uint8_t*) "BASENAME";
+    fixture->basename_len = (uint32_t)strlen((char*)fixture->basename);
+
+    fixture->revocations.sk_length=0;
+    fixture->revocations.sk_list=NULL;
+    fixture->revocations.bsn_length=0;
+    fixture->revocations.bsn_list=NULL;
 }
 
 static void teardown(sign_and_verify_fixture *fixture)
@@ -97,15 +108,52 @@ static void teardown(sign_and_verify_fixture *fixture)
 
 static void sign_then_verify_good()
 {
-    printf("Starting signature::sign_then_verify_good...\n");
+    printf("Starting signature_TPM::sign_then_verify_good...\n");
 
     sign_and_verify_fixture fixture;
     setup(&fixture);
 
     struct ecdaa_signature_FP256BN sig;
-    TEST_ASSERT(0 == ecdaa_signature_TPM_sign(&sig, fixture.msg, fixture.msg_len, &fixture.cred, &fixture.prng, &fixture.tpm_ctx.tpm_ctx));
+    TEST_ASSERT(0 == ecdaa_signature_TPM_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.cred, &fixture.prng, &fixture.tpm_ctx.tpm_ctx));
 
-    TEST_ASSERT(0 == ecdaa_signature_FP256BN_verify(&sig, &fixture.ipk.gpk, &fixture.sk_rev_list, fixture.msg, fixture.msg_len));
+    TEST_ASSERT(0 == ecdaa_signature_FP256BN_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len));
+
+    teardown(&fixture);
+
+    printf("\tsuccess\n");
+}
+
+static void sign_then_verify_bad_basename_fails()
+{
+    printf("Starting signature_TPM::sign_then_verify_bad_basename_fails...\n");
+
+    sign_and_verify_fixture fixture;
+    setup(&fixture);
+
+    uint8_t *wrong_basename = (uint8_t*) "WRONGBASENAME";
+    uint32_t wrong_basename_len = strlen((char*)wrong_basename);
+
+    struct ecdaa_signature_FP256BN sig;
+    TEST_ASSERT(0 == ecdaa_signature_TPM_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.cred, &fixture.prng, &fixture.tpm_ctx.tpm_ctx));
+
+    TEST_ASSERT(0 != ecdaa_signature_FP256BN_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, wrong_basename, wrong_basename_len));
+
+    teardown(&fixture);
+
+    printf("\tsuccess\n");
+}
+
+static void sign_then_verify_no_basename()
+{
+    printf("Starting signature_TPM::sign_then_verify_no_basename...\n");
+
+    sign_and_verify_fixture fixture;
+    setup(&fixture);
+
+    struct ecdaa_signature_FP256BN sig;
+    TEST_ASSERT(0 == ecdaa_signature_TPM_sign(&sig, fixture.msg, fixture.msg_len, NULL, 0, &fixture.cred, &fixture.prng, &fixture.tpm_ctx.tpm_ctx));
+
+    TEST_ASSERT(0 == ecdaa_signature_FP256BN_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, NULL, 0));
 
     teardown(&fixture);
 

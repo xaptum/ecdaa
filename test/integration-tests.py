@@ -46,7 +46,7 @@ class Issuer(object):
         if self.nonces.pop(nonce, None) is not pk_file:
             raise JoinException('****Issuer in directory \'' + self.directory + '\' got unknown or unmatched nonce: ' + nonce)
 
-        if 0 != subprocess.call([examples_dir + 'issuer_respond_to_join_request',
+        if 0 != subprocess.call([examples_dir + '/issuer_respond_to_join_request',
                                  pk_file,
                                  self.isk_file,
                                  cred_file,
@@ -73,7 +73,7 @@ class Member(object):
         self.directory = directory
 
         self.gpk_file = self.directory + '/gpk.bin'
-        if 0 != subprocess.call([examples_dir + 'extract_group_public_key', issuer.ipk_file, self.gpk_file]):
+        if 0 != subprocess.call([examples_dir + '/extract_group_public_key', issuer.ipk_file, self.gpk_file]):
             raise JoinException('****Error extracting group public key from file: ' + issuer.ipk_file)
 
         self.sk_file = self.directory + '/sk.bin'
@@ -81,7 +81,7 @@ class Member(object):
 
         nonce = issuer.GetNonce(self.pk_file)
 
-        if 0 != subprocess.call([examples_dir + 'member_request_join', nonce, self.pk_file, self.sk_file]):
+        if 0 != subprocess.call([examples_dir + '/member_request_join', nonce, self.pk_file, self.sk_file]):
             raise JoinException('****Member in directory \'' + self.directory + '\' unable to create join request')
 
         self.cred_file = self.directory + '/cred.bin'
@@ -94,7 +94,7 @@ class Member(object):
             raise JoinException('Issuer should have rejected our fake nonce')
         issuer.ProcessJoinRequest(self.pk_file, self.cred_file, cred_sig_file, nonce)
 
-        if 0 != subprocess.call([examples_dir + 'member_process_join_response',
+        if 0 != subprocess.call([examples_dir + '/member_process_join_response',
                                  self.pk_file,
                                  self.gpk_file,
                                  self.cred_file,
@@ -106,19 +106,15 @@ class Member(object):
         message_filename = examples_dir + '/msg_sign.tmp.bin'
         with open(message_filename, 'w') as message_file:
             message_file.write(message)
-        if 0 != subprocess.call([examples_dir + 'member_sign', self.sk_file, self.cred_file, sig_file, message_filename]):
+        if 0 != subprocess.call([examples_dir + '/member_sign', self.sk_file, self.cred_file, sig_file, message_filename]):
             raise SignException('****Member in directory \'' + self.directory + '\' unable to sign message: ' + message)
 
 def Verify(message, sig_file, gpk_file, sk_rev_list_file, sk_rev_list_length):
     message_filename = examples_dir + '/msg_verify.tmp.bin'
     with open(message_filename, 'w') as message_file:
         message_file.write(message)
-    if 0 == sk_rev_list_length:
-        if 0 != subprocess.call([examples_dir + 'verify', message_filename, sig_file, gpk_file]):
-            raise VerifyException('****Unable to verify message: ' + message)
-    else:
-        if 0 != subprocess.call([examples_dir + 'verify', message_filename, sig_file, gpk_file, sk_rev_list_file, str(sk_rev_list_length)]):
-            raise VerifyException('****Unable to verify message: ' + message)
+    if 0 != subprocess.call([examples_dir + '/verify', message_filename, sig_file, gpk_file, sk_rev_list_file, str(sk_rev_list_length), '', '0']):
+        raise VerifyException('****Unable to verify message: ' + message)
 
 def TestNoRevoked():
     issuer = Issuer('issuer')
@@ -126,7 +122,10 @@ def TestNoRevoked():
     message = 'Message'
     sig_file = 'sig.bin'
     member.Sign(message, sig_file)
-    Verify(message, sig_file, member.gpk_file, '', 0)
+
+    sk_rev_list_file = 'sk_rev_list.bin'
+    issuer.GetRevokedSecretKeyListFile(sk_rev_list_file)
+    Verify(message, sig_file, member.gpk_file, sk_rev_list_file, 0)
 
 def TestTwoRevoked():
     issuer = Issuer('issuer_for_revs')
@@ -176,8 +175,12 @@ def TestWrongGroup():
     message = 'Message'
     sig_file = 'sig.bin'
     member2.Sign(message, sig_file)
+
+    sk_rev_list_file = 'sk_rev_list.bin'
+    issuer1.GetRevokedSecretKeyListFile(sk_rev_list_file)
+
     try:
-        Verify(message, sig_file, member1.gpk_file, '', 0)
+        Verify(message, sig_file, member1.gpk_file, sk_rev_list_file, 0)
     except VerifyException as e:
         pass
     else:
