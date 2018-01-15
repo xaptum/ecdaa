@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
     // Create signature
     struct ecdaa_signature_FP256BN sig;
     if (0 != ecdaa_signature_FP256BN_sign(&sig, message, msg_len, basename, basename_len, &sk, &cred, &rng)) {
+        message[msg_len] = 0;
         fprintf(stderr, "Error signing message: \"%s\"\n", (char*)message);
         return 1;
     }
