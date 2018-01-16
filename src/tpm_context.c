@@ -31,13 +31,13 @@ static TSS2_SYS_CONTEXT* sapi_ctx_init(const char* hostname,
                                        size_t memory_pool_size);
 
 static int tpm_context_init_common(struct ecdaa_tpm_context *tpm_ctx,
-                                   ECP_FP256BN *public_key_in,
+                                   const uint8_t *public_key_in,
                                    TPM_HANDLE key_handle_in,
                                    const char *password,
                                    uint16_t password_length);
 
 int ecdaa_tpm_context_init_socket(struct ecdaa_tpm_context *tpm_ctx,
-                                  ECP_FP256BN *public_key_in,
+                                  const uint8_t *public_key_in,
                                   TPM_HANDLE key_handle_in,
                                   const char *hostname,
                                   const char *port,
@@ -104,7 +104,7 @@ sapi_ctx_init(const char *hostname,
 }
 
 int tpm_context_init_common(struct ecdaa_tpm_context *tpm_ctx,
-                            ECP_FP256BN *public_key_in,
+                            const uint8_t *public_key_in,
                             TPM_HANDLE key_handle_in,
                             const char *key_password,
                             uint16_t key_password_length)
@@ -114,7 +114,7 @@ int tpm_context_init_common(struct ecdaa_tpm_context *tpm_ctx,
 
     tpm_ctx->commit_counter = UINT16_MAX;
 
-    ECP_FP256BN_copy(&tpm_ctx->public_key, public_key_in);
+    ecp_FP256BN_deserialize(&tpm_ctx->public_key, (uint8_t*)public_key_in);
 
     tpm_ctx->key_handle = key_handle_in;
 
