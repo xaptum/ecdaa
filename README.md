@@ -51,7 +51,7 @@ cd milagro-crypto-c
 mkdir -p build
 mkdir -p install
 cd build
-cmake .. -DAMCL_CURVE=FP256BN -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On
+cmake .. -DAMCL_CURVE=FP256BN -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On -DCMAKE_INSTALL_PREFIX=$(pwd)/../install
 cmake --build .
 make install
 cd ../..
