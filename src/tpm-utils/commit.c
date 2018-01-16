@@ -30,7 +30,7 @@ static
 void ecp_to_tpm_format(TPM2B_ECC_POINT *tpm_out, ECP_FP256BN *point_in);
 
 static
-int ecp_to_amcl_format(ECP_FP256BN *point_out, TPM2B_ECC_POINT *tpm_in);
+int tpm_to_amcl_format(ECP_FP256BN *point_out, TPM2B_ECC_POINT *tpm_in);
 
 int tpm_commit(struct ecdaa_tpm_context *tpm_ctx,
                ECP_FP256BN *P1,
@@ -104,7 +104,7 @@ int tpm_commit(struct ecdaa_tpm_context *tpm_ctx,
                 ret = -2;
                 break;
             }
-            if (0 != ecp_to_amcl_format(K, &K_tpm)) {
+            if (0 != tpm_to_amcl_format(K, &K_tpm)) {
                 ret = -2;
                 break;
             }
@@ -114,7 +114,7 @@ int tpm_commit(struct ecdaa_tpm_context *tpm_ctx,
                 ret = -2;
                 break;
             }
-            if (0 != ecp_to_amcl_format(L, &L_tpm)) {
+            if (0 != tpm_to_amcl_format(L, &L_tpm)) {
                 ret = -2;
                 break;
             }
@@ -124,7 +124,7 @@ int tpm_commit(struct ecdaa_tpm_context *tpm_ctx,
                 ret = -2;
                 break;
             }
-            if (0 != ecp_to_amcl_format(E, &E_tpm)) {
+            if (0 != tpm_to_amcl_format(E, &E_tpm)) {
                 ret = -2;
                 break;
             }
@@ -157,7 +157,7 @@ void ecp_to_tpm_format(TPM2B_ECC_POINT *tpm_out, ECP_FP256BN *point_in)
     BIG_256_56_toBytes((char*)tpm_out->point.y.buffer, y);
 }
 
-int ecp_to_amcl_format(ECP_FP256BN *point_out, TPM2B_ECC_POINT *tpm_in)
+int tpm_to_amcl_format(ECP_FP256BN *point_out, TPM2B_ECC_POINT *tpm_in)
 {
     if (tpm_in->point.x.size==0 || tpm_in->point.y.size==0)
         return -2;
