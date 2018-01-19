@@ -14,6 +14,7 @@ Pseudonym linking ("basename signatures") is optional, and secret-key revocation
 # Requirements
 
 - cmake version >= 3.0
+  - The milagro-crypto-c dependency requires CMake v3.1, so local-building of milagro requires a higher version of CMake
 - python3
   - For file generation during building
 - A C99-compliant compiler
