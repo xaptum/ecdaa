@@ -133,6 +133,16 @@ cd build
 ctest -V
 ```
 
+### Testing TPM support
+
+If built with TPM support, the tests assume that a TPM2.0 simulator
+(for instance, [IBM's simulator](https://sourceforge.net/projects/ibmswtpm2/))
+is listening locally on TCP port 2321.
+Also, an ECDAA-capable signing key must be loaded in the TPM,
+and its public key (in x9.62 format) and TPM handle (as a hex-formatted integer)
+must be available in the text files
+`build/test/pub_key.txt` and `build/test/handle.txt`, respectively.
+
 # Usage
 
 The only header that has to be included is `ecdaa.h`.
@@ -151,6 +161,7 @@ To do so, a signing key must first be created and loaded in the TPM.
 This key must be created with the following properties
 (consult a TPM TSS for explanation of how to create an asymmetric signing key):
 - `sign` attribute must be set
+- `restricted` attribute must NOT be set
 - `userWithAuth` attribute must be set
   - The authorization must be a (possibly empty) password
 - `scheme = TPM_ALG_ECDAA`
