@@ -154,7 +154,7 @@ int schnorr_verify_ZZZ(BIG_XXX c,
         if (hash_ret < 0)
             return -1;
 
-        // 2ii) Multiply P2 by s (L = s*P)
+        // 2ii) Multiply P2 by s (L = s*P2)
         ECP_ZZZ_copy(&L, &P2);
         ECP_ZZZ_mul(&L, s);
 
@@ -166,7 +166,7 @@ int schnorr_verify_ZZZ(BIG_XXX c,
         // 4) Compute difference of L and c*K, and save to L (L = s*P2 - c*K)
         ECP_ZZZ_sub(&L, &K_c);
 
-        // c' = Hash( R | basepoint | public_key | L | P2 | K_out | basename | msg_in )
+        // c' = Hash( R | basepoint | public_key | L | P2 | K | basename | msg_in )
         uint8_t hash_input_begin[SIX_ECP_LENGTH];
         assert(6*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
         ecp_ZZZ_serialize(hash_input_begin, &R);

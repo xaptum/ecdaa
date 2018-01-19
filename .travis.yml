@@ -20,7 +20,7 @@ env:
   global:
     - LIBSODIUM_DIR=${TRAVIS_BUILD_DIR}/libsodium
     - AMCL_DIR=${TRAVIS_BUILD_DIR}/milagro-crypto-c/install
-    - ECDAA_CURVES=FP256BN,BN254
+    - ECDAA_CURVES=FP256BN,BN254,BN254CX,BLS383
     - CFLAGS=-I${LIBSODIUM_DIR}/include/
     - LDFLAGS=-L${LIBSODIUM_DIR}/lib/
     - LD_LIBRARY_PATH=${LIBSODIUM_DIR}/lib/

@@ -104,8 +104,16 @@ int32_t ecp_ZZZ_fromhash(ECP_ZZZ *point_out, const uint8_t *message, uint32_t me
         BIG_XXX x;
         big_XXX_from_two_message_hash(&x, (uint8_t*)&i, sizeof(i), message, message_length);
         BIG_XXX_mod(x, curve_order);
-        if (ECP_ZZZ_setx(point_out, x, 0))
+        // Check if generated point is on curve:
+        if (ECP_ZZZ_setx(point_out, x, 0)) {
+            // If on curve, and cofactor != 1, multiply by cofactor to get on correct subgroup.
+            BIG_XXX cofactor;
+            BIG_XXX_rcopy(cofactor, CURVE_Cof_ZZZ);
+            if (!BIG_XXX_isunity(cofactor)) {
+                ECP_ZZZ_mul(point_out, cofactor);
+            }
             return i;
+        }
     }
 
     // If we reach here, we ran out of tries, so return error.
