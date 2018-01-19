@@ -73,7 +73,7 @@ mkdir -p build
 cd build
 
 # Configure the build
-cmake ..
+cmake .. -DBUILD_EXAMPLES=ON
 
 # Build the library
 cmake --build .
@@ -127,6 +127,8 @@ Set the `CMAKE_INSTALL_PREFIX` variable when configuring the build to
 modify the installation location.
 
 ## Running the tests
+
+The tests assume that the `-DBUILD_EXAMPLES=ON` CMake option was used during building.
 
 ```bash
 cd build
