@@ -63,10 +63,10 @@ int ecp_ZZZ_deserialize(ECP_ZZZ *point_out,
  * The curve point generated from the message m is found as follows (cf. Chen and Li, 2013):
  *  1. Set i := 0 be a 32-bit unsigned integer.
  *  2. Compute x := H(i, m).
- *  3. Compute z := x3 + ax + b mod q.
- *  4. Compute y := √z mod q. If y does not exist, set i := i + 1,
+ *  3. Compute z := x**3 + ax + b mod q.
+ *  4. Compute y := sqrt(z) mod q. If y does not exist, set i := i + 1,
  *      repeat step 2 if i < 232, otherwise, report failure.
- *  5. Set y := min(y, q − y).
+ *  5. Set y := min(y, q - y).
  *
  * Returns:
  *  i on success (i is 32-bit unsigned integer used in construction above)
