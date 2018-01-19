@@ -39,8 +39,8 @@ If building with TPM support, the `xaptum-tpm` package is required.
 By default, cmake will look for the `xaptum-tpm project` first in the local directory
 `./xaptum-tpm`, under the directories `include` for headers and `build` for libraries.
 Next, the usual system installation locations will be searched.
-To override the local search location, set the `XAPTUMTPM_LOCAL_DIR` cmake variable to the correct path.
-To force only the system installation locations to be used, set the FORCE_SYSTEM_XAPTUMTPM_LIB cmake option to On.
+To override the local search location, set the `XAPTUM_TPM_LOCAL_DIR` cmake variable to the correct path.
+To force only the system installation locations to be used, set the FORCE_SYSTEM_XAPTUM_TPM_LIB cmake option to On.
 
 # Building
 
