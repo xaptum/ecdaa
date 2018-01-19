@@ -3,6 +3,7 @@
 A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures.
 
 The project is self-contained, and provides all DAA functionality for Issuers, Members, and Verifiers.
+Pseudonym linking ("basename signatures") is optional, and secret-key revocation lists can be used.
 
 # Project Status
 
@@ -242,7 +243,7 @@ issuer_create_group ipk.bin isk.bin
 
 A Member starts the Join process to be granted membership in the DAA group.
 
-The Join process begins with the Member requesting a nonce issuer public key from the Issuer.
+The Join process begins with the Member requesting a nonce and issuer public key from the Issuer.
 This process is outside the scope of this project.
 
 Once the Member obtains a nonce and issuer public key from the Issuer, the Member
@@ -290,7 +291,8 @@ The credential and the member's secret key will be used to create DAA signatures
 
 Any party wishing to verfiy DAA signatures for a DAA group
 first obtains the issuer public key for this group, from the pertinent Issuer.
-The verifier then extracts the group public key from this issuer public key.
+The verifier then extracts the group public key from this issuer public key,
+as described in the previous section.
 If the extraction succeeds (indicating the Issuer was honest),
 the verifier saves the group public key for all later verifications.
 
@@ -301,18 +303,20 @@ all verifiers.
 This process is outside the scope of this project.
 
 A member creates a DAA signature over a message
+using a basename (if pseudonym linking is required by the Verifier)
 by passing its secret key and its credential,
-along with the message to be signed,
+along with the message to be signed and the basename,
 to the `member_sign` command.
 This command outputs a DAA signature, which the Member
 sends (along with some indication of the DAA group
 it is claiming) to a Verifier.
 
 ```bash
-member_sign sk.bin cred.bin sig.bin message-text
+member_sign sk.bin cred.bin sig.bin message.bin basename.bin
 ```
 
 The Verifier looks up the group public key (extracted earlier)
+and the basename (if using pseudonym linking)
 for the DAA group claimed by the Signer.
 It passes this group public key and the secret key revocation list for this DAA group,
 along with the message and signature,
@@ -320,7 +324,7 @@ to the `verify` command.
 If the signature is valid, this command returns success.
 
 ```bash
-verify message-text sig.bin gpk.bin sk_revocation_list.bin num-sks-in-sk_revocation_list
+verify message.bin sig.bin gpk.bin sk_revocation_list.bin num-sks-in-sk_revocation_list
 ```
 
 # Algorithm
