@@ -14,6 +14,8 @@ Pseudonym linking ("basename signatures") is optional, and secret-key revocation
 # Requirements
 
 - cmake version >= 3.0
+- python3
+  - For file generation during building
 - A C99-compliant compiler
 - milagro-crypto-c
   - The milagro library must be built with support for the necessary curves
