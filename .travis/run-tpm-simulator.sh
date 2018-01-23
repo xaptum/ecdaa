@@ -26,4 +26,4 @@ tpm_sim_host=localhost
 
 ${xaptum_tpm_dir}/.travis/install-ibm-tpm2.sh ${tpm_sim_dir}
 ${xaptum_tpm_dir}/.travis/run-ibm-tpm2.sh ${tpm_sim_dir}
-${xaptum_tpm_dir}/build/testBin/tss2_sys_createprimary-test "${tpm_sim_host}" "${out_dir}/pub_key.txt" "${out_dir}/handle.txt"
+${xaptum_tpm_dir}/build/testBin/create_load_evict-test "${tpm_sim_host}" "${out_dir}/pub_key.txt" "${out_dir}/handle.txt"

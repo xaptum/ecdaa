@@ -33,14 +33,14 @@
 static void null_point_same_as_generator();
 static void zero_hash_returns_commitment();
 static void commit_with_s2();
-// static void one_hash_returns_commitment_plus_priv_key();
+static void one_hash_returns_commitment_plus_priv_key();
 
 int main()
 {
     null_point_same_as_generator();
     zero_hash_returns_commitment();
     commit_with_s2();
-    // one_hash_returns_commitment_plus_priv_key();
+    one_hash_returns_commitment_plus_priv_key();
 }
 
 void null_point_same_as_generator()
@@ -229,107 +229,92 @@ void zero_hash_returns_commitment()
     printf("\tsuccess\n");
 }
 
-// void one_hash_returns_commitment_plus_priv_key()
-// {
-//     int ret = 0;
-// 
-//     printf("\n\n\n");
-// 
-//     struct ecdaa_tpm_context tpm_ctx;
-//     ret = ecdaa_tpm_context_init(&tpm_ctx);
-//     if (0 != ret) {
-//         printf("Error: ecdaa_tpm_context_init failed: 0x%x\n", tpm_ctx.last_return_code);
-//         TEST_ASSERT(0 == ret);
-//     }
-// 
-//     uint8_t pub_key[65];
-//     ecdaa_tpm_context_public_key_as_bytes(pub_key, &tpm_ctx);
-//     printf("Initialized tpm_ctx with handle: %#X and public_key: {", tpm_ctx.key_handle);
-//     for (int i = 0; i < ECP_FP256BN_LENGTH; i++) {
-//         printf("%#X, ", pub_key[i]);
-//     }
-//     printf("}\n\n");
-// 
-//     ECP_FP256BN pub_key_as_point;
-//     TEST_ASSERT(0 == ecdaa_tpm_context_public_key_as_point(&pub_key_as_point, &tpm_ctx));
-// 
-//     // Commit
-//     ECP_FP256BN K, L, E;
-//     ECP_FP256BN G1;
-//     ecp_FP256BN_set_to_generator(&G1);
-//     ret = tpm_commit(&tpm_ctx, NULL, NULL, 0, &K, &L, &E);
-//     if (0 != ret) {
-//         printf("Error: Tss2_Sys_Commit failed: 0x%x, ret=%d\n", tpm_ctx.last_return_code, ret);
-//         TEST_ASSERT(0 == ret);
-//     }
-//     printf("Called TPM2_Commit with empty buffers, now count=%d, and \nE:{", tpm_ctx.commit_counter);
-//     uint8_t e_buf[ECP_FP256BN_LENGTH];
-//     ecp_FP256BN_serialize(e_buf, &E);
-//     for (int i = 0; i < ECP_FP256BN_LENGTH; i++) {
-//         printf("%#X, ", e_buf[i]);
-//     }
-//     printf("}\n\n");
-//     fflush(stdout);
-// 
-//     // Nb. digest == 1
-//     BIG_256_56 one;
-//     BIG_256_56_one(one);
-//     TPM2B_DIGEST digest = {.size=32, .buffer={0}};
-//     BIG_256_56_toBytes((char*)digest.buffer, one);
-// 
-//     // Sign
-//     TPMT_SIGNATURE signature;
-//     ret = tpm_sign(&tpm_ctx, &digest, &signature);
-//     if (0 != ret) {
-//         printf("Error: Tss2_Sign failed: 0x%x\n", tpm_ctx.last_return_code);
-//         TEST_ASSERT(0 == ret);
-//     }
-// 
-//     BIG_256_56 s;
-//     BIG_256_56_fromBytes(s, (char*)signature.signature.ecdaa.signatureS.buffer);
-//     BIG_256_56 c;
-//     BIG_256_56_fromBytes(c, (char*)signature.signature.ecdaa.signatureR.buffer);
-// 
-//     BIG_256_56 curve_order;
-//     BIG_256_56_rcopy(curve_order, CURVE_Order_FP256BN);
-//     if (BIG_256_56_comp(s, curve_order) > 0) {
-//         printf("\ns > curve_order!!\n");
-//         TEST_ASSERT(0 == 1);
-//     }
-// 
-//     printf("Called TPM2_Sign with a one hash, and \nc:{");
-//     uint8_t c_buf[MODBYTES_256_56];
-//     BIG_256_56_toBytes((char*)c_buf, c);
-//     for (int i = 0; i < MODBYTES_256_56; i++) {
-//         printf("%#X, ", c_buf[i]);
-//     }
-//     printf("}\n\ns:{");
-//     fflush(stdout);
-//     uint8_t s_buf[MODBYTES_256_56];
-//     BIG_256_56_toBytes((char*)s_buf, s);
-//     for (int i = 0; i < MODBYTES_256_56; i++) {
-//         printf("%#X, ", s_buf[i]);
-//     }
-//     printf("}\n\n");
-//     fflush(stdout);
-// 
-//     ECP_FP256BN_mul(&G1, s);
-//     ECP_FP256BN_mul(&pub_key_as_point, c);
-//     ECP_FP256BN_add(&G1, &pub_key_as_point);
-//     ECP_FP256BN_affine(&G1);
-//     printf("[s]G1 - c*pub_key={");
-//     uint8_t g1_buf[ECP_FP256BN_LENGTH];
-//     ecp_FP256BN_serialize(g1_buf, &G1);
-//     for (int i = 0; i < ECP_FP256BN_LENGTH; i++) {
-//         printf("%#X, ", g1_buf[i]);
-//     }
-//     printf("}\n\n");
-//     fflush(stdout);
-// 
-//     if (!ECP_FP256BN_equals(&G1, &E)) {
-//         printf("Error: [s]G1 - c*pub_key != E\n");
-//         TEST_ASSERT(0 == 1);
-//     }
-// 
-//     ecdaa_tpm_context_free(&tpm_ctx);
-// }
+void one_hash_returns_commitment_plus_priv_key()
+{
+    int ret = 0;
+
+    struct tpm_test_context ctx;
+    TEST_ASSERT(0 == tpm_initialize(&ctx));
+
+    // Commit
+    ECP_FP256BN K, L, E;
+    ECP_FP256BN G1;
+    ecp_FP256BN_set_to_generator(&G1);
+    ret = tpm_commit(&ctx.tpm_ctx, NULL, NULL, 0, &K, &L, &E);
+    if (0 != ret) {
+        printf("Error: Tss2_Sys_Commit failed: 0x%x, ret=%d\n", ctx.tpm_ctx.last_return_code, ret);
+        TEST_ASSERT(0 == ret);
+    }
+    printf("Called TPM2_Commit with empty buffers, now count=%d, and \nE:{", ctx.tpm_ctx.commit_counter);
+    uint8_t e_buf[ECP_FP256BN_LENGTH];
+    ecp_FP256BN_serialize(e_buf, &E);
+    for (int i = 0; i < ECP_FP256BN_LENGTH; i++) {
+        printf("%#X, ", e_buf[i]);
+    }
+    printf("}\n\n");
+    fflush(stdout);
+
+    // Nb. digest == 1
+    BIG_256_56 one;
+    BIG_256_56_one(one);
+    TPM2B_DIGEST digest = {.size=32, .buffer={0}};
+    BIG_256_56_toBytes((char*)digest.buffer, one);
+
+    // Sign
+    TPMT_SIGNATURE signature;
+    ret = tpm_sign(&ctx.tpm_ctx, &digest, &signature);
+    if (0 != ret) {
+        printf("Error: Tss2_Sign failed: 0x%x\n", ctx.tpm_ctx.last_return_code);
+        TEST_ASSERT(0 == ret);
+    }
+
+    BIG_256_56 s;
+    BIG_256_56_fromBytes(s, (char*)signature.signature.ecdaa.signatureS.buffer);
+    BIG_256_56 c;
+    BIG_256_56_fromBytes(c, (char*)signature.signature.ecdaa.signatureR.buffer);
+
+    BIG_256_56 curve_order;
+    BIG_256_56_rcopy(curve_order, CURVE_Order_FP256BN);
+    if (BIG_256_56_comp(s, curve_order) > 0) {
+        printf("\ns > curve_order!!\n");
+        TEST_ASSERT(0 == 1);
+    }
+
+    printf("Called TPM2_Sign with a one hash, and \nc:{");
+    uint8_t c_buf[MODBYTES_256_56];
+    BIG_256_56_toBytes((char*)c_buf, c);
+    for (int i = 0; i < MODBYTES_256_56; i++) {
+        printf("%#X, ", c_buf[i]);
+    }
+    printf("}\n\ns:{");
+    fflush(stdout);
+    uint8_t s_buf[MODBYTES_256_56];
+    BIG_256_56_toBytes((char*)s_buf, s);
+    for (int i = 0; i < MODBYTES_256_56; i++) {
+        printf("%#X, ", s_buf[i]);
+    }
+    printf("}\n\n");
+    fflush(stdout);
+
+    ECP_FP256BN_mul(&G1, s);
+    ECP_FP256BN_mul(&ctx.tpm_ctx.public_key, c);
+    ECP_FP256BN_sub(&G1, &ctx.tpm_ctx.public_key);
+    ECP_FP256BN_affine(&G1);
+    printf("[s]G1 - c*pub_key={");
+    uint8_t g1_buf[ECP_FP256BN_LENGTH];
+    ecp_FP256BN_serialize(g1_buf, &G1);
+    for (int i = 0; i < ECP_FP256BN_LENGTH; i++) {
+        printf("%#X, ", g1_buf[i]);
+    }
+    printf("}\n\n");
+    fflush(stdout);
+
+    if (!ECP_FP256BN_equals(&G1, &E)) {
+        printf("Error: [s]G1 - c*pub_key != E\n");
+        TEST_ASSERT(0 == 1);
+    }
+
+    tpm_cleanup(&ctx);
+
+    printf("\tsuccess\n");
+}
