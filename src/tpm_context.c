@@ -114,7 +114,8 @@ int tpm_context_init_common(struct ecdaa_tpm_context *tpm_ctx,
 
     tpm_ctx->commit_counter = UINT16_MAX;
 
-    ecp_FP256BN_deserialize(&tpm_ctx->public_key, (uint8_t*)public_key_in);
+    if (0 != ecp_FP256BN_deserialize(&tpm_ctx->public_key, (uint8_t*)public_key_in))
+        return -1;
 
     tpm_ctx->key_handle = key_handle_in;
 
