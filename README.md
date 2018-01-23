@@ -3,6 +3,7 @@
 A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures.
 
 The project is self-contained, and provides all DAA functionality for Issuers, Members, and Verifiers.
+Pseudonym linking ("basename signatures") is optional, and secret-key revocation lists can be used.
 
 # Project Status
 
@@ -13,6 +14,9 @@ The project is self-contained, and provides all DAA functionality for Issuers, M
 # Requirements
 
 - cmake version >= 3.0
+  - The milagro-crypto-c dependency requires CMake v3.1, so local-building of milagro requires a higher version of CMake
+- python3
+  - For file generation during building
 - A C99-compliant compiler
 - milagro-crypto-c
   - The milagro library must be built with support for the necessary curves
@@ -35,8 +39,8 @@ If building with TPM support, the `xaptum-tpm` package is required.
 By default, cmake will look for the `xaptum-tpm project` first in the local directory
 `./xaptum-tpm`, under the directories `include` for headers and `build` for libraries.
 Next, the usual system installation locations will be searched.
-To override the local search location, set the `XAPTUMTPM_LOCAL_DIR` cmake variable to the correct path.
-To force only the system installation locations to be used, set the FORCE_SYSTEM_XAPTUMTPM_LIB cmake option to On.
+To override the local search location, set the `XAPTUM_TPM_LOCAL_DIR` cmake variable to the correct path.
+To force only the system installation locations to be used, set the FORCE_SYSTEM_XAPTUM_TPM_LIB cmake option to On.
 
 # Building
 
@@ -70,7 +74,7 @@ mkdir -p build
 cd build
 
 # Configure the build
-cmake ..
+cmake .. -DBUILD_EXAMPLES=ON
 
 # Build the library
 cmake --build .
@@ -125,10 +129,22 @@ modify the installation location.
 
 ## Running the tests
 
+The tests assume that the `-DBUILD_EXAMPLES=ON` CMake option was used during building.
+
 ```bash
 cd build
 ctest -V
 ```
+
+### Testing TPM support
+
+If built with TPM support, the tests assume that a TPM2.0 simulator
+(for instance, [IBM's simulator](https://sourceforge.net/projects/ibmswtpm2/))
+is listening locally on TCP port 2321.
+Also, an ECDAA-capable signing key must be loaded in the TPM,
+and its public key (in x9.62 format) and TPM handle (as a hex-formatted integer)
+must be available in the text files
+`build/test/pub_key.txt` and `build/test/handle.txt`, respectively.
 
 # Usage
 
@@ -148,6 +164,7 @@ To do so, a signing key must first be created and loaded in the TPM.
 This key must be created with the following properties
 (consult a TPM TSS for explanation of how to create an asymmetric signing key):
 - `sign` attribute must be set
+- `restricted` attribute must NOT be set
 - `userWithAuth` attribute must be set
   - The authorization must be a (possibly empty) password
 - `scheme = TPM_ALG_ECDAA`
@@ -242,7 +259,7 @@ issuer_create_group ipk.bin isk.bin
 
 A Member starts the Join process to be granted membership in the DAA group.
 
-The Join process begins with the Member requesting a nonce issuer public key from the Issuer.
+The Join process begins with the Member requesting a nonce and issuer public key from the Issuer.
 This process is outside the scope of this project.
 
 Once the Member obtains a nonce and issuer public key from the Issuer, the Member
@@ -290,7 +307,8 @@ The credential and the member's secret key will be used to create DAA signatures
 
 Any party wishing to verfiy DAA signatures for a DAA group
 first obtains the issuer public key for this group, from the pertinent Issuer.
-The verifier then extracts the group public key from this issuer public key.
+The verifier then extracts the group public key from this issuer public key,
+as described in the previous section.
 If the extraction succeeds (indicating the Issuer was honest),
 the verifier saves the group public key for all later verifications.
 
@@ -301,18 +319,20 @@ all verifiers.
 This process is outside the scope of this project.
 
 A member creates a DAA signature over a message
+using a basename (if pseudonym linking is required by the Verifier)
 by passing its secret key and its credential,
-along with the message to be signed,
+along with the message to be signed and the basename,
 to the `member_sign` command.
 This command outputs a DAA signature, which the Member
 sends (along with some indication of the DAA group
 it is claiming) to a Verifier.
 
 ```bash
-member_sign sk.bin cred.bin sig.bin message-text
+member_sign sk.bin cred.bin sig.bin message.bin basename.bin
 ```
 
 The Verifier looks up the group public key (extracted earlier)
+and the basename (if using pseudonym linking)
 for the DAA group claimed by the Signer.
 It passes this group public key and the secret key revocation list for this DAA group,
 along with the message and signature,
@@ -320,7 +340,7 @@ to the `verify` command.
 If the signature is valid, this command returns success.
 
 ```bash
-verify message-text sig.bin gpk.bin sk_revocation_list.bin num-sks-in-sk_revocation_list
+verify message.bin sig.bin gpk.bin sk_revocation_list.bin num-sks-in-sk_revocation_list
 ```
 
 # Algorithm
