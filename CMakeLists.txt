@@ -17,6 +17,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(ecdaa
         LANGUAGES C
         VERSION "0.6.1")
+set(PROJECT_VERSION_PACKAGE_REVISION 1)
 
 include(GNUInstallDirs)
 include(CTest)
@@ -201,22 +202,28 @@ endif ()
 ################################################################################
 # Headers
 ################################################################################
-install(DIRECTORY ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-install(FILES ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa.h DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+if(NOT BUILD_SHARED_LIBS)
+        install(DIRECTORY ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+        install(FILES ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa.h DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
 
 ################################################################################
 # pkgconfig
 ################################################################################
-configure_file(ecdaa.pc.in ecdaa.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ecdaa.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+if(BUILD_SHARED_LIBS)
+        configure_file(ecdaa.pc.in ecdaa.pc @ONLY)
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ecdaa.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+endif()
 
 ################################################################################
 # CMake export
 ################################################################################
-install(EXPORT ${CMAKE_PROJECT_NAME}Targets
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}
-        FILE        ${CMAKE_PROJECT_NAME}Config.cmake
-)
+if(NOT BUILD_SHARED_LIBS)
+        install(EXPORT ${CMAKE_PROJECT_NAME}Targets
+                DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}
+                FILE        ${CMAKE_PROJECT_NAME}Config.cmake
+        )
+endif()
 
 ################################################################################
 # Examples
@@ -231,3 +238,48 @@ endif()
 if (BUILD_TESTING)
         add_subdirectory(test)
 endif()
+
+################################################################################
+# Packaging
+################################################################################
+set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
+if(NOT BUILD_SHARED_LIBS)
+        set(CPACK_PACKAGE_NAME "${CPACK_PACKAGE_NAME}-dev")
+endif()
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION}-${PROJECT_VERSION_PACKAGE_REVISION})
+set(CPACK_PACKAGE_CONTACT "Xaptum Sales <sales@xaptum.com>")
+set(CPACK_DESCRIPTION_STRING "\
+ ECDAA is a C implementation of elliptic-curve-based Direct Anonymous Attestation signatures.")
+if(NOT BUILD_SHARED_LIBS)
+        set(CPACK_DESCRIPTION_STRING "${CPACK_DESCRIPTION_STRING}
+ This package provides headers and static libraries."
+        )
+endif()
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${CMAKE_DESCRIPTION_STRING})
+
+if( UNIX )
+        find_program(DPKG dpkg)
+        execute_process(COMMAND ${DPKG} --print-architecture
+                OUTPUT_VARIABLE DEBIAN_PACKAGE_ARCH
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                )
+        set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}_${DEBIAN_PACKAGE_ARCH}")
+
+        set(CPACK_DEBIAN_PACKAGE_ARCH "${DEBIAN_PACKAGE_ARCH}")
+        set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+
+        set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/debian/postinst;${CMAKE_CURRENT_SOURCE_DIR}/debian/postrm")
+
+        if(NOT BUILD_SHARED_LIBS)
+                set(CPACK_DEBIAN_PACKAGE_DEPENDS "amcl(>= 4.1.1)")
+        endif()
+
+        if(BUILD_SHARED_LIBS)
+                set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+        endif()
+
+        set(CPACK_GENERATOR "DEB")
+endif()
+
+include(CPack)
