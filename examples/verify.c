@@ -179,16 +179,10 @@ int parse_args(struct command_line_args *args_out, int argc, char *argv[])
 
         args_out->sk_rev_list_file = argv[4];
         int num_revs_in = atoi(argv[5]);
-        if (0 == num_revs_in) {
-            fprintf(stderr, "Warning: Bad value for <number-of-secret-key-revocations-in-list>: %s\nUsing 0\n", argv[5]);
-        }
         args_out->number_of_sk_revs = (unsigned)num_revs_in;
 
         args_out->bsn_rev_list_file = argv[6];
         int num_bsn_revs_in = atoi(argv[7]);
-        if (0 == num_revs_in) {
-            fprintf(stderr, "Warning: Bad value for <number-of-basename-signature-revocations-in-list>: %s\nUsing 0\n", argv[7]);
-        }
         args_out->number_of_bsn_revs = (unsigned)num_bsn_revs_in;
 
         args_out->basename_file = NULL;
