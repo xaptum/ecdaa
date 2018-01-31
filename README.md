@@ -340,7 +340,7 @@ to the `verify` command.
 If the signature is valid, this command returns success.
 
 ```bash
-verify message.bin sig.bin gpk.bin sk_revocation_list.bin num-sks-in-sk_revocation_list
+verify message.bin sig.bin gpk.bin sk_revocation_list.bin num-sks-in-sk_revocation_list bsn_revocation_list.bin num_bsns-in-bsn_revocation_list basename.bin
 ```
 
 # Algorithm

@@ -110,8 +110,15 @@ int main(int argc, char *argv[])
     }
 
     // Write signature to file
-    ecdaa_signature_FP256BN_serialize(buffer, &sig, basename_len != 0);
-    if (ECDAA_SIGNATURE_FP256BN_LENGTH != write_buffer_to_file(args.sig_out_file, buffer, ECDAA_SIGNATURE_FP256BN_LENGTH)) {
+    int has_nym = basename_len != 0;
+    uint32_t sig_length;
+    if (has_nym) {
+        sig_length = ECDAA_SIGNATURE_FP256BN_WITH_NYM_LENGTH;
+    } else {
+        sig_length = ECDAA_SIGNATURE_FP256BN_LENGTH;
+    }
+    ecdaa_signature_FP256BN_serialize(buffer, &sig, has_nym);
+    if ((int)sig_length != write_buffer_to_file(args.sig_out_file, buffer, sig_length)) {
         fprintf(stderr, "Error writing signature to file: \"%s\"\n", args.sig_out_file);
         return 1;
     }

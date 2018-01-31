@@ -79,13 +79,20 @@ int main(int argc, char *argv[])
     }
 
     // Read signature from disk
+    int has_nym = basename_len != 0;
+    uint32_t sig_length;
+    if (has_nym) {
+        sig_length = ECDAA_SIGNATURE_FP256BN_WITH_NYM_LENGTH;
+    } else {
+        sig_length = ECDAA_SIGNATURE_FP256BN_LENGTH;
+    }
     struct ecdaa_signature_FP256BN sig;
-    if (ECDAA_SIGNATURE_FP256BN_LENGTH != read_file_into_buffer(buffer, ECDAA_SIGNATURE_FP256BN_LENGTH, args.sig_file)) {
+    if ((int)sig_length != read_file_into_buffer(buffer, sig_length, args.sig_file)) {
         fprintf(stderr, "Error reading signature file: \"%s\"\n", args.sig_file);
         ret = 1;
         goto cleanup;
     }
-    if (0 != ecdaa_signature_FP256BN_deserialize(&sig, buffer, basename_len != 0)) {
+    if (0 != ecdaa_signature_FP256BN_deserialize(&sig, buffer, has_nym)) {
         fputs("Error deserializing signature\n", stderr);
         ret = 1;
         goto cleanup;
@@ -114,7 +121,8 @@ int main(int argc, char *argv[])
     // Read in bsn_rev_list from disk.
     if (0 != parse_bsn_rev_list_file(&revocations, args.bsn_rev_list_file, args.number_of_bsn_revs)) {
         fputs("Error parsing basename-signature revocation list file\n", stderr);
-        return 1;
+        ret = 1;
+        goto cleanup;
     }
 
     // Read message from disk.
@@ -139,6 +147,8 @@ int main(int argc, char *argv[])
 cleanup:
     if (NULL != revocations.sk_list) {
         free(revocations.sk_list);
+    }
+    if (NULL != revocations.bsn_list) {
         free(revocations.bsn_list);
     }
 
@@ -169,16 +179,10 @@ int parse_args(struct command_line_args *args_out, int argc, char *argv[])
 
         args_out->sk_rev_list_file = argv[4];
         int num_revs_in = atoi(argv[5]);
-        if (0 == num_revs_in) {
-            fprintf(stderr, "Warning: Bad value for <number-of-secret-key-revocations-in-list>: %s\nUsing 0\n", argv[5]);
-        }
         args_out->number_of_sk_revs = (unsigned)num_revs_in;
 
         args_out->bsn_rev_list_file = argv[6];
         int num_bsn_revs_in = atoi(argv[7]);
-        if (0 == num_revs_in) {
-            fprintf(stderr, "Warning: Bad value for <number-of-basename-signature-revocations-in-list>: %s\nUsing 0\n", argv[7]);
-        }
         args_out->number_of_bsn_revs = (unsigned)num_bsn_revs_in;
 
         args_out->basename_file = NULL;
