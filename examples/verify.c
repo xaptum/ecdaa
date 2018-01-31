@@ -288,14 +288,15 @@ int parse_bsn_rev_list_file(struct ecdaa_revocations_FP256BN *revocations_out, c
 
         // Deserialize each basename signature and add it to the list.
         for (unsigned i = 0; i < num_revs; i++) {
+            BIG_256_56 wx, wy;
+            BIG_256_56_fromBytes(wx, (char*)&(buffer[1 + i*point_size]));
+            BIG_256_56_fromBytes(wy, (char*)&(buffer[1 + MODBYTES_256_56 + i*point_size]));
             // Nb. This does NOT check that the point is in the proper group.
-            octet point_as_octet = {.val=(char*)(buffer+i*point_size), .len=point_size};
-            int deserial_ret = ECP_FP256BN_fromOctet(&revocations_out->bsn_list[i], &point_as_octet);
-            revocations_out->bsn_length++;
-            if (0 != deserial_ret) {
-                ret = 1;
+            if (!ECP_FP256BN_set(&revocations_out->bsn_list[i], wx, wy)) {
+                ret = -1;
                 goto cleanup;
             }
+            revocations_out->bsn_length++;
         }
 
 cleanup:
