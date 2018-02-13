@@ -245,14 +245,14 @@ in the `${CMAKE_BINARY_DIR}/bin` directory.
 
 ### Creating a New DAA Group
 
-When acting as the Issuer, run the `issuer_create_group` command
+When acting as the Issuer, run the `ecdaa_issuer_create_group` command
 to define a new DAA Group.
 This creates a new Issuer public/secret key pair
 (the public/secret key pair is used for adding new members to the group
 during the Join process, and the public key also contains the group public key).
 
 ```bash
-issuer_create_group ipk.bin isk.bin
+ecdaa_issuer_create_group ipk.bin isk.bin
 ```
 
 ### Join Process
@@ -268,35 +268,35 @@ If the extraction succeeds (indicating the Issuer is honest), the Member saves t
 group public key.
 
 ```bash
-extract_group_public_key ipk.bin gpk.bin
+ecdaa_extract_group_public_key ipk.bin gpk.bin
 ```
 
-Next, the member passes the nonce to the `member_request_join` command to
+Next, the member passes the nonce to the `ecdaa_member_request_join` command to
 generate its public/secret key-pair.
 
 ```bash
-member_request_join nonce-text pk.bin sk.bin
+ecdaa_member_request_join nonce-text pk.bin sk.bin
 ```
 
 The Member sends its public key to the Issuer,
 who then passes it (along with its secret key and the nonce
 it originally gave to this Member) to the
-`issuer_respond_to_join_request` command.
+`ecdaa_issuer_respond_to_join_request` command.
 This command checks the validity of the Member's
 public key and generates a DAA credential and credential-signature,
 which the Issuer sends back to the Member.
 
 ```bash
-issuer_respond_to_join_request pk.bin isk.bin cred.bin cred_sig.bin nonce-text
+ecdaa_issuer_respond_to_join_request pk.bin isk.bin cred.bin cred_sig.bin nonce-text
 ```
 
 The member passes the credential and credential-signature
 (along with its public key, and the group group public key that it extracted earlier)
-to the `member_process_join_response` command.
+to the `ecdaa_member_process_join_response` command.
 This command checks the validity of the Issuer's credential-signature.
 
 ```bash
-member_process_join_response pk.bin gpk.bin cred.bin cred_sig.bin
+ecdaa_member_process_join_response pk.bin gpk.bin cred.bin cred_sig.bin
 ```
 
 If the credential-signature check succeeds, the Member saves the credential
@@ -322,13 +322,13 @@ A member creates a DAA signature over a message
 using a basename (if pseudonym linking is required by the Verifier)
 by passing its secret key and its credential,
 along with the message to be signed and the basename,
-to the `member_sign` command.
+to the `ecdaa_member_sign` command.
 This command outputs a DAA signature, which the Member
 sends (along with some indication of the DAA group
 it is claiming) to a Verifier.
 
 ```bash
-member_sign sk.bin cred.bin sig.bin message.bin basename.bin
+ecdaa_member_sign sk.bin cred.bin sig.bin message.bin basename.bin
 ```
 
 The Verifier looks up the group public key (extracted earlier)
@@ -336,11 +336,11 @@ and the basename (if using pseudonym linking)
 for the DAA group claimed by the Signer.
 It passes this group public key and the secret key revocation list for this DAA group,
 along with the message and signature,
-to the `verify` command.
+to the `ecdaa_verify` command.
 If the signature is valid, this command returns success.
 
 ```bash
-verify message.bin sig.bin gpk.bin sk_revocation_list.bin num-sks-in-sk_revocation_list bsn_revocation_list.bin num_bsns-in-bsn_revocation_list basename.bin
+ecdaa_verify message.bin sig.bin gpk.bin sk_revocation_list.bin num-sks-in-sk_revocation_list bsn_revocation_list.bin num_bsns-in-bsn_revocation_list basename.bin
 ```
 
 # Algorithm

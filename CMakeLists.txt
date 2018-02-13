@@ -230,6 +230,10 @@ endif()
 ################################################################################
 if(BUILD_EXAMPLES)
         add_subdirectory(examples)
+
+        if(NOT BUILD_SHARED_LIBS)
+                install(PROGRAMS ${CMAKE_BINARY_DIR}/bin/ DESTINATION ${CMAKE_INSTALL_BINDIR})
+        endif()
 endif()
 
 ################################################################################
