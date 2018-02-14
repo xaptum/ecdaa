@@ -19,13 +19,13 @@ add_definitions("-Wno-unused-function")
 set(CURRENT_PROGRAMS_BINARY_DIR ${CMAKE_BINARY_DIR}/bin/)
 
 set(ECDAA_PROGRAM_MAIN_FILES
-        extract_group_public_key.c
-        issuer_create_group.c
-        issuer_respond_to_join_request.c
-        member_process_join_response.c
-        member_request_join.c
-        member_sign.c
-        verify.c
+        ecdaa_extract_group_public_key.c
+        ecdaa_issuer_create_group.c
+        ecdaa_issuer_respond_to_join_request.c
+        ecdaa_member_process_join_response.c
+        ecdaa_member_request_join.c
+        ecdaa_member_sign.c
+        ecdaa_verify.c
         )
 
 foreach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
