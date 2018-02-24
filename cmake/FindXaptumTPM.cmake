@@ -12,7 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License
 
-if (NOT TARGET xaptum-tpm)
+if (NOT TARGET xaptumtpm)
         if (NOT XAPTUM_TPM_LOCAL_DIR)
                 set(XAPTUM_TPM_LOCAL_DIR "${CMAKE_CURRENT_LIST_DIR}/../xaptum-tpm")
         endif (NOT XAPTUM_TPM_LOCAL_DIR)
@@ -28,4 +28,4 @@ if (NOT TARGET xaptum-tpm)
         set(XAPTUM_TPM_LIBRARIES ${XAPTUM_TPM_LIBRARY})
 
         set(XAPTUM_TPM_FOUND TRUE)
-endif (NOT TARGET xaptum-tpm)
+endif (NOT TARGET xaptumtpm)
