@@ -81,7 +81,9 @@ else()
         SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDISABLE_LIBSODIUM_RNG_SEED_FUNCTION")
 endif()
 
-set(GENERATED_TOPLEVEL_INCLUDE_DIR "${CMAKE_BINARY_DIR}/include")
+set(TOPLEVEL_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+
+set(GENERATED_TOPLEVEL_INCLUDE_DIR "${TOPLEVEL_BINARY_DIR}/include")
 
 file(GLOB PUBLIC_HEADERS "include/ecdaa/*.h")
 file(GLOB_RECURSE IMPLEMENTATION_H_FILES "src/*.h")
@@ -101,7 +103,7 @@ foreach(template_file ${FILES_TO_PROCESS})
         execute_process(COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
                                         --template ${template_file}
                                         --curves ${ECDAA_CURVES}
-                                        --out-dir ${CMAKE_BINARY_DIR}
+                                        --out-dir ${TOPLEVEL_BINARY_DIR}
                                         --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
                                         --names-only
                 OUTPUT_VARIABLE processed_file_names)
@@ -110,7 +112,7 @@ foreach(template_file ${FILES_TO_PROCESS})
                 COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
                                 --template ${template_file}
                                 --curves ${ECDAA_CURVES}
-                                --out-dir ${CMAKE_BINARY_DIR}
+                                --out-dir ${TOPLEVEL_BINARY_DIR}
                                 --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
                 DEPENDS ${template_file})
 
@@ -125,7 +127,7 @@ add_custom_target(toplevel_header
         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
                         --template ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa.h 
                         --curves ${ECDAA_CURVES}
-                        --out-dir ${CMAKE_BINARY_DIR}
+                        --out-dir ${TOPLEVEL_BINARY_DIR}
                         --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
                         --top-level-header
                         ${USE_TPM_PYTHON_OPTION})
@@ -232,7 +234,7 @@ if(BUILD_EXAMPLES)
         add_subdirectory(examples)
 
         if(NOT BUILD_SHARED_LIBS)
-                install(PROGRAMS ${CMAKE_BINARY_DIR}/bin/ DESTINATION ${CMAKE_INSTALL_BINDIR})
+                install(PROGRAMS ${TOPLEVEL_BINARY_DIR}/bin/ DESTINATION ${CMAKE_INSTALL_BINDIR})
         endif()
 endif()
 
