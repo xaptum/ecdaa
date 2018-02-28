@@ -17,7 +17,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(ecdaa
         LANGUAGES C
         VERSION "0.6.2")
-set(PROJECT_VERSION_PACKAGE_REVISION 2)
+set(PROJECT_VERSION_PACKAGE_REVISION 3)
 
 include(GNUInstallDirs)
 include(CTest)
@@ -275,9 +275,11 @@ if( UNIX )
 
         set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/debian/postinst;${CMAKE_CURRENT_SOURCE_DIR}/debian/postrm")
 
+        set(ECDAA_DEPENDS_STRING "libsodium(>=1.0.13)")
         if(NOT BUILD_SHARED_LIBS)
-                set(CPACK_DEBIAN_PACKAGE_DEPENDS "amcl(>= 4.1.1)")
+                set(ECDAA_DEPENDS_STRING "${ECDAA_DEPENDS_STRING} amcl(>= 4.1.1)")
         endif()
+        set(CPACK_DEBIAN_PACKAGE_DEPENDS ${ECDAA_DEPENDS_STRING})
 
         if(BUILD_SHARED_LIBS)
                 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
