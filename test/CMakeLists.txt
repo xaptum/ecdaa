@@ -18,7 +18,7 @@ macro(expand_test_case template_file)
         execute_process(COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
                                         --template ${template_file}
                                         --curves ${ECDAA_CURVES}
-                                        --out-dir ${CMAKE_BINARY_DIR}
+                                        --out-dir ${TOPLEVEL_BINARY_DIR}
                                         --top-level-dir ${PROJECT_SOURCE_DIR}
                                         --names-only
                 OUTPUT_VARIABLE processed_file_names)
@@ -27,7 +27,7 @@ macro(expand_test_case template_file)
                 COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
                                 --template ${template_file}
                                 --curves ${ECDAA_CURVES}
-                                --out-dir ${CMAKE_BINARY_DIR}
+                                --out-dir ${TOPLEVEL_BINARY_DIR}
                                 --top-level-dir ${PROJECT_SOURCE_DIR}
                 DEPENDS ${template_file})
 
@@ -52,7 +52,7 @@ macro(add_test_case case_file)
           PRIVATE ${XAPTUM_TPM_INCLUDE_DIRS}
           PRIVATE ${GENERATED_TOPLEVEL_INCLUDE_DIR}
           PRIVATE ${PROJECT_SOURCE_DIR}/include/ecdaa/
-          PRIVATE ${CMAKE_BINARY_DIR}/
+          PRIVATE ${TOPLEVEL_BINARY_DIR}/
           )
 
   set_target_properties(${case_name} PROPERTIES
@@ -64,7 +64,7 @@ macro(add_test_case case_file)
           )
 endmacro()
 
-set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/testBin/)
+set(CURRENT_TEST_BINARY_DIR ${TOPLEVEL_BINARY_DIR}/testBin/)
 
 file(GLOB_RECURSE ECDAA_TEST_FILES "*.c")
 
@@ -76,14 +76,14 @@ if(NOT ECDAA_TPM_SUPPORT)
                 endif()
         endforeach()
 else()
-        file(COPY tpm-test-utils.h DESTINATION ${CMAKE_BINARY_DIR}/test/)
+        file(COPY tpm-test-utils.h DESTINATION ${TOPLEVEL_BINARY_DIR}/test/)
 endif()
 
 foreach(template_file ${ECDAA_TEST_FILES})
         expand_test_case(${template_file})
 endforeach()
 
-file(COPY ecdaa-test-utils.h DESTINATION ${CMAKE_BINARY_DIR}/test/)
+file(COPY ecdaa-test-utils.h DESTINATION ${TOPLEVEL_BINARY_DIR}/test/)
 
 foreach(case_file ${ECDAA_TEST_SRCS})
         add_test_case(${case_file})
@@ -92,4 +92,4 @@ endforeach()
 # Add the integration-tests python script
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/integration-tests.py ${CURRENT_TEST_BINARY_DIR}/integration-tests.py)
 add_test(NAME integration-tests
-        COMMAND python "${CURRENT_TEST_BINARY_DIR}/integration-tests.py" "${CMAKE_BINARY_DIR}/bin/")
+        COMMAND python "${CURRENT_TEST_BINARY_DIR}/integration-tests.py" "${TOPLEVEL_BINARY_DIR}/bin/")

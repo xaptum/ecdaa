@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 add_definitions("-Wno-unused-function")
 
-set(CURRENT_PROGRAMS_BINARY_DIR ${CMAKE_BINARY_DIR}/bin/)
+set(CURRENT_PROGRAMS_BINARY_DIR ${TOPLEVEL_BINARY_DIR}/bin/)
 
 set(ECDAA_PROGRAM_MAIN_FILES
         ecdaa_extract_group_public_key.c
