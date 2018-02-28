@@ -16,7 +16,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(ecdaa
         LANGUAGES C
-        VERSION "0.6.2")
+        VERSION "0.6.3")
 set(PROJECT_VERSION_PACKAGE_REVISION 3)
 
 include(GNUInstallDirs)
