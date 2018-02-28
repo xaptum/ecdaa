@@ -35,6 +35,7 @@ extern "C" {
  * -1 on error
  */
 int ecdaa_member_key_pair_TPM_generate(struct ecdaa_member_public_key_FP256BN *pk_out,
+                                       const uint8_t *serialized_public_key_in,
                                        uint8_t *nonce,
                                        uint32_t nonce_length,
                                        struct ecdaa_tpm_context *tpm_ctx);

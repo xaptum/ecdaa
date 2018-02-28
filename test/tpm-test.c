@@ -297,8 +297,8 @@ void one_hash_returns_commitment_plus_priv_key()
     fflush(stdout);
 
     ECP_FP256BN_mul(&G1, s);
-    ECP_FP256BN_mul(&ctx.tpm_ctx.public_key, c);
-    ECP_FP256BN_sub(&G1, &ctx.tpm_ctx.public_key);
+    ECP_FP256BN_mul(&ctx.public_key, c);
+    ECP_FP256BN_sub(&G1, &ctx.public_key);
     ECP_FP256BN_affine(&G1);
     printf("[s]G1 - c*pub_key={");
     uint8_t g1_buf[ECP_FP256BN_LENGTH];

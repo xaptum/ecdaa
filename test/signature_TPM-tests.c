@@ -83,7 +83,7 @@ static void setup(sign_and_verify_fixture* fixture)
 
     uint8_t *nonce = (uint8_t*)"nonce";
     uint32_t nonce_len = 5;
-    TEST_ASSERT(0 == ecdaa_member_key_pair_TPM_generate(&fixture->pk, nonce, nonce_len, &fixture->tpm_ctx.tpm_ctx));
+    TEST_ASSERT(0 == ecdaa_member_key_pair_TPM_generate(&fixture->pk, fixture->tpm_ctx.serialized_public_key, nonce, nonce_len, &fixture->tpm_ctx.tpm_ctx));
 
     struct ecdaa_credential_FP256BN_signature cred_sig;
     ecdaa_credential_FP256BN_generate(&fixture->cred, &cred_sig, &fixture->isk, &fixture->pk, &fixture->prng);
