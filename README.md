@@ -84,6 +84,11 @@ cmake --build .
 In addition to the standard CMake options the following configuration
 options and variables are supported.
 
+### TPM Support
+
+By default, the library builds with support for using a TPM.
+If this isn't desired, set the `cmake` option `ECDAA_TPM_SUPPORT=Off`.
+
 ### Static vs Shared Libary
 If `BUILD_SHARED_LIBS` is set, the shared library is built. If
 `BUILD_STATIC_LIBS` is set, the static library is built. If both are
@@ -148,6 +153,14 @@ and its public key (in x9.62 format) and TPM handle (as a hex-formatted integer)
 must be available in the text files
 `build/test/pub_key.txt` and `build/test/handle.txt`, respectively.
 
+If using a local `xaptum-tpm` repo,
+a quick way to set up a TPM2.0 simulator with the required settings,
+in order to run the `ecdaa` tests,
+is to run:
+```
+.travis/run-tpm-simulator.sh ${ABSOLUTE_PATH_TO_XAPTUM_TPM_PROJECT} $(pwd)/build/ibm-simulator $(pwd)/build/test
+```
+
 # Usage
 
 The only header that has to be included is `ecdaa.h`.
@@ -192,9 +205,6 @@ where `credential` is an ECDAA credential obtained earlier and `prng` is an `ecd
 
 Notice that the signature thus created is not TPM-specific.
 This means that verification of a TPM-generated signature proceeds as usual, using `ecdaa_signature_FP256BN_verify`.
-
-By default, the library builds with support for using a TPM.
-If this isn't desired, set the `cmake` option `ECDAA_TPM_SUPPORT=Off`.
 
 ## Random number generator
 
