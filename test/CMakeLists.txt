@@ -90,6 +90,8 @@ foreach(case_file ${ECDAA_TEST_SRCS})
 endforeach()
 
 # Add the integration-tests python script
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/integration-tests.py ${CURRENT_TEST_BINARY_DIR}/integration-tests.py)
-add_test(NAME integration-tests
-        COMMAND python "${CURRENT_TEST_BINARY_DIR}/integration-tests.py" "${TOPLEVEL_BINARY_DIR}/bin/")
+if(BUILD_EXAMPLES)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/integration-tests.py ${CURRENT_TEST_BINARY_DIR}/integration-tests.py)
+        add_test(NAME integration-tests
+                COMMAND python "${CURRENT_TEST_BINARY_DIR}/integration-tests.py" "${TOPLEVEL_BINARY_DIR}/bin/")
+endif()

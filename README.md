@@ -130,12 +130,13 @@ modify the installation location.
 
 ## Running the tests
 
-The tests assume that the `-DBUILD_EXAMPLES=ON` CMake option was used during building.
-
 ```bash
 cd build
 ctest -V
 ```
+
+NOTE: If the `-DBUILD_EXAMPLES=ON` CMake option was not set, the "integration-tests"
+will NOT be run.
 
 ### Testing TPM support
 
