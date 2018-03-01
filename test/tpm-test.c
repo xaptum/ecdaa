@@ -173,7 +173,7 @@ void zero_hash_returns_commitment()
     struct ecdaa_prng prng;
     TEST_ASSERT(0 == ecdaa_prng_init(&prng));
     BIG_256_56 exp;
-    big_256_56_random_mod_order(&exp, get_csprng(&prng));
+    ecp_FP256BN_random_mod_order(&exp, get_csprng(&prng));
     ECP_FP256BN_mul(&G1, exp);
     ret = tpm_commit(&ctx.tpm_ctx, &G1, NULL, 0, &K, &L, &E);
     if (0 != ret) {

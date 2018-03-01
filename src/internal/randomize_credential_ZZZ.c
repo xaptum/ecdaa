@@ -18,7 +18,7 @@
 
 #include "randomize_credential_ZZZ.h"
 
-#include "../amcl-extensions/big_XXX.h"
+#include "../amcl-extensions/ecp_ZZZ.h"
 
 void randomize_credential_ZZZ(struct ecdaa_credential_ZZZ *cred,
                               struct ecdaa_prng *prng,
@@ -26,7 +26,7 @@ void randomize_credential_ZZZ(struct ecdaa_credential_ZZZ *cred,
 {
     // 1) Choose random l <- Z_p
     BIG_XXX l;
-    big_XXX_random_mod_order(&l, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(&l, get_csprng(prng));
 
     // 2) Multiply the four points in the credential by l,
     //  and save to the four points in the signature

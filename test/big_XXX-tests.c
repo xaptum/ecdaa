@@ -20,8 +20,6 @@
 
 #include "src/amcl-extensions/big_XXX.h"
 
-#include <ecdaa/prng.h>
-
 #include <amcl/ecp_ZZZ.h>
 
 #include <stdio.h>
@@ -38,7 +36,6 @@ static void mul_and_add_modulus_two();
 static void mul_and_add_normalization_works();
 static void mul_and_add_greater_than_modulus_ok();
 static void mul_and_add_small_sanity_check();
-static void random_num_mod_order_is_valid();
 
 int main()
 {
@@ -53,7 +50,6 @@ int main()
     mul_and_add_normalization_works();
     mul_and_add_greater_than_modulus_ok();
     mul_and_add_small_sanity_check();
-    random_num_mod_order_is_valid();
 }
 
 void hash_not_zero()
@@ -313,27 +309,3 @@ void mul_and_add_small_sanity_check()
     printf("\tsuccess\n");
 }
 
-void random_num_mod_order_is_valid()
-{
-    printf("Starting pairing_curve_utils::random_num_mod_order_is_valid...\n");
-
-    BIG_XXX curve_order;
-    BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
-
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
-    BIG_XXX num;
-    for (int i = 0; i < 500; ++i) {
-        big_XXX_random_mod_order(&num, get_csprng(&prng));
-
-        TEST_ASSERT(BIG_XXX_iszilch(num) == 0);
-        TEST_ASSERT(BIG_XXX_isunity(num) == 0);
-
-        TEST_ASSERT(BIG_XXX_comp(num, curve_order) == -1);
-    }
-
-    ecdaa_prng_free(&prng);
-
-    printf("\tsuccess\n");
-}

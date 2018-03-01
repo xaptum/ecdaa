@@ -119,3 +119,13 @@ int32_t ecp_ZZZ_fromhash(ECP_ZZZ *point_out, const uint8_t *message, uint32_t me
     // If we reach here, we ran out of tries, so return error.
     return -1;
 }
+
+void ecp_ZZZ_random_mod_order(BIG_XXX *big_out,
+                              csprng *rng)
+{
+    BIG_XXX curve_order;
+    BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
+
+    BIG_XXX_randomnum(*big_out, curve_order, rng);
+}
+

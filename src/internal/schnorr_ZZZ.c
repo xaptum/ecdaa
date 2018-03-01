@@ -52,7 +52,7 @@ void schnorr_keygen_ZZZ(ECP_ZZZ *public_out,
                         BIG_XXX *private_out,
                         struct ecdaa_prng *prng)
 {
-    big_XXX_random_mod_order(private_out, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(private_out, get_csprng(prng));
 
     ecp_ZZZ_set_to_generator(public_out);
 
@@ -215,7 +215,7 @@ int credential_schnorr_sign_ZZZ(BIG_XXX *c_out,
 
     // 2) Choose random r <- Z_n
     BIG_XXX r;
-    big_XXX_random_mod_order(&r, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(&r, get_csprng(prng));
 
     // 3) Multiply generator by r: U = r*generator
     ECP_ZZZ U;
@@ -334,8 +334,8 @@ int issuer_schnorr_sign_ZZZ(BIG_XXX *c_out,
 
     // 2) Choose random rx, ry <- Z_n
     BIG_XXX rx, ry;
-    big_XXX_random_mod_order(&rx, get_csprng(prng));
-    big_XXX_random_mod_order(&ry, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(&rx, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(&ry, get_csprng(prng));
 
     // 3) Multiply generator_2 by rx: Ux = rx*generator_2
     ECP2_ZZZ Ux;
@@ -453,7 +453,7 @@ int commit(ECP_ZZZ *P1,
     //  which means it's valid.
 
     // 2) Choose random k <- Z_n
-    big_XXX_random_mod_order(k, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(k, get_csprng(prng));
 
     // 3) If s2 is provided,
     //  3i) Do K = [private_key](x2,y2),

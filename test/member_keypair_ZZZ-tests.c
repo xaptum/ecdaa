@@ -151,7 +151,7 @@ static void serialize_deserialize_secret()
     TEST_ASSERT(0 == ecdaa_prng_init(&prng));
 
     struct ecdaa_member_secret_key_ZZZ sk;
-    big_XXX_random_mod_order(&sk.sk, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&sk.sk, get_csprng(&prng));
 
     uint8_t buffer[ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH];
     ecdaa_member_secret_key_ZZZ_serialize(buffer, &sk);
@@ -172,7 +172,7 @@ static void serialize_deserialize_public_no_check()
     TEST_ASSERT(0 == ecdaa_prng_init(&prng));
 
     BIG_XXX sk;
-    big_XXX_random_mod_order(&sk, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&sk, get_csprng(&prng));
 
     struct ecdaa_member_public_key_ZZZ pk;
     ecp_ZZZ_set_to_generator(&pk.Q);

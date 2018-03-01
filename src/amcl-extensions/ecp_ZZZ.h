@@ -74,6 +74,15 @@ int ecp_ZZZ_deserialize(ECP_ZZZ *point_out,
  */
 int32_t ecp_ZZZ_fromhash(ECP_ZZZ *point_out, const uint8_t *message, uint32_t message_length);
 
+/*
+ * Generate a uniformly-distributed pseudo-random number,
+ * between [0, n], where n is the order of the EC group.
+ *
+ * Output is normalized.
+ */
+void ecp_ZZZ_random_mod_order(BIG_XXX *big_out,
+                              csprng *rng);
+
 #ifdef __cplusplus
 }
 #endif

@@ -113,15 +113,6 @@ void big_XXX_mod_mul_and_add(BIG_XXX *big_out,
     BIG_XXX_mod(*big_out, modulus);
 }
 
-void big_XXX_random_mod_order(BIG_XXX *big_out,
-                              csprng *rng)
-{
-    BIG_XXX curve_order;
-    BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
-
-    BIG_XXX_randomnum(*big_out, curve_order, rng);
-}
-
 static void convert_hash_to_big_XXX(BIG_XXX *big_out, hash256 *hash)
 {
     char hash_as_bytes[32] = {0};

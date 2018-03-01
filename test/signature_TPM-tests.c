@@ -73,11 +73,11 @@ static void setup(sign_and_verify_fixture* fixture)
 
     TEST_ASSERT(0 == ecdaa_prng_init(&fixture->prng));
 
-    big_256_56_random_mod_order(&fixture->isk.x, get_csprng(&fixture->prng));
+    ecp_FP256BN_random_mod_order(&fixture->isk.x, get_csprng(&fixture->prng));
     ecp2_FP256BN_set_to_generator(&fixture->ipk.gpk.X);
     ECP2_FP256BN_mul(&fixture->ipk.gpk.X, fixture->isk.x);
 
-    big_256_56_random_mod_order(&fixture->isk.y, get_csprng(&fixture->prng));
+    ecp_FP256BN_random_mod_order(&fixture->isk.y, get_csprng(&fixture->prng));
     ecp2_FP256BN_set_to_generator(&fixture->ipk.gpk.Y);
     ECP2_FP256BN_mul(&fixture->ipk.gpk.Y, fixture->isk.y);
 

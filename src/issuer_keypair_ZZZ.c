@@ -20,7 +20,7 @@
 
 #include <ecdaa/prng.h>
 
-#include "./amcl-extensions/big_XXX.h"
+#include "./amcl-extensions/ecp_ZZZ.h"
 #include "./amcl-extensions/ecp2_ZZZ.h"
 #include "./internal/schnorr_ZZZ.h"
 
@@ -40,8 +40,8 @@ int ecdaa_issuer_key_pair_ZZZ_generate(struct ecdaa_issuer_public_key_ZZZ *pk,
 {
     // Secret key is
     // two random Bignums.
-    big_XXX_random_mod_order(&sk->x, get_csprng(prng));
-    big_XXX_random_mod_order(&sk->y, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(&sk->x, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(&sk->y, get_csprng(prng));
 
     // Public key is
     // 1) G2 generator raised to the two private key random Bignums...
