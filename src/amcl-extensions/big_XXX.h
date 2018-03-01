@@ -75,15 +75,6 @@ void big_XXX_mod_mul_and_add(BIG_XXX *big_out,
                              BIG_XXX multiplicand2,
                              BIG_XXX modulus);
 
-/*
- * Generate a uniformly-distributed pseudo-random number,
- * between [0, n], where n is the order of the EC group.
- *
- * Output is normalized.
- */
-void big_XXX_random_mod_order(BIG_XXX *big_out,
-                              csprng *rng);
-
 #ifdef __cplusplus
 }
 #endif

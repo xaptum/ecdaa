@@ -20,6 +20,8 @@
 
 #include "src/amcl-extensions/ecp_ZZZ.h"
 
+#include <ecdaa/prng.h>
+
 #include <stdio.h>
 #include <string.h>
 
@@ -28,6 +30,7 @@ static void g1_serialize_then_deserialize_basepoint();
 static void g1_lengths_same();
 static void g1_deserialize_badformat_fails();
 static void g1_deserialize_badcoords_fails();
+static void random_num_mod_order_is_valid();
 
 int main()
 {
@@ -36,6 +39,7 @@ int main()
     g1_lengths_same();
     g1_deserialize_badformat_fails();
     g1_deserialize_badcoords_fails();
+    random_num_mod_order_is_valid();
 
     return 0;
 }
@@ -103,6 +107,31 @@ static void g1_deserialize_badcoords_fails()
 
     ECP_ZZZ point;
     TEST_ASSERT(-1 == ecp_ZZZ_deserialize(&point, buffer));
+
+    printf("\tsuccess\n");
+}
+
+void random_num_mod_order_is_valid()
+{
+    printf("Starting pairing_curve_utils::random_num_mod_order_is_valid...\n");
+
+    BIG_XXX curve_order;
+    BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
+
+    struct ecdaa_prng prng;
+    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
+
+    BIG_XXX num;
+    for (int i = 0; i < 500; ++i) {
+        ecp_ZZZ_random_mod_order(&num, get_csprng(&prng));
+
+        TEST_ASSERT(BIG_XXX_iszilch(num) == 0);
+        TEST_ASSERT(BIG_XXX_isunity(num) == 0);
+
+        TEST_ASSERT(BIG_XXX_comp(num, curve_order) == -1);
+    }
+
+    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }

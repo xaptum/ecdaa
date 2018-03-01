@@ -97,7 +97,7 @@ void schnorr_sign_sane()
     ECP_ZZZ public;
     BIG_XXX private;
 
-    big_XXX_random_mod_order(&private, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&private, get_csprng(&prng));
     ecp_ZZZ_set_to_generator(&public);
 
     ECP_ZZZ_mul(&public, private);
@@ -249,12 +249,12 @@ void schnorr_sign_integration_other_basepoint()
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
     BIG_XXX rand;
-    big_XXX_random_mod_order(&rand, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&rand, get_csprng(&prng));
     ECP_ZZZ_mul(&basepoint, rand);
 
     ECP_ZZZ public;
     BIG_XXX private;
-    big_XXX_random_mod_order(&private, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&private, get_csprng(&prng));
     ECP_ZZZ_copy(&public, &basepoint);
     ECP_ZZZ_mul(&public, private);
 
@@ -352,10 +352,10 @@ void schnorr_credential_sign_sane()
     struct ecdaa_prng prng;
     TEST_ASSERT(0 == ecdaa_prng_init(&prng));
 
-    big_XXX_random_mod_order(&credential_random, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&credential_random, get_csprng(&prng));
 
-    big_XXX_random_mod_order(&member_private, get_csprng(&prng));
-    big_XXX_random_mod_order(&issuer_private, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&member_private, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&issuer_private, get_csprng(&prng));
     ecp_ZZZ_set_to_generator(&member_public);
     ECP_ZZZ_mul(&member_public, member_private);
 
@@ -416,9 +416,9 @@ void schnorr_issuer_sign_sane()
     TEST_ASSERT(0 == ecdaa_prng_init(&prng));
 
     BIG_XXX issuer_private_x;
-    big_XXX_random_mod_order(&issuer_private_x, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&issuer_private_x, get_csprng(&prng));
     BIG_XXX issuer_private_y;
-    big_XXX_random_mod_order(&issuer_private_y, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&issuer_private_y, get_csprng(&prng));
     ECP2_ZZZ issuer_public_X;
     ECP2_ZZZ issuer_public_Y;
     ecp2_ZZZ_set_to_generator(&issuer_public_X);
@@ -450,13 +450,13 @@ void schnorr_issuer_sign_integration()
     TEST_ASSERT(0 == ecdaa_prng_init(&prng));
 
     BIG_XXX issuer_private_x;
-    big_XXX_random_mod_order(&issuer_private_x, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&issuer_private_x, get_csprng(&prng));
     ECP2_ZZZ issuer_public_X;
     ecp2_ZZZ_set_to_generator(&issuer_public_X);
     ECP2_ZZZ_mul(&issuer_public_X, issuer_private_x);
 
     BIG_XXX issuer_private_y;
-    big_XXX_random_mod_order(&issuer_private_y, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&issuer_private_y, get_csprng(&prng));
     ECP2_ZZZ issuer_public_Y;
     ecp2_ZZZ_set_to_generator(&issuer_public_Y);
     ECP2_ZZZ_mul(&issuer_public_Y, issuer_private_y);

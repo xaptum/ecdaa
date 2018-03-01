@@ -60,16 +60,16 @@ static void setup(credential_test_fixture* fixture)
 {
     TEST_ASSERT(0 == ecdaa_prng_init(&fixture->prng));
 
-    big_XXX_random_mod_order(&fixture->isk.x, get_csprng(&fixture->prng));
+    ecp_ZZZ_random_mod_order(&fixture->isk.x, get_csprng(&fixture->prng));
     ecp2_ZZZ_set_to_generator(&fixture->ipk.gpk.X);
     ECP2_ZZZ_mul(&fixture->ipk.gpk.X, fixture->isk.x);
 
-    big_XXX_random_mod_order(&fixture->isk.y, get_csprng(&fixture->prng));
+    ecp_ZZZ_random_mod_order(&fixture->isk.y, get_csprng(&fixture->prng));
     ecp2_ZZZ_set_to_generator(&fixture->ipk.gpk.Y);
     ECP2_ZZZ_mul(&fixture->ipk.gpk.Y, fixture->isk.y);
 
     ecp_ZZZ_set_to_generator(&fixture->pk.Q);
-    big_XXX_random_mod_order(&fixture->sk.sk, get_csprng(&fixture->prng));
+    ecp_ZZZ_random_mod_order(&fixture->sk.sk, get_csprng(&fixture->prng));
     ECP_ZZZ_mul(&fixture->pk.Q, fixture->sk.sk);
 }
 
