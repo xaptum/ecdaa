@@ -279,7 +279,7 @@ if( UNIX )
 
         set(ECDAA_DEPENDS_STRING "libsodium(>=1.0.13)")
         if(NOT BUILD_SHARED_LIBS)
-                set(ECDAA_DEPENDS_STRING "${ECDAA_DEPENDS_STRING}, amcl(>= 4.1.1)")
+                set(ECDAA_DEPENDS_STRING "${ECDAA_DEPENDS_STRING}, amcl(>= 4.1.1), xaptum-tpm-dev(>=0.3.0)")
         endif()
         set(CPACK_DEBIAN_PACKAGE_DEPENDS ${ECDAA_DEPENDS_STRING})
 
