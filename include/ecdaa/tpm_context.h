@@ -36,7 +36,6 @@ struct ecdaa_tpm_context {
     uint8_t context_buffer[TPM_CONTEXT_BUFFER_SIZE];
 
     TSS2_SYS_CONTEXT *sapi_context;
-    ECP_FP256BN public_key; 
     uint16_t commit_counter;
     TPM_HANDLE key_handle;
 
@@ -56,15 +55,11 @@ struct ecdaa_tpm_context {
  *
  * Only password authentication (for the ownership of the Schnorr keypair) is supported.
  *
- * `public_key_in` must be an x9.62-encoded FP256BN curve point:
- * ( 0x04 | pub_key.x-coord | pub_key.y-coord )
- *
  * Returns:
  * 0 on success
  * -1 on failure
  */
 int ecdaa_tpm_context_init_socket(struct ecdaa_tpm_context *tpm_ctx,
-                                  const uint8_t *public_key_in,
                                   TPM_HANDLE key_handle_in,
                                   const char *hostname,
                                   const char *port,

@@ -28,6 +28,8 @@ int read_public_key_from_files(uint8_t *public_key,
 
 struct tpm_test_context {
     struct ecdaa_tpm_context tpm_ctx;
+    uint8_t serialized_public_key[ECP_FP256BN_LENGTH];
+    ECP_FP256BN public_key;
 };
 
 static
@@ -40,15 +42,19 @@ int tpm_initialize(struct tpm_test_context *ctx)
 
     int ret = 0;
 
-    uint8_t public_key[ECP_FP256BN_LENGTH];
     TPM_HANDLE key_handle = 0;
 
-    if (0 != read_public_key_from_files(public_key, &key_handle, pub_key_filename, handle_filename)) {
+    if (0 != read_public_key_from_files(ctx->serialized_public_key, &key_handle, pub_key_filename, handle_filename)) {
         printf("Error: error reading in public key files '%s' and '%s'\n", pub_key_filename, handle_filename);
         return -1;
     }
 
-    ret = ecdaa_tpm_context_init_socket(&ctx->tpm_ctx, public_key, key_handle, hostname, port, NULL, 0);
+    if (0 != ecp_FP256BN_deserialize(&ctx->public_key, (uint8_t*)ctx->serialized_public_key)) {
+        printf("Error: error public key to point\n");
+        return -1;
+    }
+
+    ret = ecdaa_tpm_context_init_socket(&ctx->tpm_ctx, key_handle, hostname, port, NULL, 0);
     if (0 != ret) {
         printf("Error: ecdaa_tpm_context_init failed: 0x%x\n", ret);
         return -1;

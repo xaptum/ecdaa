@@ -24,14 +24,16 @@
 #include <assert.h>
 
 int ecdaa_member_key_pair_TPM_generate(struct ecdaa_member_public_key_FP256BN *pk,
+                                       const uint8_t *serialized_public_key_in,
                                        uint8_t *nonce,
                                        uint32_t nonce_length,
                                        struct ecdaa_tpm_context *tpm_ctx)
 {
     int ret = 0;
 
-    // 1) Copy public key from TPM.
-    ECP_FP256BN_copy(&pk->Q, &tpm_ctx->public_key);
+    // 1) Copy public key
+    if (0 != ecp_FP256BN_deserialize(&pk->Q, (uint8_t*)serialized_public_key_in))
+        return -1;
 
     // 2) and a Schnorr-type signature on the Schnorr-type public_key itself concatenated with the nonce.
     ECP_FP256BN basepoint;

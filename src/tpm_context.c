@@ -31,24 +31,22 @@ static TSS2_SYS_CONTEXT* sapi_ctx_init(const char* hostname,
                                        size_t memory_pool_size);
 
 static int tpm_context_init_common(struct ecdaa_tpm_context *tpm_ctx,
-                                   const uint8_t *public_key_in,
                                    TPM_HANDLE key_handle_in,
                                    const char *password,
                                    uint16_t password_length);
 
 int ecdaa_tpm_context_init_socket(struct ecdaa_tpm_context *tpm_ctx,
-                                  const uint8_t *public_key_in,
                                   TPM_HANDLE key_handle_in,
                                   const char *hostname,
                                   const char *port,
-                                  const char *password,
-                                  uint16_t password_length)
+                                  const char *key_password,
+                                  uint16_t key_password_length)
 {
     tpm_ctx->sapi_context = sapi_ctx_init(hostname, port, tpm_ctx->context_buffer, sizeof(tpm_ctx->context_buffer));
     if (NULL == tpm_ctx->sapi_context)
         return -1;
 
-    if (0 != tpm_context_init_common(tpm_ctx, public_key_in, key_handle_in, password, password_length))
+    if (0 != tpm_context_init_common(tpm_ctx, key_handle_in, key_password, key_password_length))
         return -1;
 
     return 0;
@@ -104,7 +102,6 @@ sapi_ctx_init(const char *hostname,
 }
 
 int tpm_context_init_common(struct ecdaa_tpm_context *tpm_ctx,
-                            const uint8_t *public_key_in,
                             TPM_HANDLE key_handle_in,
                             const char *key_password,
                             uint16_t key_password_length)
@@ -113,9 +110,6 @@ int tpm_context_init_common(struct ecdaa_tpm_context *tpm_ctx,
         return -1;
 
     tpm_ctx->commit_counter = UINT16_MAX;
-
-    if (0 != ecp_FP256BN_deserialize(&tpm_ctx->public_key, (uint8_t*)public_key_in))
-        return -1;
 
     tpm_ctx->key_handle = key_handle_in;
 
