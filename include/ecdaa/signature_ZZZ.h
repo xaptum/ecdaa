@@ -149,6 +149,21 @@ int ecdaa_signature_ZZZ_deserialize_and_verify(struct ecdaa_signature_ZZZ *signa
                                                uint32_t basename_len,
                                                int has_nym);
 
+/*
+ * Access the linkable pseudonym in a signature
+ */
+void ecdaa_signature_ZZZ_get_pseudonym(ECP_ZZZ *pseudonym_out,
+                                       struct ecdaa_signature_ZZZ *signature_in);
+
+/*
+ * Access the linkable pseudonym in a serialized signature
+ *
+ * NOTE: It is assumed the serialized signature passed in does in fact have a pseudonym!
+ */
+void ecdaa_signature_ZZZ_access_pseudonym_in_serialized(uint8_t **pseudonym_out,
+                                                        uint32_t *pseudonym_length_out,
+                                                        uint8_t *signature_in);
+
 #ifdef __cplusplus
 }
 #endif
