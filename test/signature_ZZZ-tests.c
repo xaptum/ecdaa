@@ -41,6 +41,7 @@ static void sign_then_verify_no_basename();
 static void sign_then_verify_on_bsn_rev_list();
 static void lengths_same();
 static void serialize_deserialize();
+static void pseudonym();
 static void deserialize_garbage_fails();
 static void trivial_credential_fails();
 
@@ -70,6 +71,7 @@ int main()
     sign_then_verify_on_bsn_rev_list();
     lengths_same();
     serialize_deserialize();
+    pseudonym();
     deserialize_garbage_fails();
     trivial_credential_fails();
 }
@@ -234,6 +236,54 @@ static void serialize_deserialize()
     struct ecdaa_signature_ZZZ sig_deserialized;
     TEST_ASSERT(0 == ecdaa_signature_ZZZ_deserialize(&sig_deserialized, buffer, 1));
     TEST_ASSERT(0 == ecdaa_signature_ZZZ_deserialize_and_verify(&sig_deserialized, &fixture.ipk.gpk, &fixture.revocations, buffer, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, 1));
+
+    teardown(&fixture);
+
+    printf("\tsuccess\n");
+}
+
+static void pseudonym()
+{
+    printf("Starting signature::pseudonym...\n");
+
+    sign_and_verify_fixture fixture;
+    setup(&fixture);
+
+    struct ecdaa_signature_ZZZ sig;
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.sk, &fixture.cred, &fixture.prng));
+
+    ECP_ZZZ pseudonym;
+    ecdaa_signature_ZZZ_get_pseudonym(&pseudonym, &sig);
+
+    // Serialize, then ensure we get same pseudonym whether from the original sig or the serialized one
+    uint8_t buffer[ECDAA_SIGNATURE_ZZZ_WITH_NYM_LENGTH];
+    ecdaa_signature_ZZZ_serialize(buffer, &sig, 1);
+
+    uint8_t *serialized_pseudonym;
+    uint32_t serialized_pseudonym_length;
+    ecdaa_signature_ZZZ_access_pseudonym_in_serialized(&serialized_pseudonym, &serialized_pseudonym_length, buffer);
+    TEST_ASSERT(ECP_ZZZ_LENGTH == serialized_pseudonym_length);
+    ECP_ZZZ pseudonym_from_serialized;
+    int deserial_ret = ecp_ZZZ_deserialize(&pseudonym_from_serialized, serialized_pseudonym);
+    TEST_ASSERT(0 == deserial_ret);
+
+    TEST_ASSERT(1 == ECP_ZZZ_equals(&pseudonym, &pseudonym_from_serialized));
+
+    // Create another signature, and ensure it has the same pseudonym
+    struct ecdaa_signature_ZZZ sig2;
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig2, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.sk, &fixture.cred, &fixture.prng));
+    ECP_ZZZ pseudonym2;
+    ecdaa_signature_ZZZ_get_pseudonym(&pseudonym2, &sig2);
+    TEST_ASSERT(1 == ECP_ZZZ_equals(&pseudonym, &pseudonym2));
+
+    // Create a third signature, with a different basename, and ensure it has a DIFFERENT pseudonym
+    uint8_t *new_basename = (uint8_t*)"LWKEJFLJWEFL:WEJ";
+    uint32_t new_basename_len = strlen((char*)new_basename);
+    struct ecdaa_signature_ZZZ sig3;
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig3, fixture.msg, fixture.msg_len, new_basename, new_basename_len, &fixture.sk, &fixture.cred, &fixture.prng));
+    ECP_ZZZ pseudonym3;
+    ecdaa_signature_ZZZ_get_pseudonym(&pseudonym3, &sig3);
+    TEST_ASSERT(1 != ECP_ZZZ_equals(&pseudonym, &pseudonym3));
 
     teardown(&fixture);
 

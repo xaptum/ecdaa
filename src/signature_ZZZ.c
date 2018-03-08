@@ -216,3 +216,17 @@ int ecdaa_signature_ZZZ_deserialize_and_verify(struct ecdaa_signature_ZZZ *signa
     return ret;
 }
 
+void ecdaa_signature_ZZZ_get_pseudonym(ECP_ZZZ *pseudonym_out,
+                                       struct ecdaa_signature_ZZZ *signature_in)
+{
+    ECP_ZZZ_copy(pseudonym_out, &signature_in->K);
+}
+
+void ecdaa_signature_ZZZ_access_pseudonym_in_serialized(uint8_t **pseudonym_out,
+                                                        uint32_t *pseudonym_length_out,
+                                                        uint8_t *signature_in)
+{
+    *pseudonym_out = signature_in + 2*MODBYTES_XXX + 4*ECP_ZZZ_LENGTH;
+
+    *pseudonym_length_out = ECP_ZZZ_LENGTH;
+}
