@@ -105,6 +105,7 @@ int32_t ecp_ZZZ_fromhash(ECP_ZZZ *point_out, const uint8_t *message, uint32_t me
         big_XXX_from_two_message_hash(&x, (uint8_t*)&i, sizeof(i), message, message_length);
         BIG_XXX_mod(x, curve_order);
         // Check if generated point is on curve:
+        //  (the 0 indicates we want the y-coord with lsb=0)
         if (ECP_ZZZ_setx(point_out, x, 0)) {
             // If on curve, and cofactor != 1, multiply by cofactor to get on correct subgroup.
             BIG_XXX cofactor;
