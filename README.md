@@ -2,6 +2,8 @@
 
 A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures.
 
+Created to support the Xaptum Edge Network Fabric, an IoT Network Solution.
+
 The project is self-contained, and provides all DAA functionality for Issuers, Members, and Verifiers.
 Pseudonym linking ("basename signatures") is optional, and secret-key revocation lists can be used.
 
