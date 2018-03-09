@@ -51,7 +51,9 @@ struct ecdaa_tpm_context {
 };
 
 /*
- * Initialize an ecdaa_tpm_context object and connect to a TPM listening on a TCP socket.
+ * Initialize an ecdaa_tpm_context object.
+ *
+ * The given TSS2_TCTI_CONTEXT is assumed to point to valid memory and already be initialized.
  *
  * Only password authentication (for the ownership of the Schnorr keypair) is supported.
  *
@@ -59,12 +61,11 @@ struct ecdaa_tpm_context {
  * 0 on success
  * -1 on failure
  */
-int ecdaa_tpm_context_init_socket(struct ecdaa_tpm_context *tpm_ctx,
-                                  TPM_HANDLE key_handle_in,
-                                  const char *hostname,
-                                  const char *port,
-                                  const char *key_password,
-                                  uint16_t key_password_length);
+int ecdaa_tpm_context_init(struct ecdaa_tpm_context *tpm_ctx,
+                           TPM_HANDLE key_handle_in,
+                           const char *key_password,
+                           uint16_t key_password_length,
+                           TSS2_TCTI_CONTEXT *tcti_context);
 
 void ecdaa_tpm_context_free(struct ecdaa_tpm_context *tpm_ctx);
 

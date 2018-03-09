@@ -20,29 +20,27 @@
 
 #include "./amcl-extensions/ecp_FP256BN.h"
 
-#include <tss2/tss2_tcti_socket.h>
-
 #include <assert.h>
 #include <string.h>
 
-static TSS2_SYS_CONTEXT* sapi_ctx_init(const char* hostname,
-                                       const char* port,
-                                       uint8_t *memory_pool,
-                                       size_t memory_pool_size);
+static
+TSS2_SYS_CONTEXT*
+sapi_ctx_init(uint8_t *memory_pool,
+             size_t memory_pool_size,
+             TSS2_TCTI_CONTEXT *tcti_context);
 
 static int tpm_context_init_common(struct ecdaa_tpm_context *tpm_ctx,
                                    TPM_HANDLE key_handle_in,
                                    const char *password,
                                    uint16_t password_length);
 
-int ecdaa_tpm_context_init_socket(struct ecdaa_tpm_context *tpm_ctx,
-                                  TPM_HANDLE key_handle_in,
-                                  const char *hostname,
-                                  const char *port,
-                                  const char *key_password,
-                                  uint16_t key_password_length)
+int ecdaa_tpm_context_init(struct ecdaa_tpm_context *tpm_ctx,
+                           TPM_HANDLE key_handle_in,
+                           const char *key_password,
+                           uint16_t key_password_length,
+                           TSS2_TCTI_CONTEXT *tcti_context)
 {
-    tpm_ctx->sapi_context = sapi_ctx_init(hostname, port, tpm_ctx->context_buffer, sizeof(tpm_ctx->context_buffer));
+    tpm_ctx->sapi_context = sapi_ctx_init(tpm_ctx->context_buffer, sizeof(tpm_ctx->context_buffer), tcti_context);
     if (NULL == tpm_ctx->sapi_context)
         return -1;
 
@@ -54,46 +52,27 @@ int ecdaa_tpm_context_init_socket(struct ecdaa_tpm_context *tpm_ctx,
 
 void ecdaa_tpm_context_free(struct ecdaa_tpm_context *tpm_ctx)
 {
-    TSS2_TCTI_CONTEXT *tcti_context = NULL;
-    TSS2_RC rc;
-
     if (tpm_ctx->sapi_context != NULL) {
-        rc = Tss2_Sys_GetTctiContext(tpm_ctx->sapi_context, &tcti_context);
-
-        if (TSS2_RC_SUCCESS == rc) {
-            tss2_tcti_finalize(tcti_context);
-        }
-
         Tss2_Sys_Finalize(tpm_ctx->sapi_context);
     }
 }
 
 TSS2_SYS_CONTEXT*
-sapi_ctx_init(const char *hostname,
-              const char *port,
-              uint8_t *memory_pool,
-              size_t memory_pool_size)
+sapi_ctx_init(uint8_t *memory_pool,
+             size_t memory_pool_size,
+             TSS2_TCTI_CONTEXT *tcti_context)
 {
-    size_t tcti_ctx_size = tss2_tcti_getsize_socket();
-    if (memory_pool_size < tcti_ctx_size)
-        return NULL;
-    TSS2_TCTI_CONTEXT *tcti_ctx = (TSS2_TCTI_CONTEXT*)&memory_pool[0];
-
     size_t sapi_ctx_size = Tss2_Sys_GetContextSize(0);
-    if ((memory_pool_size - tcti_ctx_size) < sapi_ctx_size)
+    if (memory_pool_size < sapi_ctx_size)
         return NULL;
-    TSS2_SYS_CONTEXT *sapi_ctx = (TSS2_SYS_CONTEXT*)&memory_pool[tcti_ctx_size];
+    TSS2_SYS_CONTEXT *sapi_ctx = (TSS2_SYS_CONTEXT*)memory_pool;
     
     TSS2_RC init_ret;
-
-    init_ret = tss2_tcti_init_socket(hostname, port, tcti_ctx);
-    if (TSS2_RC_SUCCESS != init_ret)
-        return NULL;
 
     TSS2_ABI_VERSION abi_version = TSS2_ABI_CURRENT_VERSION;
     init_ret = Tss2_Sys_Initialize(sapi_ctx,
                                    sapi_ctx_size,
-                                   tcti_ctx,
+                                   tcti_context,
                                    &abi_version);
     if (TSS2_RC_SUCCESS != init_ret)
         return NULL;

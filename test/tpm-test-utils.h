@@ -20,6 +20,9 @@
 
 #include <ecdaa/tpm_context.h>
 
+#include <tss2/tss2_sys.h>
+#include <tss2/tss2_tcti_socket.h>
+
 static
 int read_public_key_from_files(uint8_t *public_key,
                                TPM_HANDLE *key_handle,
@@ -30,6 +33,7 @@ struct tpm_test_context {
     struct ecdaa_tpm_context tpm_ctx;
     uint8_t serialized_public_key[ECP_FP256BN_LENGTH];
     ECP_FP256BN public_key;
+    TSS2_TCTI_CONTEXT *tcti_context;
 };
 
 static
@@ -54,7 +58,13 @@ int tpm_initialize(struct tpm_test_context *ctx)
         return -1;
     }
 
-    ret = ecdaa_tpm_context_init_socket(&ctx->tpm_ctx, key_handle, hostname, port, NULL, 0);
+    ctx->tcti_context = malloc(tss2_tcti_getsize_socket());
+    ret = tss2_tcti_init_socket(hostname, port, ctx->tcti_context);
+    if (TSS2_RC_SUCCESS != ret) {
+        printf("Error: Unable to initialize TCTI context\n");
+        return -1;
+    }
+    ret = ecdaa_tpm_context_init(&ctx->tpm_ctx, key_handle, NULL, 0, ctx->tcti_context);
     if (0 != ret) {
         printf("Error: ecdaa_tpm_context_init failed: 0x%x\n", ret);
         return -1;
@@ -67,6 +77,11 @@ static
 void tpm_cleanup(struct tpm_test_context *ctx)
 {
     ecdaa_tpm_context_free(&ctx->tpm_ctx);
+
+    if (NULL != ctx->tcti_context) {
+        tss2_tcti_finalize(ctx->tcti_context);
+        free(ctx->tcti_context);
+    }
 }
 
 int read_public_key_from_files(uint8_t *public_key,
