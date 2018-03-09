@@ -17,7 +17,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 project(ecdaa
         LANGUAGES C
         VERSION "0.8.0")
-set(PROJECT_VERSION_PACKAGE_REVISION 1)
+set(PROJECT_VERSION_PACKAGE_REVISION 2)
 
 include(GNUInstallDirs)
 include(CTest)
@@ -232,10 +232,6 @@ endif()
 ################################################################################
 if(BUILD_EXAMPLES)
         add_subdirectory(examples)
-
-        if(NOT BUILD_SHARED_LIBS)
-                install(PROGRAMS ${TOPLEVEL_BINARY_DIR}/bin/ DESTINATION ${CMAKE_INSTALL_BINDIR})
-        endif()
 endif()
 
 ################################################################################

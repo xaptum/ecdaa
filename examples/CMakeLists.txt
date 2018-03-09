@@ -50,4 +50,8 @@ foreach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
         set_target_properties(${program_name} PROPERTIES
                 RUNTIME_OUTPUT_DIRECTORY ${CURRENT_PROGRAMS_BINARY_DIR}
                 )
+
+        if(NOT BUILD_SHARED_LIBS)
+                install(TARGETS ${program_name} DESTINATION ${CMAKE_INSTALL_BINDIR})
+        endif()
 endforeach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
