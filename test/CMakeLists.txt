@@ -40,10 +40,10 @@ macro(add_test_case case_file)
   add_executable(${case_name} ${case_file})
 
   if(BUILD_SHARED_LIBS)
-          target_link_libraries(${case_name} PRIVATE ecdaa ${AMCL_LIBRARIES} ${ECDAA_SEED_LINK_LIBRARY})
+          target_link_libraries(${case_name} PRIVATE ecdaa ${AMCL_LIBRARIES} ${ECDAA_SEED_LINK_LIBRARY} ${XAPTUM_TPM_LIBRARIES})
           add_dependencies(${case_name} ecdaa)
   else()
-          target_link_libraries(${case_name} PRIVATE ecdaa_static ${AMCL_LIBRARIES} ${ECDAA_SEED_LINK_LIBRARY})
+          target_link_libraries(${case_name} PRIVATE ecdaa_static ${AMCL_LIBRARIES} ${ECDAA_SEED_LINK_LIBRARY} ${XAPTUM_TPM_LIBRARIES})
           add_dependencies(${case_name} ecdaa_static)
   endif()
 
