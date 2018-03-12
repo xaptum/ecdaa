@@ -27,6 +27,7 @@
 #include <ecdaa/prng.h>
 #include <ecdaa/revocations_ZZZ.h>
 #include <ecdaa/signature_ZZZ.h>
+#include <ecdaa/member_keypair_TPM.h>
 #include <ecdaa/signature_TPM.h>
 #include <ecdaa/tpm_context.h>
 
