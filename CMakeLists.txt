@@ -1,4 +1,4 @@
-# Copyright 2017 Xaptum, Inc.
+# Copyright 2017-2018 Xaptum, Inc.
 # 
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -14,10 +14,11 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
+list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
 project(ecdaa
         LANGUAGES C
         VERSION "0.8.1")
-set(PROJECT_VERSION_PACKAGE_REVISION 1)
 
 include(GNUInstallDirs)
 include(CTest)
@@ -26,13 +27,8 @@ option(DISABLE_LIBSODIUM_RNG_SEED_FUNCTION
         "Disable the default Libsodium-based seed function"
         OFF)
 
-option(BUILD_SHARED_LIBS
-       "Build as a shared library"
-       ON)
-
-option(BUILD_STATIC_LIBS
-       "Build as a static library"
-       OFF)
+option(BUILD_SHARED_LIBS "Build as a shared library" ON)
+option(BUILD_STATIC_LIBS "Build as a static library" OFF)
 
 # If not building as a shared library, force build as a static.  This
 # is to match the CMake default semantics of using
@@ -41,9 +37,7 @@ if (NOT DEFINED BUILD_SHARED_LIBS OR NOT  "${BUILD_SHARED_LIBS}")
   set(BUILD_STATIC_LIBS ON CACHE BOOL "Build as a static library" FORCE)
 endif ()
 
-option(ECDAA_TPM_SUPPORT
-        "Include ECDAA functions that require a TPM"
-        ON)
+option(ECDAA_TPM_SUPPORT "Include ECDAA functions that require a TPM" ON)
 
 if(NOT ECDAA_CURVES)
         set(ECDAA_CURVES FP256BN)
@@ -52,7 +46,6 @@ endif()
 set(ECDAA_VERSION ${PROJECT_VERSION})
 set(ECDAA_SOVERSION ${PROJECT_VERSION_MAJOR})
 
-list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 find_package(AMCL REQUIRED QUIET)
 if(ECDAA_TPM_SUPPORT)
         find_package(XaptumTPM REQUIRED QUIET)
@@ -204,28 +197,27 @@ endif ()
 ################################################################################
 # Headers
 ################################################################################
-if(NOT BUILD_SHARED_LIBS)
-        install(DIRECTORY ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-        install(FILES ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa.h DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-endif()
+install(DIRECTORY ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+
+install(FILES ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa.h
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
 
 ################################################################################
 # pkgconfig
 ################################################################################
-if(BUILD_SHARED_LIBS)
-        configure_file(ecdaa.pc.in ecdaa.pc @ONLY)
-        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ecdaa.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-endif()
+configure_file(ecdaa.pc.in ecdaa.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ecdaa.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 ################################################################################
 # CMake export
 ################################################################################
-if(NOT BUILD_SHARED_LIBS)
-        install(EXPORT ${CMAKE_PROJECT_NAME}Targets
-                DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}
-                FILE        ${CMAKE_PROJECT_NAME}Config.cmake
-        )
-endif()
+install(EXPORT ${CMAKE_PROJECT_NAME}Targets
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}
+        FILE        ${CMAKE_PROJECT_NAME}Config.cmake
+)
 
 ################################################################################
 # Examples
@@ -240,50 +232,3 @@ endif()
 if (BUILD_TESTING)
         add_subdirectory(test)
 endif()
-
-################################################################################
-# Packaging
-################################################################################
-set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
-if(NOT BUILD_SHARED_LIBS)
-        set(CPACK_PACKAGE_NAME "${CPACK_PACKAGE_NAME}-dev")
-endif()
-set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION}-${PROJECT_VERSION_PACKAGE_REVISION})
-set(CPACK_PACKAGE_CONTACT "Xaptum Sales <sales@xaptum.com>")
-set(CPACK_DESCRIPTION_STRING "\
- ECDAA is a C implementation of elliptic-curve-based Direct Anonymous Attestation signatures.")
-if(NOT BUILD_SHARED_LIBS)
-        set(CPACK_DESCRIPTION_STRING "${CPACK_DESCRIPTION_STRING}
- This package provides headers and static libraries."
-        )
-endif()
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${CMAKE_DESCRIPTION_STRING})
-
-if( UNIX )
-        find_program(DPKG dpkg)
-        execute_process(COMMAND ${DPKG} --print-architecture
-                OUTPUT_VARIABLE DEBIAN_PACKAGE_ARCH
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-                )
-        set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}_${DEBIAN_PACKAGE_ARCH}")
-
-        set(CPACK_DEBIAN_PACKAGE_ARCH "${DEBIAN_PACKAGE_ARCH}")
-        set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-
-        set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/debian/postinst;${CMAKE_CURRENT_SOURCE_DIR}/debian/postrm")
-
-        set(ECDAA_DEPENDS_STRING "libsodium(>=1.0.13)")
-        if(NOT BUILD_SHARED_LIBS)
-                set(ECDAA_DEPENDS_STRING "${ECDAA_DEPENDS_STRING}, amcl(>= 4.1.1), xaptum-tpm-dev(>=0.3.0)")
-        endif()
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS ${ECDAA_DEPENDS_STRING})
-
-        if(BUILD_SHARED_LIBS)
-                set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-        endif()
-
-        set(CPACK_GENERATOR "DEB")
-endif()
-
-include(CPack)
