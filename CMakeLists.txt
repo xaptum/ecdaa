@@ -46,7 +46,7 @@ endif()
 set(ECDAA_VERSION ${PROJECT_VERSION})
 set(ECDAA_SOVERSION ${PROJECT_VERSION_MAJOR})
 
-find_package(AMCL REQUIRED QUIET)
+find_package(AMCL 4.6.0 REQUIRED QUIET)
 if(ECDAA_TPM_SUPPORT)
         find_package(xaptum-tpm 0.5.0 REQUIRED QUIET)
 endif()
@@ -140,13 +140,12 @@ if (BUILD_SHARED_LIBS)
 
         target_include_directories(ecdaa PUBLIC
                 $<BUILD_INTERFACE:${GENERATED_TOPLEVEL_INCLUDE_DIR}>
-                $<BUILD_INTERFACE:${AMCL_INCLUDE_DIRS}>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
-        target_link_libraries(ecdaa
-                PRIVATE ${AMCL_LIBRARIES}
+        target_link_libraries(ecdaa PRIVATE
                 ${ECDAA_SEED_LINK_LIBRARY}
+                AMCL::AMCL
                 xaptum-tpm::xaptum-tpm
         )
 
@@ -174,13 +173,12 @@ if (BUILD_STATIC_LIBS)
 
         target_include_directories(ecdaa_static PUBLIC
                 $<BUILD_INTERFACE:${GENERATED_TOPLEVEL_INCLUDE_DIR}>
-                $<BUILD_INTERFACE:${AMCL_INCLUDE_DIRS}>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
-        target_link_libraries(ecdaa_static
-                PRIVATE ${AMCL_LIBRARIES}
+        target_link_libraries(ecdaa_static PRIVATE
                 ${ECDAA_SEED_LINK_LIBRARY}
+                amcl::amcl
                 xaptum-tpm::xaptum-tpm
         )
 

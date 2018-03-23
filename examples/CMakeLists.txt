@@ -33,16 +33,14 @@ foreach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
 
         add_executable(${program_name} ${main_file})
 
-        target_include_directories(${program_name}
-                PRIVATE
-                ${AMCL_INCLUDE_DIRS}
+        target_include_directories(${program_name} PRIVATE
                 ${GENERATED_TOPLEVEL_INCLUDE_DIR})
 
         if(BUILD_SHARED_LIBS)
-              target_link_libraries(${program_name} PRIVATE ecdaa ${AMCL_LIBRARIES})
+              target_link_libraries(${program_name} PRIVATE AMCL::AMCL ecdaa)
               add_dependencies(${program_name} ecdaa)
         else()
-              target_link_libraries(${program_name} PRIVATE ecdaa_static ${AMCL_LIBRARIES})
+              target_link_libraries(${program_name} PRIVATE ecdaa_static AMCL::AMCL)
               add_dependencies(${program_name} ecdaa_static)
         endif()
 
