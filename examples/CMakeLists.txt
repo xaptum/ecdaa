@@ -36,7 +36,6 @@ foreach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
         target_include_directories(${program_name}
                 PRIVATE
                 ${AMCL_INCLUDE_DIRS}
-                ${XAPTUM_TPM_INCLUDE_DIRS}
                 ${GENERATED_TOPLEVEL_INCLUDE_DIR})
 
         if(BUILD_SHARED_LIBS)

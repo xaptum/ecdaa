@@ -48,7 +48,7 @@ set(ECDAA_SOVERSION ${PROJECT_VERSION_MAJOR})
 
 find_package(AMCL REQUIRED QUIET)
 if(ECDAA_TPM_SUPPORT)
-        find_package(XaptumTPM REQUIRED QUIET)
+        find_package(xaptum-tpm 0.5.0 REQUIRED QUIET)
 endif()
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -std=c99 -Wno-missing-field-initializers")
@@ -141,14 +141,14 @@ if (BUILD_SHARED_LIBS)
         target_include_directories(ecdaa PUBLIC
                 $<BUILD_INTERFACE:${GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${AMCL_INCLUDE_DIRS}>
-                $<BUILD_INTERFACE:${XAPTUM_TPM_INCLUDE_DIRS}>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
         target_link_libraries(ecdaa
                 PRIVATE ${AMCL_LIBRARIES}
-                ${XAPTUM_TPM_LIBRARIES}
-                ${ECDAA_SEED_LINK_LIBRARY})
+                ${ECDAA_SEED_LINK_LIBRARY}
+                xaptum-tpm::xaptum-tpm
+        )
 
         install(TARGETS ecdaa
                 EXPORT ${CMAKE_PROJECT_NAME}Targets
@@ -175,14 +175,14 @@ if (BUILD_STATIC_LIBS)
         target_include_directories(ecdaa_static PUBLIC
                 $<BUILD_INTERFACE:${GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${AMCL_INCLUDE_DIRS}>
-                $<BUILD_INTERFACE:${XAPTUM_TPM_INCLUDE_DIRS}>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
         target_link_libraries(ecdaa_static
                 PRIVATE ${AMCL_LIBRARIES}
-                ${XAPTUM_TPM_LIBRARIES}
-                ${ECDAA_SEED_LINK_LIBRARY})
+                ${ECDAA_SEED_LINK_LIBRARY}
+                xaptum-tpm::xaptum-tpm
+        )
 
         install(TARGETS ecdaa_static
                 EXPORT ${CMAKE_PROJECT_NAME}Targets
