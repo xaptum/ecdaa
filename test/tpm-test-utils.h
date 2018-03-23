@@ -96,12 +96,12 @@ int read_public_key_from_files(uint8_t *public_key,
         return -1;
     do {
         for (unsigned i=0; i < ECP_FP256BN_LENGTH; i++) {
-            unsigned byte;
-            if (fscanf(pub_key_file_ptr, "%02X", &byte) != 1) {
+            unsigned byt;
+            if (fscanf(pub_key_file_ptr, "%02X", &byt) != 1) {
                 ret = -1;
                 break;
             }
-            public_key[i] = (uint8_t)byte;
+            public_key[i] = (uint8_t)byt;
         }
     } while(0);
     (void)fclose(pub_key_file_ptr);
@@ -113,12 +113,12 @@ int read_public_key_from_files(uint8_t *public_key,
         return -1;
     do {
         for (int i=(sizeof(TPM_HANDLE)-1); i >= 0; i--) {
-            unsigned byte;
-            if (fscanf(handle_file_ptr, "%02X", &byte) != 1) {
+            unsigned byt;
+            if (fscanf(handle_file_ptr, "%02X", &byt) != 1) {
                 ret = -1;
                 break;
             }
-            *key_handle += byte<<(i*8);
+            *key_handle += byt<<(i*8);
         }
         if (0 != ret)
             break;
