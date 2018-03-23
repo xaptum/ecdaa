@@ -143,11 +143,14 @@ if (BUILD_SHARED_LIBS)
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
-        target_link_libraries(ecdaa PRIVATE
-                ${ECDAA_SEED_LINK_LIBRARY}
-                AMCL::AMCL
-                xaptum-tpm::xaptum-tpm
+        target_link_libraries(ecdaa
+          PUBLIC  AMCL::AMCL
+          PRIVATE ${ECDAA_SEED_LINK_LIBRARY}
         )
+
+        if (ECDAA_TPM_SUPPORT)
+          target_link_libraries(ecdaa PUBLIC xaptum-tpm::xaptum-tpm)
+        endif()
 
         install(TARGETS ecdaa
                 EXPORT ${CMAKE_PROJECT_NAME}Targets
@@ -176,11 +179,14 @@ if (BUILD_STATIC_LIBS)
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
-        target_link_libraries(ecdaa_static PRIVATE
-                ${ECDAA_SEED_LINK_LIBRARY}
-                amcl::amcl
-                xaptum-tpm::xaptum-tpm
+        target_link_libraries(ecdaa_static
+          PUBLIC  AMCL::AMCL
+          PRIVATE ${ECDAA_SEED_LINK_LIBRARY}
         )
+
+        if (ECDAA_TPM_SUPPORT)
+          target_link_libraries(ecdaa PUBLIC xaptum-tpm::xaptum-tpm)
+        endif()
 
         install(TARGETS ecdaa_static
                 EXPORT ${CMAKE_PROJECT_NAME}Targets
