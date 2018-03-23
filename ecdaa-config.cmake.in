@@ -1,0 +1,28 @@
+get_filename_component(ecdaa_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+set(ECDAA_TPM_SUPPORT @ECDAA_TPM_SUPPORT@)
+
+include(CMakeFindDependencyMacro)
+find_dependency(AMCL 4.6.0)
+if(ECDAA_TPM_SUPPORT)
+  find_dependency(xaptum-tpm 0.5.0)
+endif()
+
+if(NOT TARGET ecdaa::ecdaa)
+    include("${ecdaa_CMAKE_DIR}/ecdaa-targets.cmake")
+endif()
+
+set(ecdaa_LIBRARIES ecdaa::ecdaa)
+
+if(ecdaa_FIND_COMPONENTS)
+  foreach(comp ${ecdaa_FIND_COMPONENTS})
+    if(comp STREQUAL "tpm" AND ECDAA_TPM_SUPPORT)
+      set(ecdaa_tpm_FOUND 1)
+    else()
+      set(ecdaa_${comp}_FOUND 0)
+      if(ecdaa_FIND_REQUIRED_${comp})
+        message(FATAL_ERROR "ecdaa::${comp} not available.")
+      endif()
+    endif()
+  endforeach()
+endif()

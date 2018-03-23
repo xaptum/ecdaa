@@ -153,7 +153,7 @@ if (BUILD_SHARED_LIBS)
         endif()
 
         install(TARGETS ecdaa
-                EXPORT ${CMAKE_PROJECT_NAME}Targets
+                EXPORT ecdaa-targets
                 RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
                 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
                 ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -189,7 +189,7 @@ if (BUILD_STATIC_LIBS)
         endif()
 
         install(TARGETS ecdaa_static
-                EXPORT ${CMAKE_PROJECT_NAME}Targets
+                EXPORT ecdaa-targets
                 RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
                 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
                 ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -213,14 +213,37 @@ install(FILES ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa.h
 # pkgconfig
 ################################################################################
 configure_file(ecdaa.pc.in ecdaa.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ecdaa.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ecdaa.pc
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+)
 
 ################################################################################
 # CMake export
 ################################################################################
-install(EXPORT ${CMAKE_PROJECT_NAME}Targets
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}
-        FILE        ${CMAKE_PROJECT_NAME}Config.cmake
+set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/ecdaa)
+
+install(EXPORT ecdaa-targets
+        FILE ecdaa-targets.cmake
+        NAMESPACE ecdaa::
+        DESTINATION ${INSTALL_CONFIGDIR}
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config-version.cmake
+  VERSION ${ECDAA_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/ecdaa-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config.cmake
+  INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
+)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config-version.cmake
+  DESTINATION ${INSTALL_CONFIGDIR}
 )
 
 ################################################################################
