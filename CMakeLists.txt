@@ -48,13 +48,18 @@ set(ECDAA_SOVERSION ${PROJECT_VERSION_MAJOR})
 
 find_package(AMCL 4.6.0 REQUIRED QUIET)
 if(ECDAA_TPM_SUPPORT)
-        find_package(xaptum-tpm 0.5.0 REQUIRED QUIET)
+  find_package(xaptum-tpm 0.5.0 REQUIRED QUIET)
+endif()
+
+if(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
+  find_package(sodium 1.0.11 REQUIRED QUIET)
+  SET(ECDAA_SEED_LIBRARY sodium)
+else()
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDISABLE_LIBSODIUM_RNG_SEED_FUNCTION")
 endif()
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -std=c99 -Wno-missing-field-initializers")
-
 SET(CMAKE_C_FLAGS_DEBUGWITHCOVERAGE "${CMAKE_C_FLAGS_DEBUGWITHCOVERAGE} -O0 -fprofile-arcs -ftest-coverage")
-
 SET(CMAKE_C_FLAGS_RELWITHSANITIZE "${CMAKE_C_FLAGS_RELWITHSANITIZE} -O2 -g -fsanitize=address,undefined -fsanitize=unsigned-integer-overflow")
 
 # The following options are automatically passed to the `memcheck` executable:
@@ -67,12 +72,6 @@ SET(CMAKE_C_FLAGS_RELWITHSANITIZE "${CMAKE_C_FLAGS_RELWITHSANITIZE} -O2 -g -fsan
 find_program(MEMORYCHECK_COMMAND NAMES valgrind)
 set(MEMORYCHECK_COMMAND_OPTIONS
         "--error-exitcode=5 --leak-check=full -v --track-origins=yes --partial-loads-ok=no")
-
-if(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
-        SET(ECDAA_SEED_LINK_LIBRARY sodium)
-else()
-        SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDISABLE_LIBSODIUM_RNG_SEED_FUNCTION")
-endif()
 
 set(TOPLEVEL_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -145,7 +144,7 @@ if (BUILD_SHARED_LIBS)
 
         target_link_libraries(ecdaa
           PUBLIC  AMCL::AMCL
-          PRIVATE ${ECDAA_SEED_LINK_LIBRARY}
+          PRIVATE ${ECDAA_SEED_LIBRARY}
         )
 
         if (ECDAA_TPM_SUPPORT)
@@ -181,7 +180,7 @@ if (BUILD_STATIC_LIBS)
 
         target_link_libraries(ecdaa_static
           PUBLIC  AMCL::AMCL
-          PRIVATE ${ECDAA_SEED_LINK_LIBRARY}
+          PRIVATE ${ECDAA_SEED_LIBRARY}
         )
 
         if (ECDAA_TPM_SUPPORT)
@@ -241,6 +240,7 @@ configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/ecdaa-config.cmake.in
 )
 
 install(FILES
+  cmake/Findsodium.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config-version.cmake
   DESTINATION ${INSTALL_CONFIGDIR}
