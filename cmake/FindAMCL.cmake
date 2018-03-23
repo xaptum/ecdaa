@@ -14,7 +14,7 @@
 
 if (NOT TARGET amcl)
         if (NOT AMCL_LOCAL_DIR)
-                set(AMCL_LOCAL_DIR "${CMAKE_CURRENT_LIST_DIR}/../milagro-crypto-c/install/")
+                set(AMCL_LOCAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../milagro-crypto-c/build")
         endif (NOT AMCL_LOCAL_DIR)
 
         if (NOT FORCE_SYSTEM_AMCL_LIB)

@@ -14,7 +14,7 @@
 
 if (NOT TARGET xaptumtpm)
         if (NOT XAPTUM_TPM_LOCAL_DIR)
-                set(XAPTUM_TPM_LOCAL_DIR "${CMAKE_CURRENT_LIST_DIR}/../xaptum-tpm")
+                set(XAPTUM_TPM_LOCAL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../xaptum-tpm")
         endif (NOT XAPTUM_TPM_LOCAL_DIR)
 
         if (NOT FORCE_SYSTEM_XAPTUM_TPM_LIB)
