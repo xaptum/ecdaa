@@ -25,9 +25,6 @@ env:
     - XAPTUM_TPM_DIR=${TRAVIS_BUILD_DIR}/xaptum-tpm/
     - IBM_TPM_DIR=${TRAVIS_BUILD_DIR}/ibm-tpm-simulator
     - ECDAA_CURVES=FP256BN,BN254,BN254CX,BLS383
-    - CFLAGS=-I${LIBSODIUM_DIR}/include/
-    - LDFLAGS=-L${LIBSODIUM_DIR}/lib/
-    - LD_LIBRARY_PATH=${LIBSODIUM_DIR}/lib/
 
 jobs:
   include:
