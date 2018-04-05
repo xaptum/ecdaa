@@ -23,7 +23,7 @@ Pseudonym linking ("basename signatures") is optional, and secret-key revocation
 - milagro-crypto-c
   - The milagro library must be built with support for the necessary curves
   - Currently, the fork available [here](https://github.com/drbild/milagro-crypto-c/tree/fix-cmake) must be used
-- libsodium >= 1.0.13
+- libsodium >= 1.0.11
   - Optionally, see below
 - xaptum-tpm >= 0.4.0
   - If building with TPM support

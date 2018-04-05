@@ -18,11 +18,11 @@ if [[ $# -ne 1 ]]; then
         exit 1
 fi
 
-version=1.0.13
+version=1.0.11
 source_dir="$1"
 mkdir -p ${source_dir}
 pushd ${source_dir}
-wget https://download.libsodium.org/libsodium/releases/libsodium-${version}.tar.gz
+wget https://download.libsodium.org/libsodium/releases/old/libsodium-${version}.tar.gz
 tar xvfz libsodium-${version}.tar.gz
 pushd libsodium-${version}
 ./configure --prefix=${INSTALL_PREFIX}
