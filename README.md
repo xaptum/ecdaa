@@ -33,51 +33,12 @@ Pseudonym linking ("basename signatures") is optional, and secret-key revocation
 `ecdaa` uses CMake as its build system:
 
 ```bash
-# Create a local install location for dependencies
-INSTALL_PREFIX=$(pwd)/usr
-mkdir -p ${INSTALL_PREFIX}
-```
-
-```bash
-# Build a local copy of libsodium
-mkdir -p libsodium
-cd libsodium
-wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.13.tar.gz
-tar xvfz libsodium-1.0.13.tar.gz
-cd libsodium-1.0.13
-./configure --prefix=${INSTALL_PREFIX}
-make
-make install
-cd ../..
-```
-
-```bash
-# Build a local copy of milagro-crypto-c
-git clone -b fix-cmake https://github.com/drbild/milagro-crypto-c
-cd milagro-crypto-c
-mkdir -p build
-cd build
-cmake .. -DAMCL_CURVE=FP256BN -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DAMCL_INCLUDE_SUBDIR=amcl
-cmake --build .
-cmake --build . --target install
-cd ../..
-
-# Build a local copy of xaptum-tpm
-git clone https://github.com/xaptum/xaptum-tpm
-cd xaptum-tpm
-mkdir -p build
-cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
-cmake --build .
-cmake --build . --target install
-cd ../..
-
 # Create a subdirectory to hold the build
 mkdir -p build
 cd build
 
 # Configure the build
-cmake .. -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX} -DBUILD_EXAMPLES=ON
+cmake .. -DBUILD_EXAMPLES=ON
 
 # Build the library
 cmake --build .
@@ -90,6 +51,7 @@ The following CMake configuration options are supported.
 | Option                          | Values          | Default    | Description                                     |
 |---------------------------------|-----------------|------------|-------------------------------------------------|
 | ECDAA_TPM_SUPPORT               | ON, OFF         | ON         | Build with support for using a TPM2.0           |
+| BUILD_EXAMPLES                  | ON, OFF         | OFF        | Build example programs                          |
 | CMAKE_BUILD_TYPE                | Release         |            | With full optimizations.                        |
 |                                 | Debug           |            | With debug symbols.                             |
 |                                 | RelWithDebInfo  |            | With full optimizations and debug symbols.      |
@@ -99,7 +61,6 @@ The following CMake configuration options are supported.
 | BUILD_STATIC_LIBS               | ON, OFF         | OFF        | Build static libraries.                         |
 | BUILD_TESTING                   | ON, OFF         | ON         | Build the test suite.                           |
 | STATIC_SUFFIX                   | <string>        | <none>     | Appends a suffix to the static lib name.        |
-| CMAKE_POSITION_INDEPENDENT_CODE | ON, OFF         | ON         | Compile static libs with `-fPIC`.               |
 
 
 ## Installation
@@ -227,11 +188,6 @@ where for simplicity communication between the Issuer, Member, and Verifier
 is done using regular files.
 
 The example programs use the FP256BN curve type.
-
-These programs are not built by default, though they can be enabled
-by setting the CMake option `BUILD_EXAMPLES=ON`.
-The examples require Libsodium, and by default the binaries are placed
-in the `${CMAKE_BINARY_DIR}/bin` directory.
 
 ### Creating a New DAA Group
 
