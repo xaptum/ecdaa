@@ -22,45 +22,44 @@ Pseudonym linking ("basename signatures") is optional, and secret-key revocation
 - A C99-compliant compiler
 - milagro-crypto-c
   - The milagro library must be built with support for the necessary curves
-  - Currently, the fork available [here](https://github.com/zanebeckwith/milagro-crypto-c/tree/headers-under-directory) must be used
+  - Currently, the fork available [here](https://github.com/drbild/milagro-crypto-c/tree/fix-cmake) must be used
 - libsodium >= 1.0.13
   - Optionally, see below
-- xaptum-tpm >= 0.3.0
+- xaptum-tpm >= 0.4.0
   - If building with TPM support
-
-## Milagro-Crypto-C Dependency
-
-By default, `cmake` will look for the `milagro-crypto-c` project first 
-in the local directory `./milagro-crypto-c/install`, under the directories `include` for headers and `lib` for libraries.
-Next, the usual system installation locations will be searched.
-To override the local search location, set the `AMCL_LOCAL_DIR` cmake variable to the correct path.
-To force only the system installation locations to be used, set the `FORCE_SYSTEM_AMCL_LIB` cmake option to `On`.
-
-## Xaptum-TPM Dependency
-
-If building with TPM support, the `xaptum-tpm` package is required.
-By default, cmake will look for the `xaptum-tpm project` first in the local directory
-`./xaptum-tpm`, under the directories `include` for headers and `build` for libraries.
-Next, the usual system installation locations will be searched.
-To override the local search location, set the `XAPTUM_TPM_LOCAL_DIR` cmake variable to the correct path.
-To force only the system installation locations to be used, set the FORCE_SYSTEM_XAPTUM_TPM_LIB cmake option to On.
 
 # Building
 
 `ecdaa` uses CMake as its build system:
 
-In the following, it is assumed that libsodium has been installed.
+```bash
+# Create a local install location for dependencies
+INSTALL_PREFIX=$(pwd)/usr
+mkdir -p ${INSTALL_PREFIX}
+```
+
+```bash
+# Build a local copy of libsodium
+mkdir -p libsodium
+cd libsodium
+wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.13.tar.gz
+tar xvfz libsodium-1.0.13.tar.gz
+cd libsodium-1.0.13
+./configure --prefix=${INSTALL_PREFIX}
+make
+make install
+cd ../..
+```
 
 ```bash
 # Build a local copy of milagro-crypto-c
-git clone -b headers-under-directory https://github.com/zanebeckwith/milagro-crypto-c
+git clone -b fix-cmake https://github.com/drbild/milagro-crypto-c
 cd milagro-crypto-c
 mkdir -p build
-mkdir -p install
 cd build
-cmake .. -DAMCL_CURVE=FP256BN -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On -DCMAKE_INSTALL_PREFIX=$(pwd)/../install
+cmake .. -DAMCL_CURVE=FP256BN -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DAMCL_INCLUDE_SUBDIR=amcl
 cmake --build .
-make install
+cmake --build . --target install
 cd ../..
 
 # Build a local copy of xaptum-tpm
@@ -68,8 +67,9 @@ git clone https://github.com/xaptum/xaptum-tpm
 cd xaptum-tpm
 mkdir -p build
 cd build
-cmake .. -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On
+cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}
 cmake --build .
+cmake --build . --target install
 cd ../..
 
 # Create a subdirectory to hold the build
@@ -77,51 +77,30 @@ mkdir -p build
 cd build
 
 # Configure the build
-cmake .. -DBUILD_EXAMPLES=ON
+cmake .. -DCMAKE_PREFIX_PATH=${INSTALL_PREFIX} -DBUILD_EXAMPLES=ON
 
 # Build the library
 cmake --build .
 ```
 
-In addition to the standard CMake options the following configuration
-options and variables are supported.
+### CMake Options
 
-### TPM Support
+The following CMake configuration options are supported.
 
-By default, the library builds with support for using a TPM.
-If this isn't desired, set the `cmake` option `ECDAA_TPM_SUPPORT=Off`.
+| Option                          | Values          | Default    | Description                                     |
+|---------------------------------|-----------------|------------|-------------------------------------------------|
+| ECDAA_TPM_SUPPORT               | ON, OFF         | ON         | Build with support for using a TPM2.0           |
+| CMAKE_BUILD_TYPE                | Release         |            | With full optimizations.                        |
+|                                 | Debug           |            | With debug symbols.                             |
+|                                 | RelWithDebInfo  |            | With full optimizations and debug symbols.      |
+|                                 | RelWithSanitize |            | With address and undefined-behavior sanitizers. |
+| CMAKE_INSTALL_PREFIX            | <string>        | /usr/local | The directory to install the library in.        |
+| BUILD_SHARED_LIBS               | ON, OFF         | ON         | Build shared libraries.                         |
+| BUILD_STATIC_LIBS               | ON, OFF         | OFF        | Build static libraries.                         |
+| BUILD_TESTING                   | ON, OFF         | ON         | Build the test suite.                           |
+| STATIC_SUFFIX                   | <string>        | <none>     | Appends a suffix to the static lib name.        |
+| CMAKE_POSITION_INDEPENDENT_CODE | ON, OFF         | ON         | Compile static libs with `-fPIC`.               |
 
-### Static vs Shared Libary
-If `BUILD_SHARED_LIBS` is set, the shared library is built. If
-`BUILD_STATIC_LIBS` is set, the static library is built. If both are
-set, both libraries will be built.  If neither is set, the static
-library will be built.
-
-### Static Library Name
-`STATIC_SUFFIX`, if defined, will be appended to the static library
-name.  For example,
-
-```bash
-cmake .. -DBUILD_STATIC_LIBS=ON -DSTATIC_SUFFIX=_static
-cmake --build .
-cd ../..
-
-mkdir -p build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug -DECDAA_CURVES=BN254\;BN254CX\;BLS383\;FP256BN
-cmake --build . -- -j4
-```
-
-will create a static library named `libecdaa_static.a`.
-
-### Force Position Independent Code (-fPIC)
-Set the standard CMake variable `CMAKE_POSITION_INDEPENDENT_CODE` to
-`ON` to force compilation with `-fPIC` for static libraries.  The
-default is `OFF` for static libraries and `ON` for shared libraries.
-
-### Disable Building of Tests
-Set the standard CMake variable `BUILD_TESTING` to `OFF` to disable
-the building of tests.  The default value is `ON`.
 
 ## Installation
 
@@ -131,9 +110,6 @@ CMake creates a target for installation.
 cd build
 cmake --build . --target install
 ```
-
-Set the `CMAKE_INSTALL_PREFIX` variable when configuring the build to
-modify the installation location.
 
 ## Running the tests
 
