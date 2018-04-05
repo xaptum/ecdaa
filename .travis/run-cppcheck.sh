@@ -13,6 +13,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License
 
+set -e
+
 if [[ $# -eq 0 ]]; then
         generated_sources_dir="`pwd`"
 elif [[ $# -eq 1 ]]; then

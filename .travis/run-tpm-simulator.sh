@@ -13,6 +13,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License
 
+set -e
+
 if [[ $# -ne 3 ]]; then
         echo "usage: $0 <absolute-path-to-xaptum-tpm-installation-directory> <absolute-path-to-simulator> <absolute-path-to-save-public-key>"
         exit 1
