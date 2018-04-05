@@ -1,3 +1,5 @@
 build/
 milagro-crypto-c/
 xaptum-tpm/
+libsodium/
+usr/

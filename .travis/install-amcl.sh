@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2017 Xaptum, Inc.
+# Copyright 2017-2018 Xaptum, Inc.
 # 
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -14,18 +14,20 @@
 #    limitations under the License
 
 if [[ $# -ne 2 ]]; then
-        echo "usage: $0 <absolute-path-to-amcl-installation-directory> <comma-separated-curve-list>"
+        echo "usage: $0 <absolute-path-to-amcl-source-directory> <comma-separated-curve-list>"
         exit 1
 fi
 
-repo_url=https://github.com/zanebeckwith/milagro-crypto-c
-tag=headers-under-directory
-install_dir="$1"
+repo_url=https://github.com/drbild/milagro-crypto-c
+tag=fix-cmake
+source_dir="$1"
 curves="$2"
-git clone -b $tag "${repo_url}"
-cd milagro-crypto-c
+git clone -b $tag "${repo_url}" "${source_dir}"
+pushd "${source_dir}"
 mkdir -p build
-cd build
-cmake .. -DAMCL_CURVE=${curves} -DBUILD_MPIN=Off -DBUILD_WCC=Off -DBUILD_DOXYGEN=Off -DUSE_PATENTS=Off -DCMAKE_INSTALL_PREFIX=${install_dir} -DBUILD_SHARED_LIBS=Off -DCMAKE_POSITION_INDEPENDENT_CODE=On
-make
-make install
+pushd build
+cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DAMCL_CURVE=${curves} -DAMCL_RSA="" -DAMCL_INCLUDE_SUBDIR=amcl -DBUILD_PYTHON=Off -DBUILD_MPIN=Off -DBUILD_WCC=Off -DBUILD_DOCS=Off  -DBUILD_SHARED_LIBS=On
+cmake --build .
+cmake --build . --target install
+popd
+popd

@@ -1,0 +1,47 @@
+get_filename_component(ecdaa_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+
+set(DISABLE_LIBSODIUM_RNG_SEED_FUNCTION @DISABLE_LIBSODIUM_RNG_SEED_FUNCTION@)
+set(ECDAA_TPM_SUPPORT @ECDAA_TPM_SUPPORT@)
+
+################################################################################
+# Find dependencies
+################################################################################
+include(CMakeFindDependencyMacro)
+list(APPEND CMAKE_MODULE_PATH ${ecdaa_CMAKE_DIR})
+
+find_dependency(AMCL 4.6.0)
+if(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
+  find_dependency(sodium 1.0.11)
+endif()
+if(ECDAA_TPM_SUPPORT)
+  find_dependency(xaptum-tpm 0.5.0)
+endif()
+
+list(REMOVE_AT CMAKE_MODULE_PATH -1)
+
+################################################################################
+# Include ecdaa targets
+################################################################################
+if(NOT TARGET ecdaa::ecdaa)
+    include("${ecdaa_CMAKE_DIR}/ecdaa-targets.cmake")
+endif()
+
+set(ecdaa_LIBRARIES ecdaa::ecdaa)
+
+################################################################################
+# Verify that required components were included in build
+################################################################################
+if(ecdaa_FIND_COMPONENTS)
+  foreach(comp ${ecdaa_FIND_COMPONENTS})
+    if(comp STREQUAL "tpm" AND ECDAA_TPM_SUPPORT)
+      set(ecdaa_tpm_FOUND 1)
+    elseif(comp STREQUAL "sodium" AND NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
+      set(ecdaa_sodium_FOUND 1)
+    else()
+      set(ecdaa_${comp}_FOUND 0)
+      if(ecdaa_FIND_REQUIRED_${comp})
+        message(FATAL_ERROR "ecdaa::${comp} not available.")
+      endif()
+    endif()
+  endforeach()
+endif()

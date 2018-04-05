@@ -33,23 +33,15 @@ foreach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
 
         add_executable(${program_name} ${main_file})
 
-        target_include_directories(${program_name}
-                PRIVATE
-                ${AMCL_INCLUDE_DIRS}
-                ${XAPTUM_TPM_INCLUDE_DIRS}
-                ${GENERATED_TOPLEVEL_INCLUDE_DIR})
-
         if(BUILD_SHARED_LIBS)
-              target_link_libraries(${program_name} PRIVATE ecdaa ${AMCL_LIBRARIES})
-              add_dependencies(${program_name} ecdaa)
+              target_link_libraries(${program_name} PRIVATE ecdaa)
         else()
-              target_link_libraries(${program_name} PRIVATE ecdaa_static ${AMCL_LIBRARIES})
-              add_dependencies(${program_name} ecdaa_static)
+              target_link_libraries(${program_name} PRIVATE ecdaa_static)
         endif()
 
         set_target_properties(${program_name} PROPERTIES
                 RUNTIME_OUTPUT_DIRECTORY ${CURRENT_PROGRAMS_BINARY_DIR}
-                )
+        )
 
         if(NOT BUILD_SHARED_LIBS)
                 install(TARGETS ${program_name} DESTINATION ${CMAKE_INSTALL_BINDIR})

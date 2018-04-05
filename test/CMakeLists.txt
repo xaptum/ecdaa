@@ -40,28 +40,27 @@ macro(add_test_case case_file)
   add_executable(${case_name} ${case_file})
 
   if(BUILD_SHARED_LIBS)
-          target_link_libraries(${case_name} PRIVATE ecdaa ${AMCL_LIBRARIES} ${ECDAA_SEED_LINK_LIBRARY} ${XAPTUM_TPM_LIBRARIES})
+          target_link_libraries(${case_name} PRIVATE
+                                ecdaa)
           add_dependencies(${case_name} ecdaa)
   else()
-          target_link_libraries(${case_name} PRIVATE ecdaa_static ${AMCL_LIBRARIES} ${ECDAA_SEED_LINK_LIBRARY} ${XAPTUM_TPM_LIBRARIES})
+          target_link_libraries(${case_name} PRIVATE
+                                ecdaa_static)
           add_dependencies(${case_name} ecdaa_static)
   endif()
 
   target_include_directories(${case_name}
-          PRIVATE ${AMCL_INCLUDE_DIRS}
-          PRIVATE ${XAPTUM_TPM_INCLUDE_DIRS}
-          PRIVATE ${GENERATED_TOPLEVEL_INCLUDE_DIR}
-          PRIVATE ${PROJECT_SOURCE_DIR}/include/ecdaa/
-          PRIVATE ${TOPLEVEL_BINARY_DIR}/
-          )
+          PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+                  ${TOPLEVEL_BINARY_DIR}
+  )
 
   set_target_properties(${case_name} PROPERTIES
           RUNTIME_OUTPUT_DIRECTORY ${CURRENT_TEST_BINARY_DIR}
-          )
+  )
 
   add_test(NAME ${case_name}
           COMMAND ${CURRENT_TEST_BINARY_DIR}/${case_name}
-          )
+  )
 endmacro()
 
 set(CURRENT_TEST_BINARY_DIR ${TOPLEVEL_BINARY_DIR}/testBin/)
@@ -75,15 +74,11 @@ if(NOT ECDAA_TPM_SUPPORT)
                         list(REMOVE_ITEM ECDAA_TEST_FILES ${match})
                 endif()
         endforeach()
-else()
-        file(COPY tpm-test-utils.h DESTINATION ${TOPLEVEL_BINARY_DIR}/test/)
 endif()
 
 foreach(template_file ${ECDAA_TEST_FILES})
         expand_test_case(${template_file})
 endforeach()
-
-file(COPY ecdaa-test-utils.h DESTINATION ${TOPLEVEL_BINARY_DIR}/test/)
 
 foreach(case_file ${ECDAA_TEST_SRCS})
         add_test_case(${case_file})

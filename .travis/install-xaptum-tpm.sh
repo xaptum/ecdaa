@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2017 Xaptum, Inc.
+# Copyright 2017-2018 Xaptum, Inc.
 # 
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -14,16 +14,17 @@
 #    limitations under the License
 
 if [[ $# -ne 1 ]]; then
-        echo "usage: $0 <absolute-path-to-xaptum-tpm-installation-directory>"
+        echo "usage: $0 <absolute-path-to-xaptum-tpm-source-directory>"
         exit 1
 fi
 
-install_dir="$1"
-git clone https://github.com/xaptum/xaptum-tpm "${install_dir}" 
-pushd "${install_dir}" 
+source_dir="$1"
+git clone https://github.com/xaptum/xaptum-tpm "${source_dir}"
+pushd "${source_dir}"
 mkdir -p build
 pushd build
-cmake .. -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=On
+cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DBUILD_SHARED_LIBS=On -DBUILD_TESTING=On
 cmake --build .
+cmake --build . --target install
 popd
 popd
