@@ -13,6 +13,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License
 
+set -e
+
 if [[ $# -ne 2 ]]; then
         echo "usage: $0 <absolute-path-to-amcl-source-directory> <comma-separated-curve-list>"
         exit 1

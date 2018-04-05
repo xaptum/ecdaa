@@ -13,6 +13,8 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License
 
+set -e
+
 if [[ $# -ne 1 ]]; then
         echo "usage: $0 <path-to-cmake-build-directory>"
         exit 1
