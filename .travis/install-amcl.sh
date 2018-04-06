@@ -20,8 +20,8 @@ if [[ $# -ne 2 ]]; then
         exit 1
 fi
 
-repo_url=https://github.com/drbild/milagro-crypto-c
-tag=fix-cmake
+repo_url=https://github.com/milagro-crypto/milagro-crypto-c
+tag=4.7.0
 source_dir="$1"
 curves="$2"
 git clone -b $tag "${repo_url}" "${source_dir}"
