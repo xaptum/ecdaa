@@ -21,7 +21,7 @@
 
 #include <ecdaa/tpm_context.h>
 #include <ecdaa/prng.h>
-#include "src/amcl-extensions/big_256_56.h"
+#include "src/amcl-extensions/big_XXX.h"
 #include "src/amcl-extensions/ecp_FP256BN.h"
 
 #include "src/tpm-utils/commit.h"
@@ -82,12 +82,12 @@ void null_point_same_as_generator()
     }
     printf("Called TPM2_Sign with a zero hash, and \ns:{");
 
-    BIG_256_56 s;
-    BIG_256_56_fromBytes(s, (char*)signature.signature.ecdaa.signatureS.buffer);
+    BIG_XXX s;
+    BIG_XXX_fromBytes(s, (char*)signature.signature.ecdaa.signatureS.buffer);
 
-    uint8_t s_buf[MODBYTES_256_56];
-    BIG_256_56_toBytes((char*)s_buf, s);
-    for (int i = 0; i < MODBYTES_256_56; i++) {
+    uint8_t s_buf[MODBYTES_XXX];
+    BIG_XXX_toBytes((char*)s_buf, s);
+    for (int i = 0; i < MODBYTES_XXX; i++) {
         printf("%#X, ", s_buf[i]);
     }
     printf("}\n\n");
@@ -172,7 +172,7 @@ void zero_hash_returns_commitment()
     ecp_FP256BN_set_to_generator(&G1);
     struct ecdaa_prng prng;
     TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-    BIG_256_56 exp;
+    BIG_XXX exp;
     ecp_FP256BN_random_mod_order(&exp, get_csprng(&prng));
     ECP_FP256BN_mul(&G1, exp);
     ret = tpm_commit(&ctx.tpm_ctx, &G1, NULL, 0, &K, &L, &E);
@@ -201,12 +201,12 @@ void zero_hash_returns_commitment()
     }
     printf("Called TPM2_Sign with a zero hash, and \ns:{");
 
-    BIG_256_56 s;
-    BIG_256_56_fromBytes(s, (char*)signature.signature.ecdaa.signatureS.buffer);
+    BIG_XXX s;
+    BIG_XXX_fromBytes(s, (char*)signature.signature.ecdaa.signatureS.buffer);
 
-    uint8_t s_buf[MODBYTES_256_56];
-    BIG_256_56_toBytes((char*)s_buf, s);
-    for (int i = 0; i < MODBYTES_256_56; i++) {
+    uint8_t s_buf[MODBYTES_XXX];
+    BIG_XXX_toBytes((char*)s_buf, s);
+    for (int i = 0; i < MODBYTES_XXX; i++) {
         printf("%#X, ", s_buf[i]);
     }
     printf("}\n\n");
@@ -255,10 +255,10 @@ void one_hash_returns_commitment_plus_priv_key()
     fflush(stdout);
 
     // Nb. digest == 1
-    BIG_256_56 one;
-    BIG_256_56_one(one);
+    BIG_XXX one;
+    BIG_XXX_one(one);
     TPM2B_DIGEST digest = {.size=32, .buffer={0}};
-    BIG_256_56_toBytes((char*)digest.buffer, one);
+    BIG_XXX_toBytes((char*)digest.buffer, one);
 
     // Sign
     TPMT_SIGNATURE signature;
@@ -268,29 +268,29 @@ void one_hash_returns_commitment_plus_priv_key()
         TEST_ASSERT(0 == ret);
     }
 
-    BIG_256_56 s;
-    BIG_256_56_fromBytes(s, (char*)signature.signature.ecdaa.signatureS.buffer);
-    BIG_256_56 c;
-    BIG_256_56_fromBytes(c, (char*)signature.signature.ecdaa.signatureR.buffer);
+    BIG_XXX s;
+    BIG_XXX_fromBytes(s, (char*)signature.signature.ecdaa.signatureS.buffer);
+    BIG_XXX c;
+    BIG_XXX_fromBytes(c, (char*)signature.signature.ecdaa.signatureR.buffer);
 
-    BIG_256_56 curve_order;
-    BIG_256_56_rcopy(curve_order, CURVE_Order_FP256BN);
-    if (BIG_256_56_comp(s, curve_order) > 0) {
+    BIG_XXX curve_order;
+    BIG_XXX_rcopy(curve_order, CURVE_Order_FP256BN);
+    if (BIG_XXX_comp(s, curve_order) > 0) {
         printf("\ns > curve_order!!\n");
         TEST_ASSERT(0 == 1);
     }
 
     printf("Called TPM2_Sign with a one hash, and \nc:{");
-    uint8_t c_buf[MODBYTES_256_56];
-    BIG_256_56_toBytes((char*)c_buf, c);
-    for (int i = 0; i < MODBYTES_256_56; i++) {
+    uint8_t c_buf[MODBYTES_XXX];
+    BIG_XXX_toBytes((char*)c_buf, c);
+    for (int i = 0; i < MODBYTES_XXX; i++) {
         printf("%#X, ", c_buf[i]);
     }
     printf("}\n\ns:{");
     fflush(stdout);
-    uint8_t s_buf[MODBYTES_256_56];
-    BIG_256_56_toBytes((char*)s_buf, s);
-    for (int i = 0; i < MODBYTES_256_56; i++) {
+    uint8_t s_buf[MODBYTES_XXX];
+    BIG_XXX_toBytes((char*)s_buf, s);
+    for (int i = 0; i < MODBYTES_XXX; i++) {
         printf("%#X, ", s_buf[i]);
     }
     printf("}\n\n");

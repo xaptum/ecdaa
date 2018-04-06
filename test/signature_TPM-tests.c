@@ -19,7 +19,7 @@
 #include "ecdaa-test-utils.h"
 #include "tpm-test-utils.h"
 
-#include "src/amcl-extensions/big_256_56.h"
+#include "src/amcl-extensions/big_XXX.h"
 #include "src/amcl-extensions/ecp_FP256BN.h"
 #include "src/amcl-extensions/ecp2_FP256BN.h"
 

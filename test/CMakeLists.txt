@@ -17,6 +17,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 macro(expand_test_case template_file)
         execute_process(COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
                                         --template ${template_file}
+                                        --word-size ${WORD_SIZE}
                                         --curves ${ECDAA_CURVES}
                                         --out-dir ${TOPLEVEL_BINARY_DIR}
                                         --top-level-dir ${PROJECT_SOURCE_DIR}
@@ -26,6 +27,7 @@ macro(expand_test_case template_file)
         add_custom_command(OUTPUT ${processed_file_names}
                 COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
                                 --template ${template_file}
+                                --word-size ${WORD_SIZE}
                                 --curves ${ECDAA_CURVES}
                                 --out-dir ${TOPLEVEL_BINARY_DIR}
                                 --top-level-dir ${PROJECT_SOURCE_DIR}

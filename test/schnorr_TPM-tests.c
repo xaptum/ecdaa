@@ -53,7 +53,7 @@ void full_test()
     const uint8_t *msg = (uint8_t*)"msg";
     const uint32_t msg_len = 3;
 
-    BIG_256_56 c, s;
+    BIG_XXX c, s;
     ret = schnorr_sign_TPM(&c,
                            &s,
                            NULL,
@@ -98,7 +98,7 @@ static void schnorr_TPM_basename()
     uint8_t *basename = (uint8_t*) "BASENAME";
     uint32_t basename_len = strlen((char*)basename);
 
-    BIG_256_56 c, s;
+    BIG_XXX c, s;
     ECP_FP256BN K;
 
     ret = schnorr_sign_TPM(&c,
@@ -143,7 +143,7 @@ static void schnorr_TPM_wrong_basename_fails()
     uint8_t *wrong_basename = (uint8_t*) "WRONGBASENAME";
     uint32_t wrong_basename_len = strlen((char*)wrong_basename);
 
-    BIG_256_56 c, s;
+    BIG_XXX c, s;
     ECP_FP256BN K;
 
     ret = schnorr_sign_TPM(&c,
