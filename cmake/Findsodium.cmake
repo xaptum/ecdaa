@@ -233,6 +233,8 @@ find_package_handle_standard_args(sodium
         sodium_INCLUDE_DIR
     VERSION_VAR
         sodium_VERSION
+    FOUND_VAR
+        sodium_FOUND
 )
 
 # mark file paths as advanced
