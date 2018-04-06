@@ -20,6 +20,8 @@
 
 #include "internal/explicit_bzero.h"
 
+#include <limits.h>
+
 #ifndef DISABLE_LIBSODIUM_RNG_SEED_FUNCTION
 
 #include <sodium.h>
@@ -30,8 +32,6 @@
 #include <sys/ioctl.h>
 #include <linux/random.h>
 #endif
-
-#include <limits.h>
 
 static int check_entropy()
 {
