@@ -43,7 +43,5 @@ foreach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
                 RUNTIME_OUTPUT_DIRECTORY ${CURRENT_PROGRAMS_BINARY_DIR}
         )
 
-        if(NOT BUILD_SHARED_LIBS)
-                install(TARGETS ${program_name} DESTINATION ${CMAKE_INSTALL_BINDIR})
-        endif()
+        install(TARGETS ${program_name} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endforeach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
