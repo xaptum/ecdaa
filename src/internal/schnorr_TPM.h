@@ -28,7 +28,7 @@ struct ecdaa_prng;
 
 #include <ecdaa/tpm_context.h>
 
-#include <amcl/big_256_56.h>
+#include <amcl/big_XXX.h>
 #include <amcl/ecp_FP256BN.h>
 #include <amcl/ecp2_FP256BN.h>
 
@@ -54,8 +54,8 @@ struct ecdaa_prng;
  *   0 on success
  *   -1 if basepoint is not valid
  */
-int schnorr_sign_TPM(BIG_256_56 *c_out,
-                     BIG_256_56 *s_out,
+int schnorr_sign_TPM(BIG_XXX *c_out,
+                     BIG_XXX *s_out,
                      ECP_FP256BN *K_out,
                      const uint8_t *msg_in,
                      uint32_t msg_len,

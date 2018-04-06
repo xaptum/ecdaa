@@ -18,7 +18,7 @@
 
 #include "commit.h"
 
-#include "../amcl-extensions/big_256_56.h"
+#include "../amcl-extensions/big_XXX.h"
 #include "../amcl-extensions/ecp_FP256BN.h"
 #include "../internal/explicit_bzero.h"
 
@@ -146,15 +146,15 @@ void ecp_to_tpm_format(TPM2B_ECC_POINT *tpm_out, ECP_FP256BN *point_in)
 {
     tpm_out->size = 4 + 2*ECP_FP256BN_LENGTH;  // 4 bytes for 2 UINT16 sizes
 
-    tpm_out->point.x.size = MODBYTES_256_56;
-    BIG_256_56 x;
+    tpm_out->point.x.size = MODBYTES_XXX;
+    BIG_XXX x;
     FP_FP256BN_redc(x, &point_in->x);
-    BIG_256_56_toBytes((char*)tpm_out->point.x.buffer, x);
+    BIG_XXX_toBytes((char*)tpm_out->point.x.buffer, x);
 
-    tpm_out->point.y.size = MODBYTES_256_56;
-    BIG_256_56 y;
+    tpm_out->point.y.size = MODBYTES_XXX;
+    BIG_XXX y;
     FP_FP256BN_redc(y, &point_in->y);
-    BIG_256_56_toBytes((char*)tpm_out->point.y.buffer, y);
+    BIG_XXX_toBytes((char*)tpm_out->point.y.buffer, y);
 }
 
 int tpm_to_amcl_format(ECP_FP256BN *point_out, TPM2B_ECC_POINT *tpm_in)
@@ -162,11 +162,11 @@ int tpm_to_amcl_format(ECP_FP256BN *point_out, TPM2B_ECC_POINT *tpm_in)
     if (tpm_in->point.x.size==0 || tpm_in->point.y.size==0)
         return -2;
 
-    BIG_256_56 x;
-    BIG_256_56_fromBytes(x, (char*)tpm_in->point.x.buffer);
+    BIG_XXX x;
+    BIG_XXX_fromBytes(x, (char*)tpm_in->point.x.buffer);
 
-    BIG_256_56 y;
-    BIG_256_56_fromBytes(y, (char*)tpm_in->point.y.buffer);
+    BIG_XXX y;
+    BIG_XXX_fromBytes(y, (char*)tpm_in->point.y.buffer);
 
     if (1 == ECP_FP256BN_set(point_out, x, y)) {
         return 0;
