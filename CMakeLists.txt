@@ -22,6 +22,7 @@ project(ecdaa
 
 include(GNUInstallDirs)
 include(CTest)
+include(DetermineWordSize)
 
 option(DISABLE_LIBSODIUM_RNG_SEED_FUNCTION
         "Disable the default Libsodium-based seed function"
@@ -38,6 +39,14 @@ if (NOT DEFINED BUILD_SHARED_LIBS OR NOT  "${BUILD_SHARED_LIBS}")
 endif ()
 
 option(ECDAA_TPM_SUPPORT "Include ECDAA functions that require a TPM" ON)
+
+determine_word_size(DEFAULT_WORD_SIZE)
+set(WORD_SIZE ${DEFAULT_WORD_SIZE} CACHE STRING "Word length in bits. See ./include/arch.h")
+set_property(CACHE WORD_SIZE PROPERTY STRINGS "16;32;64")
+
+if(WORD_SIZE STREQUAL "")
+  message(FATAL_ERROR "Must explicitly set WORD_SIZE.")
+endif()
 
 if(NOT ECDAA_CURVES)
         set(ECDAA_CURVES FP256BN)
@@ -94,6 +103,7 @@ endif()
 foreach(template_file ${FILES_TO_PROCESS})
         execute_process(COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
                                         --template ${template_file}
+                                        --word-size ${WORD_SIZE}
                                         --curves ${ECDAA_CURVES}
                                         --out-dir ${TOPLEVEL_BINARY_DIR}
                                         --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
@@ -103,6 +113,7 @@ foreach(template_file ${FILES_TO_PROCESS})
         add_custom_command(OUTPUT ${processed_file_names}
                 COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
                                 --template ${template_file}
+                                --word-size ${WORD_SIZE}
                                 --curves ${ECDAA_CURVES}
                                 --out-dir ${TOPLEVEL_BINARY_DIR}
                                 --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
@@ -117,7 +128,8 @@ if (ECDAA_TPM_SUPPORT)
 endif ()
 add_custom_target(toplevel_header
         COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
-                        --template ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa.h 
+                        --template ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa.h
+                        --word-size ${WORD_SIZE}
                         --curves ${ECDAA_CURVES}
                         --out-dir ${TOPLEVEL_BINARY_DIR}
                         --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
