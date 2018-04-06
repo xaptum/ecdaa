@@ -18,20 +18,42 @@ add_definitions("-Wno-unused-function")
 
 set(CURRENT_PROGRAMS_BINARY_DIR ${TOPLEVEL_BINARY_DIR}/bin/)
 
-set(ECDAA_PROGRAM_MAIN_FILES
-        ecdaa_extract_group_public_key.c
-        ecdaa_issuer_create_group.c
-        ecdaa_issuer_respond_to_join_request.c
-        ecdaa_member_process_join_response.c
-        ecdaa_member_request_join.c
-        ecdaa_member_sign.c
-        ecdaa_verify.c
-        )
+macro(expand_example template_file)
+        execute_process(COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
+                                        --template ${template_file}
+                                        --word-size ${WORD_SIZE}
+                                        --curves ${ECDAA_CURVES}
+                                        --out-dir ${TOPLEVEL_BINARY_DIR}
+                                        --top-level-dir ${PROJECT_SOURCE_DIR}
+                                        --names-only
+                OUTPUT_VARIABLE processed_file_names)
 
-foreach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
+        add_custom_command(OUTPUT ${processed_file_names}
+                COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
+                                --template ${template_file}
+                                --word-size ${WORD_SIZE}
+                                --curves ${ECDAA_CURVES}
+                                --out-dir ${TOPLEVEL_BINARY_DIR}
+                                --top-level-dir ${PROJECT_SOURCE_DIR}
+                DEPENDS ${template_file})
+
+        list(APPEND ECDAA_EXAMPLE_SRCS ${processed_file_names})
+endmacro()
+
+file(GLOB_RECURSE ECDAA_EXAMPLE_FILES "*.c")
+
+foreach(template_file ${ECDAA_EXAMPLE_FILES})
+  expand_example(${template_file})
+endforeach()
+
+foreach(main_file ${ECDAA_EXAMPLE_SRCS})
         get_filename_component(program_name ${main_file} NAME_WE)
 
         add_executable(${program_name} ${main_file})
+
+        target_include_directories(${program_name}
+          PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+        )
 
         if(BUILD_SHARED_LIBS)
               target_link_libraries(${program_name} PRIVATE ecdaa)
