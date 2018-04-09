@@ -1,4 +1,4 @@
-ecdaa (0.8.4) unstable; urgency=medium
+ecdaa (0.8.4-1) unstable; urgency=medium
 
   * Bump revision number, to reflect recent changes and cut a release
   * Add FOUND_VAR to FindSodium script, to work with CMake 3.0
