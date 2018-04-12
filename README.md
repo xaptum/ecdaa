@@ -23,7 +23,7 @@ built from source.
 
 ``` bash
 # Install the Xaptum API repo GPG signing key.
-apt-get adv --keyserver keyserver.ubuntu.com --recv-keys c615bfaa7fe1b4ca
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys c615bfaa7fe1b4ca
 
 # Add the repository to your APT sources, replacing <dist> with either jessie or stretch.
 echo "deb http://dl.bintray.com/xaptum/deb <dist> main" > /etc/apt/sources.list.d/xaptum.list
