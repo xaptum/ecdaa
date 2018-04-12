@@ -16,6 +16,9 @@ Pseudonym linking ("basename signatures") is optional, and secret-key revocation
 
 ## Installation
 
+`ecdaa` is available for the following distributions. It may also be
+built from source.
+
 ### Debian (Jessie or Stretch)
 
 ``` bash
