@@ -36,7 +36,6 @@ sudo apt-get install libecdaa-dev
 brew tap xaptum/xaptum
 
 # Install the library.
-
 brew install xaptum-tpm
 ```
 
