@@ -51,7 +51,7 @@ brew install xaptum-tpm
   * Built with the support for the necessary curves
 * [xaptum-tpm](https://github.com/xaptum/xaptum-tpm) (version 0.5.0 or higher)
   * If building ECDAA with TPM support
-* libsodium (version 1.0.11 or higher)
+* [libsodium](https://github.com/jedisct1/libsodium) (version 1.0.11 or higher)
   * Not required if DISABLE_LIBSODIUM_RNG_SEED_FUNCTION is ON
 
 ### Building
