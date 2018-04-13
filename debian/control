@@ -13,12 +13,12 @@ Pre-Depends: multiarch-support
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: Elliptic-curve-based Direct Anonymous Attestation signatures
  .
- This package contains the library.  
+ This package contains the library.
 
 Package: libecdaa-dev
 Section: libdevel
 Architecture: any
-Depends: ${misc:Depends}, libecdaa0 (= ${binary:Version})
+Depends: ${misc:Depends}, libecdaa0 (= ${binary:Version}), libxaptum-tpm-dev (>= 0.5.0), libamcl-dev (>= 4.6.0)
 Description: Elliptic-curve-based Direct Anonymous Attestation signatures
  .
  This package contains the development files.
