@@ -1,3 +1,9 @@
+ecdaa (0.8.5-2) unstable; urgency=medium
+
+  * Go back to using pre-depends
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Mon, 16 Apr 2018 20:00:39 +0000
+
 ecdaa (0.8.5-1) unstable; urgency=medium
 
   * In Findsodium, when checking variable against empty string, also check if it's not defined.
