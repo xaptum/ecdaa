@@ -18,7 +18,7 @@ Description: Elliptic-curve-based Direct Anonymous Attestation signatures
 Package: libecdaa-dev
 Section: libdevel
 Architecture: any
-Depends: ${misc:Depends}, libecdaa0 (= ${binary:Version})
+Depends: ${misc:Depends}, libecdaa0 (= ${binary:Version}), libxaptum-tpm-dev (>= 0.5), libamcl-dev (>= 4.7)
 Description: Elliptic-curve-based Direct Anonymous Attestation signatures
  .
  This package contains the development files.
