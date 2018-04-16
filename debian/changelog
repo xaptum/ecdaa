@@ -1,3 +1,10 @@
+ecdaa (0.8.5-3) unstable; urgency=medium
+
+  [ Zane Beckwith ]
+  * Specify AMCL and xaptum-tpm dependencies in -dev package.
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Mon, 16 Apr 2018 21:20:09 +0000
+
 ecdaa (0.8.5-2) unstable; urgency=medium
 
   * Go back to using pre-depends
