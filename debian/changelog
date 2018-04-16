@@ -1,0 +1,27 @@
+ecdaa (0.8.5-1) unstable; urgency=medium
+
+  * In Findsodium, when checking variable against empty string, also check if it's not defined.
+  * Bump patch number
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Tue, 10 Apr 2018 00:39:18 -0500
+
+ecdaa (0.8.4-1) unstable; urgency=medium
+
+  * Bump revision number, to reflect recent changes and cut a release
+  * Add FOUND_VAR to FindSodium script, to work with CMake 3.0
+  * Bump revision number, to cut a new release
+  * Ensure that limits.h is included in prng.c, even when not using sodium
+  * Build in a 'build' directory in travis, not in-tree.
+  * Specify build dirs in variables, and use pushd/popd
+  * Install example executables, don't wrap in a `if(NOT BUILD_SHARED_LIBS)`
+  * Bump patch number.
+  * Include example binaries in debian package
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Fri, 06 Apr 2018 18:57:38 -0500
+
+ecdaa (0.8.2) unstable; urgency=medium
+
+  * Initial release.
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Fri, 6 Apr 2018 21:07:37 +0000
+

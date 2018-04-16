@@ -1,0 +1,25 @@
+Source: ecdaa
+Section: admin
+Priority: optional
+Maintainer: Zane Beckwith <zane.beckwith@xaptum.com>
+Build-Depends: debhelper (>= 10), cmake (>= 3.0.2)
+Standards-Version: 3.9.8
+Homepage: https://github.com/xaptum/ecdaa
+
+Package: libecdaa0
+Section: libs
+Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Elliptic-curve-based Direct Anonymous Attestation signatures
+ .
+ This package contains the library.  
+
+Package: libecdaa-dev
+Section: libdevel
+Architecture: any
+Pre-Depends: ${misc: Pre-Depends}
+Depends: ${misc:Depends}, libecdaa0 (= ${binary:Version})
+Description: Elliptic-curve-based Direct Anonymous Attestation signatures
+ .
+ This package contains the development files.
