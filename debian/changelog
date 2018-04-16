@@ -1,3 +1,10 @@
+ecdaa (0.8.5-2) unstable; urgency=medium
+
+  [ Zane Beckwith ]
+  * Specify AMCL and xaptum-tpm dependencies in -dev package.
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Mon, 16 Apr 2018 21:49:16 +0000
+
 ecdaa (0.8.5-1) unstable; urgency=medium
 
   * In Findsodium, when checking variable against empty string, also check if it's not defined.
