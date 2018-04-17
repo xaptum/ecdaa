@@ -46,7 +46,7 @@ endif()
 set(ECDAA_VERSION ${PROJECT_VERSION})
 set(ECDAA_SOVERSION ${PROJECT_VERSION_MAJOR})
 
-find_package(AMCL 4.6.0 REQUIRED QUIET)
+find_package(AMCL 4.7.0 REQUIRED QUIET)
 if(ECDAA_TPM_SUPPORT)
   find_package(xaptum-tpm 0.5.0 REQUIRED QUIET)
 endif()

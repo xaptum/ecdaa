@@ -50,7 +50,7 @@ brew install xaptum-tpm
 * Python3 (for file generation during build)
 * A C99-compliant compiler
 
-* [AMCL](https://github.com/milagro-crypto/milagro-crypto-c)
+* [AMCL](https://github.com/milagro-crypto/milagro-crypto-c) (version 4.7)
   * Built with the support for the necessary curves
 * [xaptum-tpm](https://github.com/xaptum/xaptum-tpm) (version 0.5.0 or higher)
   * If building ECDAA with TPM support
