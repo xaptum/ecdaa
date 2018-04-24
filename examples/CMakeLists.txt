@@ -18,38 +18,10 @@ add_definitions("-Wno-unused-function")
 
 set(CURRENT_PROGRAMS_BINARY_DIR ${TOPLEVEL_BINARY_DIR}/bin/)
 
-macro(expand_example template_file)
-        execute_process(COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
-                                        --template ${template_file}
-                                        --word-size ${WORD_SIZE}
-                                        --curves ${ECDAA_CURVES}
-                                        --out-dir ${TOPLEVEL_BINARY_DIR}
-                                        --top-level-dir ${PROJECT_SOURCE_DIR}
-                                        --names-only
-                OUTPUT_VARIABLE processed_file_names)
+macro(add_example example_file)
+        get_filename_component(program_name ${example_file} NAME_WE)
 
-        add_custom_command(OUTPUT ${processed_file_names}
-                COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
-                                --template ${template_file}
-                                --word-size ${WORD_SIZE}
-                                --curves ${ECDAA_CURVES}
-                                --out-dir ${TOPLEVEL_BINARY_DIR}
-                                --top-level-dir ${PROJECT_SOURCE_DIR}
-                DEPENDS ${template_file})
-
-        list(APPEND ECDAA_EXAMPLE_SRCS ${processed_file_names})
-endmacro()
-
-file(GLOB_RECURSE ECDAA_EXAMPLE_FILES "*.c")
-
-foreach(template_file ${ECDAA_EXAMPLE_FILES})
-  expand_example(${template_file})
-endforeach()
-
-foreach(main_file ${ECDAA_EXAMPLE_SRCS})
-        get_filename_component(program_name ${main_file} NAME_WE)
-
-        add_executable(${program_name} ${main_file})
+        add_executable(${program_name} ${example_file})
 
         target_include_directories(${program_name}
           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -66,4 +38,22 @@ foreach(main_file ${ECDAA_EXAMPLE_SRCS})
         )
 
         install(TARGETS ${program_name} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-endforeach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
+endmacro()
+
+set(ECDAA_EXAMPLE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_extract_group_public_key.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_issuer_create_group.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_issuer_respond_to_join_request.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_member_process_join_response.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_member_request_join.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_member_sign.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_verify.c
+        )
+
+foreach(template_file ${ECDAA_EXAMPLE_FILES})
+  expand_template(${template_file} ECDAA_EXAMPLE_SRCS FALSE)
+endforeach()
+
+foreach(example_file ${ECDAA_EXAMPLE_SRCS})
+  add_example(${example_file})
+endforeach()

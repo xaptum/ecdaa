@@ -26,7 +26,7 @@ env:
     - IBM_TPM_DIR=${TRAVIS_BUILD_DIR}/ibm-tpm-simulator
     - ECDAA_CURVES=FP256BN,BN254,BN254CX,BLS383
     - ECDAA_BUILD_DIR=${TRAVIS_BUILD_DIR}/build
-    - TPM_KEY_DIR=${ECDAA_BUILD_DIR}/test
+    - TPM_KEY_DIR=${ECDAA_BUILD_DIR}/test/tpm
 
 jobs:
   include:

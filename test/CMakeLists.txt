@@ -14,46 +14,23 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-macro(expand_test_case template_file)
-        execute_process(COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
-                                        --template ${template_file}
-                                        --word-size ${WORD_SIZE}
-                                        --curves ${ECDAA_CURVES}
-                                        --out-dir ${TOPLEVEL_BINARY_DIR}
-                                        --top-level-dir ${PROJECT_SOURCE_DIR}
-                                        --names-only
-                OUTPUT_VARIABLE processed_file_names)
-
-        add_custom_command(OUTPUT ${processed_file_names}
-                COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
-                                --template ${template_file}
-                                --word-size ${WORD_SIZE}
-                                --curves ${ECDAA_CURVES}
-                                --out-dir ${TOPLEVEL_BINARY_DIR}
-                                --top-level-dir ${PROJECT_SOURCE_DIR}
-                DEPENDS ${template_file})
-
-        list(APPEND ECDAA_TEST_SRCS ${processed_file_names})
-endmacro()
-
 macro(add_test_case case_file)
   get_filename_component(case_name ${case_file} NAME_WE)
 
-  add_executable(${case_name} ${case_file})
+  add_executable(${case_name} ${case_file} $<TARGET_OBJECTS:ecdaa_utilities>)
 
   if(BUILD_SHARED_LIBS)
           target_link_libraries(${case_name} PRIVATE
                                 ecdaa)
-          add_dependencies(${case_name} ecdaa)
   else()
           target_link_libraries(${case_name} PRIVATE
                                 ecdaa_static)
-          add_dependencies(${case_name} ecdaa_static)
   endif()
 
   target_include_directories(${case_name}
           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-                  ${TOPLEVEL_BINARY_DIR}
+                  $<BUILD_INTERFACE:${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}>
+                  ${TOPLEVEL_BINARY_DIR}/libecdaa
   )
 
   set_target_properties(${case_name} PROPERTIES
@@ -67,19 +44,22 @@ endmacro()
 
 set(CURRENT_TEST_BINARY_DIR ${TOPLEVEL_BINARY_DIR}/testBin/)
 
-file(GLOB_RECURSE ECDAA_TEST_FILES "*.c")
-
-if(NOT ECDAA_TPM_SUPPORT)
-        foreach(file ${ECDAA_TEST_FILES})
-                string(REGEX MATCH ".*tpm.*|.*TPM.*" match ${file})
-                if(match)
-                        list(REMOVE_ITEM ECDAA_TEST_FILES ${match})
-                endif()
-        endforeach()
-endif()
+set(ECDAA_TEST_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks_ZZZ.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/big_XXX-tests.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/credential_ZZZ-tests.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecp2_ZZZ-tests.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecp_ZZZ-tests.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/group_public_key_ZZZ-tests.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/issuer_keypair_ZZZ-tests.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/member_keypair_ZZZ-tests.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/prng-tests.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/schnorr_ZZZ-tests.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/signature_ZZZ-tests.c
+        )
 
 foreach(template_file ${ECDAA_TEST_FILES})
-        expand_test_case(${template_file})
+        expand_template(${template_file} ECDAA_TEST_SRCS FALSE)
 endforeach()
 
 foreach(case_file ${ECDAA_TEST_SRCS})
@@ -91,4 +71,11 @@ if(BUILD_EXAMPLES)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/integration-tests.py ${CURRENT_TEST_BINARY_DIR}/integration-tests.py)
         add_test(NAME integration-tests
                 COMMAND python "${CURRENT_TEST_BINARY_DIR}/integration-tests.py" "${TOPLEVEL_BINARY_DIR}/bin/")
+endif()
+
+################################################################################
+# TPM
+################################################################################
+if(ECDAA_TPM_SUPPORT)
+        add_subdirectory(tpm)
 endif()

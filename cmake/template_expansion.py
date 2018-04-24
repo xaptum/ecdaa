@@ -8,6 +8,8 @@ big_pattern = 'XXX'
 fp_pattern = 'YYY'
 curve_pattern = 'ZZZ'
 
+tpm_allowed_curves = ['FP256BN']
+
 big_replacements = {
     '64': {
         'BN254': '256_56',
@@ -73,7 +75,7 @@ def expand_template(input_file, wordsize, curve_list, output_directory):
         with open(output_file_name, 'w') as output_file:
             output_file.write(expanded_string)
 
-def generate_top_level_header(input_file, wordsize, curve_list, output_directory, use_tpm):
+def generate_top_level_header(input_file, wordsize, curve_list, output_directory):
     with open(input_file, 'r') as template_file:
         input_lines = template_file.readlines()
 
@@ -89,8 +91,6 @@ def generate_top_level_header(input_file, wordsize, curve_list, output_directory
                     output_file.write(line.replace(big_pattern, big_replace) \
                                           .replace(fp_pattern, fp_replace) \
                                           .replace(curve_pattern, curve))
-            elif not use_tpm and ('tpm' in line or 'TPM' in line):
-                pass
             else:
                 output_file.write(line)
 
@@ -107,12 +107,14 @@ if __name__ == '__main__':
     parser.add_argument('--out-dir', help='directory to move expanded files')
     parser.add_argument('--top-level-dir', help='top-level directory of project')
     parser.add_argument('--top-level-header', action='store_true', help='the given template is the top-level header file')
-    parser.add_argument('--use-tpm', action='store_true', help='use tpm-enabled functions')
+    parser.add_argument('--use-tpm', action='store_true', help='the given template is for the tpm library')
     args = parser.parse_args()
 
     input_file = args.template
     wordsize = args.word_size
     curve_list = args.curves.split(',')
+    if args.use_tpm:
+        curve_list = list(filter(set(curve_list).__contains__, tpm_allowed_curves))
     output_directory = args.out_dir
     toplevel_dir = args.top_level_dir
 
@@ -120,7 +122,7 @@ if __name__ == '__main__':
         if not args.top_level_header:
             expand_template(input_file, wordsize, curve_list, output_directory)
         else:
-            generate_top_level_header(input_file, wordsize, curve_list, output_directory, args.use_tpm)
+            generate_top_level_header(input_file, wordsize, curve_list, output_directory)
 
     file_name_list = get_processed_file_names(input_file, wordsize, curve_list, output_directory, toplevel_dir)
     print_file_names(file_name_list)

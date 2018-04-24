@@ -18,7 +18,7 @@
 
 #include "ecdaa-test-utils.h"
 
-#include "src/amcl-extensions/big_XXX.h"
+#include "amcl-extensions/big_XXX.h"
 
 #include <amcl/ecp_ZZZ.h>
 #include <amcl/arch.h>

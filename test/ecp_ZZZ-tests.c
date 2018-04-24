@@ -18,7 +18,7 @@
 
 #include "ecdaa-test-utils.h"
 
-#include "src/amcl-extensions/ecp_ZZZ.h"
+#include "amcl-extensions/ecp_ZZZ.h"
 
 #include <ecdaa/prng.h>
 

@@ -18,10 +18,10 @@
 
 #include "ecdaa-test-utils.h"
 
-#include "src/internal/schnorr_ZZZ.h"
-#include "src/amcl-extensions/big_XXX.h"
-#include "src/amcl-extensions/ecp_ZZZ.h"
-#include "src/amcl-extensions/ecp2_ZZZ.h"
+#include "schnorr/schnorr_ZZZ.h"
+#include "amcl-extensions/big_XXX.h"
+#include "amcl-extensions/ecp_ZZZ.h"
+#include "amcl-extensions/ecp2_ZZZ.h"
 
 #include <ecdaa/credential_ZZZ.h>
 #include <ecdaa/member_keypair_ZZZ.h>
