@@ -23,9 +23,9 @@
 #include <ecdaa/issuer_keypair_ZZZ.h>
 #include <ecdaa/prng.h>
 
-#include "src/amcl-extensions/big_XXX.h"
-#include "src/amcl-extensions/ecp_ZZZ.h"
-#include "src/amcl-extensions/ecp2_ZZZ.h"
+#include "amcl-extensions/big_XXX.h"
+#include "amcl-extensions/ecp_ZZZ.h"
+#include "amcl-extensions/ecp2_ZZZ.h"
 
 #include <amcl/ecp_ZZZ.h>
 #include <amcl/ecp2_ZZZ.h>

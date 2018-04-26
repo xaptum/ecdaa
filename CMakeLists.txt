@@ -14,7 +14,7 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
 project(ecdaa
         LANGUAGES C
@@ -22,6 +22,7 @@ project(ecdaa
 
 include(GNUInstallDirs)
 include(CTest)
+include(DetermineWordSize)
 
 option(DISABLE_LIBSODIUM_RNG_SEED_FUNCTION
         "Disable the default Libsodium-based seed function"
@@ -38,6 +39,14 @@ if (NOT DEFINED BUILD_SHARED_LIBS OR NOT  "${BUILD_SHARED_LIBS}")
 endif ()
 
 option(ECDAA_TPM_SUPPORT "Include ECDAA functions that require a TPM" ON)
+
+determine_word_size(DEFAULT_WORD_SIZE)
+set(WORD_SIZE ${DEFAULT_WORD_SIZE} CACHE STRING "Word length in bits. See ./include/arch.h")
+set_property(CACHE WORD_SIZE PROPERTY STRINGS "16;32;64")
+
+if(WORD_SIZE STREQUAL "")
+  message(FATAL_ERROR "Must explicitly set WORD_SIZE.")
+endif()
 
 if(NOT ECDAA_CURVES)
         set(ECDAA_CURVES FP256BN)
@@ -75,146 +84,61 @@ set(MEMORYCHECK_COMMAND_OPTIONS
 
 set(TOPLEVEL_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
-set(GENERATED_TOPLEVEL_INCLUDE_DIR "${TOPLEVEL_BINARY_DIR}/include")
+macro(expand_template template_file srcs_list use_tpm)
+        if (${use_tpm})
+                set(use_tpm_flag "--use-tpm")
+        endif()
 
-file(GLOB PUBLIC_HEADERS "include/ecdaa/*.h")
-file(GLOB_RECURSE IMPLEMENTATION_H_FILES "src/*.h")
-file(GLOB_RECURSE IMPLEMENTATION_C_FILES "src/*.c")
-set(FILES_TO_PROCESS ${PUBLIC_HEADERS} ${IMPLEMENTATION_H_FILES} ${IMPLEMENTATION_C_FILES})
-
-if(NOT ECDAA_TPM_SUPPORT)
-        foreach(file ${FILES_TO_PROCESS})
-                string(REGEX MATCH ".*tpm.*|.*TPM.*" match ${file})
-                if(match)
-                        list(REMOVE_ITEM FILES_TO_PROCESS ${match})
-                endif()
-        endforeach()
-endif()
-
-foreach(template_file ${FILES_TO_PROCESS})
-        execute_process(COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
+        execute_process(COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
                                         --template ${template_file}
+                                        --word-size ${WORD_SIZE}
                                         --curves ${ECDAA_CURVES}
                                         --out-dir ${TOPLEVEL_BINARY_DIR}
-                                        --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
+                                        --top-level-dir ${PROJECT_SOURCE_DIR}
                                         --names-only
+                                        ${use_tpm_flag}
                 OUTPUT_VARIABLE processed_file_names)
 
         add_custom_command(OUTPUT ${processed_file_names}
-                COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
+                COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
                                 --template ${template_file}
+                                --word-size ${WORD_SIZE}
                                 --curves ${ECDAA_CURVES}
                                 --out-dir ${TOPLEVEL_BINARY_DIR}
-                                --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
+                                --top-level-dir ${PROJECT_SOURCE_DIR}
+                                ${use_tpm_flag}
                 DEPENDS ${template_file})
 
-        list(APPEND ECDAA_SRCS ${processed_file_names})
-endforeach(template_file ${FILES_TO_PROCESS})
+        list(APPEND ${srcs_list} ${processed_file_names})
+endmacro()
 
-set(TOPLEVEL_HEADER ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa.h)
-if (ECDAA_TPM_SUPPORT)
-        set(USE_TPM_PYTHON_OPTION "--use-tpm")
-endif ()
-add_custom_target(toplevel_header
-        COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/template_expansion.py
-                        --template ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa.h 
-                        --curves ${ECDAA_CURVES}
-                        --out-dir ${TOPLEVEL_BINARY_DIR}
-                        --top-level-dir ${CMAKE_CURRENT_SOURCE_DIR}
-                        --top-level-header
-                        ${USE_TPM_PYTHON_OPTION})
-
-add_custom_target(generate_sources DEPENDS ${ECDAA_SRCS} toplevel_header)
+add_subdirectory(common)
 
 ################################################################################
-# Shared Libary
+# libecdaa
 ################################################################################
-if (BUILD_SHARED_LIBS)
-        add_library(ecdaa SHARED ${ECDAA_SRCS})
-
-        set_target_properties(ecdaa PROPERTIES
-                VERSION "${ECDAA_VERSION}"
-                SOVERSION "${ECDAA_SOVERSION}"
-        )
-
-        target_include_directories(ecdaa PUBLIC
-                $<BUILD_INTERFACE:${GENERATED_TOPLEVEL_INCLUDE_DIR}>
-                $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-        )
-
-        target_link_libraries(ecdaa
-          PUBLIC  AMCL::AMCL
-          PRIVATE ${ECDAA_SEED_LIBRARY}
-        )
-
-        if (ECDAA_TPM_SUPPORT)
-          target_link_libraries(ecdaa PUBLIC xaptum-tpm::xaptum-tpm)
-        endif()
-
-        install(TARGETS ecdaa
-                EXPORT ecdaa-targets
-                RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-                LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-                ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        )
-
-        add_dependencies(ecdaa toplevel_header)
-endif ()
+add_subdirectory(libecdaa)
 
 ################################################################################
-# Static Libary
+# libecdaa-tpm
 ################################################################################
-if (BUILD_STATIC_LIBS)
-        add_library(ecdaa_static STATIC ${ECDAA_SRCS})
-
-        set_target_properties(ecdaa_static PROPERTIES
-                OUTPUT_NAME "ecdaa${STATIC_SUFFIX}"
-                VERSION "${ECDAA_VERSION}"
-                SOVERSION "${ECDAA_SOVERSION}"
-        )
-
-        target_include_directories(ecdaa_static PUBLIC
-                $<BUILD_INTERFACE:${GENERATED_TOPLEVEL_INCLUDE_DIR}>
-                $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-        )
-
-        target_link_libraries(ecdaa_static
-          PUBLIC  AMCL::AMCL
-          PRIVATE ${ECDAA_SEED_LIBRARY}
-        )
-
-        if (ECDAA_TPM_SUPPORT)
-          target_link_libraries(ecdaa PUBLIC xaptum-tpm::xaptum-tpm)
-        endif()
-
-        install(TARGETS ecdaa_static
-                EXPORT ecdaa-targets
-                RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-                LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-                ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        )
-
-        add_dependencies(ecdaa_static toplevel_header)
-endif ()
+if(ECDAA_TPM_SUPPORT)
+  add_subdirectory(libecdaa-tpm)
+endif()
 
 ################################################################################
-# Headers
+# Examples
 ################################################################################
-install(DIRECTORY ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-)
-
-install(FILES ${GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa.h
-        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
-)
+if(BUILD_EXAMPLES)
+        add_subdirectory(examples)
+endif()
 
 ################################################################################
-# pkgconfig
+# Tests
 ################################################################################
-configure_file(ecdaa.pc.in ecdaa.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/ecdaa.pc
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
-)
+if (BUILD_TESTING)
+        add_subdirectory(test)
+endif()
 
 ################################################################################
 # CMake export
@@ -234,28 +158,14 @@ write_basic_package_version_file(
   COMPATIBILITY SameMajorVersion
 )
 
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/ecdaa-config.cmake.in
+configure_package_config_file(${PROJECT_SOURCE_DIR}/ecdaa-config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config.cmake
   INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
 )
 
 install(FILES
-  cmake/Findsodium.cmake
+  ${PROJECT_SOURCE_DIR}/cmake/Findsodium.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config-version.cmake
   DESTINATION ${INSTALL_CONFIGDIR}
 )
-
-################################################################################
-# Examples
-################################################################################
-if(BUILD_EXAMPLES)
-        add_subdirectory(examples)
-endif()
-
-################################################################################
-# Tests
-################################################################################
-if (BUILD_TESTING)
-        add_subdirectory(test)
-endif()

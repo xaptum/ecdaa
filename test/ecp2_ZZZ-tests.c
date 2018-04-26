@@ -18,7 +18,7 @@
 
 #include "ecdaa-test-utils.h"
 
-#include "src/amcl-extensions/ecp2_ZZZ.h"
+#include "amcl-extensions/ecp2_ZZZ.h"
 
 #include <stdio.h>
 #include <string.h>
