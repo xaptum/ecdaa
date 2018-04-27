@@ -107,16 +107,20 @@ locally on TCP port 2321.
 
 An ECDAA signing key must loaded in the simulator. The associated
 public key (in x9.62 format) and TPM handle (as a hex integer) must be
-in `build/test/pub_key.txt` and `build/test/handle.txt`.
+in `build/test/tpm/pub_key.txt` and `build/test/tpm/handle.txt`.
+Currently, only the `TPM_ECC_NIST_P256` curve is supported in the tests.
 
-The `.travis/run-tpm-simulator.sh` script in this repo and
-`.travis/install-ibm-tpm2.sh` and `.travis/run-ibm-tpm2.sh` scripts in
-[xaptum-tpm](https://github.com/xaptum/xaptum) can be used to setup
-the simulator.
-
+Convenience scripts in the `.travis` directory can be used to download
+and prepare a TPM2.0 simulator for the tests.
+After building `ecdaa` in the directory `build` with `ECDAA_TPM_SUPPORT=ON`,
+run the following steps:
 ``` bash
-.travis/install-ibm-tpm2.sh ${ABSOLUTE_PATH_TO_XAPTUM_TPM_PROJECT} $(pwd)/build/ibm-simulator $(pwd)/build/test
+.travis/install-ibm-tpm2.sh ./ibm-tpm2-simulator
+.travis/run-ibm-tpm2.sh ./ibm-tpm2-simulator/
+.travis/prepare-tpm2.sh ./build/testBin/ ./build/test/tpm
 ```
+
+The `ecdaa` tests will now be able to create signatures using the TPM2.0 simulator.
 
 ### Installing
 
