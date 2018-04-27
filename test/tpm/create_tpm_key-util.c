@@ -68,6 +68,8 @@ struct test_context {
     TPM_HANDLE persistent_key_handle;
     TPM2B_PUBLIC out_public;
     TPM2B_PRIVATE out_private;
+    unsigned char tcti_buffer[128];
+    unsigned char sapi_buffer[4200];
 
 };
 
@@ -91,20 +93,18 @@ int main(int argc, char *argv[])
 
 void initialize(struct test_context *ctx)
 {
+    TSS2_TCTI_CONTEXT *tcti_ctx = (TSS2_TCTI_CONTEXT*)ctx->tcti_buffer;
     size_t tcti_ctx_size = tss2_tcti_getsize_socket();
-
-    TSS2_TCTI_CONTEXT *tcti_ctx = malloc(tcti_ctx_size);
-    TEST_EXPECT(NULL != tcti_ctx);
+    TEST_ASSERT(sizeof(ctx->tcti_buffer) >= tcti_ctx_size);
     
     TSS2_RC init_ret;
 
     init_ret = tss2_tcti_init_socket(hostname_g, port_g, tcti_ctx);
     TEST_ASSERT(TSS2_RC_SUCCESS == init_ret);
 
+    ctx->sapi_ctx = (TSS2_SYS_CONTEXT*)ctx->sapi_buffer;
     size_t sapi_ctx_size = Tss2_Sys_GetContextSize(0);
-
-    ctx->sapi_ctx = malloc(sapi_ctx_size);
-    TEST_EXPECT(NULL != ctx->sapi_ctx);
+    TEST_ASSERT(sizeof(ctx->sapi_buffer) >= sapi_ctx_size);
     
     TSS2_ABI_VERSION abi_version = TSS2_ABI_CURRENT_VERSION;
     init_ret = Tss2_Sys_Initialize(ctx->sapi_ctx,
@@ -127,10 +127,8 @@ void cleanup(struct test_context *ctx)
         TEST_ASSERT(TSS2_RC_SUCCESS == rc);
 
         tss2_tcti_finalize(tcti_context);
-        free(tcti_context);
 
         Tss2_Sys_Finalize(ctx->sapi_ctx);
-        free(ctx->sapi_ctx);
     }
 }
 
