@@ -18,10 +18,12 @@ add_definitions("-Wno-unused-function")
 
 set(CURRENT_PROGRAMS_BINARY_DIR ${TOPLEVEL_BINARY_DIR}/bin/)
 
+add_library(ecdaa_examples_rand OBJECT ${CMAKE_CURRENT_SOURCE_DIR}/examples_rand.c)
+
 macro(add_example example_file)
         get_filename_component(program_name ${example_file} NAME_WE)
 
-        add_executable(${program_name} ${example_file})
+        add_executable(${program_name} ${example_file} $<TARGET_OBJECTS:ecdaa_examples_rand>)
 
         target_include_directories(${program_name}
           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}

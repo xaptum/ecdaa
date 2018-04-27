@@ -19,7 +19,6 @@
 #include <ecdaa-tpm/signature_TPM_ZZZ.h>
 
 #include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/prng.h>
 #include <ecdaa/signature_ZZZ.h>
 #include <ecdaa-tpm/tpm_context.h>
 
@@ -29,7 +28,7 @@
 
 static
 void randomize_credential_ZZZ(struct ecdaa_credential_ZZZ *cred,
-                              struct ecdaa_prng *prng,
+                              ecdaa_rand_func get_random,
                               struct ecdaa_signature_ZZZ *signature_out);
 
 int ecdaa_signature_TPM_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
@@ -38,11 +37,11 @@ int ecdaa_signature_TPM_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
                                  const uint8_t* basename,
                                  uint32_t basename_len,
                                  struct ecdaa_credential_ZZZ *cred,
-                                 struct ecdaa_prng *prng,
+                                 ecdaa_rand_func get_random,
                                  struct ecdaa_tpm_context *tpm_ctx)
 {
     // 1) Randomize credential
-    randomize_credential_ZZZ(cred, prng, signature_out);
+    randomize_credential_ZZZ(cred, get_random, signature_out);
 
     // 2) Create a Schnorr-like signature on W concatenated with the message,
     //  where the basepoint is S.
@@ -61,12 +60,12 @@ int ecdaa_signature_TPM_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
 }
 
 void randomize_credential_ZZZ(struct ecdaa_credential_ZZZ *cred,
-                              struct ecdaa_prng *prng,
+                              ecdaa_rand_func get_random,
                               struct ecdaa_signature_ZZZ *signature_out)
 {
     // 1) Choose random l <- Z_p
     BIG_XXX l;
-    ecp_ZZZ_random_mod_order(&l, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(&l, get_random);
 
     // 2) Multiply the four points in the credential by l,
     //  and save to the four points in the signature

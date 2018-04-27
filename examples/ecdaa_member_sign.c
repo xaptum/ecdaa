@@ -16,6 +16,7 @@
  *
  *****************************************************************************/
 
+#include "examples_rand.h"
 #include "file_utils.h"
 
 #include <ecdaa.h>
@@ -47,13 +48,6 @@ int main(int argc, char *argv[])
     struct command_line_args args;
     if (0 != parse_args(&args, argc, argv))
         return 1;
-
-    // Initialize PRNG
-    struct ecdaa_prng rng;
-    if (0 != ecdaa_prng_init(&rng)) {
-        fputs("Error initializing ecdaa_prng\n", stderr);
-        return 1;
-    }
 
     // Read member secret key from disk
     struct ecdaa_member_secret_key_FP256BN sk;
@@ -103,7 +97,7 @@ int main(int argc, char *argv[])
 
     // Create signature
     struct ecdaa_signature_FP256BN sig;
-    if (0 != ecdaa_signature_FP256BN_sign(&sig, message, msg_len, basename, basename_len, &sk, &cred, &rng)) {
+    if (0 != ecdaa_signature_FP256BN_sign(&sig, message, msg_len, basename, basename_len, &sk, &cred, examples_rand)) {
         message[msg_len] = 0;
         fprintf(stderr, "Error signing message: \"%s\"\n", (char*)message);
         return 1;

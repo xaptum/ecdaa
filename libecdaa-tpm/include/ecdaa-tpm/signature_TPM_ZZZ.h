@@ -25,6 +25,7 @@ extern "C" {
 #endif
 
 #include <ecdaa/signature_ZZZ.h>
+#include <ecdaa/rand.h>
 
 #include <stdint.h>
 
@@ -43,7 +44,7 @@ int ecdaa_signature_TPM_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
                                  const uint8_t* basename,
                                  uint32_t basename_len,
                                  struct ecdaa_credential_ZZZ *cred,
-                                 struct ecdaa_prng *prng,
+                                 ecdaa_rand_func get_random,
                                  struct ecdaa_tpm_context *tpm_ctx);
 
 #ifdef __cplusplus

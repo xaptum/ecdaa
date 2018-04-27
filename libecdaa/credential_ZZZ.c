@@ -27,7 +27,6 @@
 #include <ecdaa/member_keypair_ZZZ.h>
 #include <ecdaa/issuer_keypair_ZZZ.h>
 #include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/prng.h>
 
 size_t ecdaa_credential_ZZZ_length(void)
 {
@@ -43,7 +42,7 @@ int ecdaa_credential_ZZZ_generate(struct ecdaa_credential_ZZZ *cred,
                                   struct ecdaa_credential_ZZZ_signature *cred_sig_out,
                                   struct ecdaa_issuer_secret_key_ZZZ *isk,
                                   struct ecdaa_member_public_key_ZZZ *member_pk,
-                                  struct ecdaa_prng *prng)
+                                  ecdaa_rand_func get_random)
 {
     int ret = 0;
 
@@ -52,7 +51,7 @@ int ecdaa_credential_ZZZ_generate(struct ecdaa_credential_ZZZ *cred,
 
     // 1) Choose random l <- Z_p
     BIG_XXX l;
-    ecp_ZZZ_random_mod_order(&l, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(&l, get_random);
 
     // 2) Multiply generator by l and save to cred->A (A = l*P)
     ecp_ZZZ_set_to_generator(&cred->A);
@@ -97,7 +96,7 @@ int ecdaa_credential_ZZZ_generate(struct ecdaa_credential_ZZZ *cred,
                                                   &cred->D,
                                                   isk->y,
                                                   l,
-                                                  prng);
+                                                  get_random);
     if (0 != schnorr_ret)
         ret = -1;
 

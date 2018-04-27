@@ -20,7 +20,6 @@
 #include "tpm_ZZZ-test-utils.h"
 
 #include <ecdaa-tpm/tpm_context.h>
-#include <ecdaa/prng.h>
 
 #include "amcl-extensions/big_XXX.h"
 #include "amcl-extensions/ecp_ZZZ.h"
@@ -170,10 +169,8 @@ void zero_hash_returns_commitment()
     ECP_ZZZ K, L, E;
     ECP_ZZZ G1;
     ecp_ZZZ_set_to_generator(&G1);
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
     BIG_XXX exp;
-    ecp_ZZZ_random_mod_order(&exp, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&exp, test_randomness);
     ECP_ZZZ_mul(&G1, exp);
     ret = tpm_commit_ZZZ(&ctx.tpm_ctx, &G1, NULL, 0, &K, &L, &E);
     if (0 != ret) {

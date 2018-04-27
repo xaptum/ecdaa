@@ -18,8 +18,6 @@
 
 #include <ecdaa/issuer_keypair_ZZZ.h>
 
-#include <ecdaa/prng.h>
-
 #include "amcl-extensions/ecp_ZZZ.h"
 #include "amcl-extensions/ecp2_ZZZ.h"
 #include "schnorr/schnorr_ZZZ.h"
@@ -36,12 +34,12 @@ size_t ecdaa_issuer_secret_key_ZZZ_length(void) {
 
 int ecdaa_issuer_key_pair_ZZZ_generate(struct ecdaa_issuer_public_key_ZZZ *pk,
                                        struct ecdaa_issuer_secret_key_ZZZ *sk,
-                                       struct ecdaa_prng *prng)
+                                       ecdaa_rand_func get_random)
 {
     // Secret key is
     // two random Bignums.
-    ecp_ZZZ_random_mod_order(&sk->x, get_csprng(prng));
-    ecp_ZZZ_random_mod_order(&sk->y, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(&sk->x, get_random);
+    ecp_ZZZ_random_mod_order(&sk->y, get_random);
 
     // Public key is
     // 1) G2 generator raised to the two private key random Bignums...
@@ -51,7 +49,7 @@ int ecdaa_issuer_key_pair_ZZZ_generate(struct ecdaa_issuer_public_key_ZZZ *pk,
     ECP2_ZZZ_mul(&pk->gpk.Y, sk->y);
 
     // 2) and a Schnorr-type signature to prove our knowledge of those two random Bignums.
-    int sign_ret = issuer_schnorr_sign_ZZZ(&pk->c, &pk->sx, &pk->sy, &pk->gpk.X, &pk->gpk.Y, sk->x, sk->y, prng);
+    int sign_ret = issuer_schnorr_sign_ZZZ(&pk->c, &pk->sx, &pk->sy, &pk->gpk.X, &pk->gpk.Y, sk->x, sk->y, get_random);
     if (0 != sign_ret)
         return -1;
 

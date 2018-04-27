@@ -19,7 +19,7 @@ set(ECDAA_INPUT_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/group_public_key_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/issuer_keypair_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/member_keypair_ZZZ.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/prng.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/rand.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/revocations_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/signature_ZZZ.h
 
@@ -27,7 +27,6 @@ set(ECDAA_INPUT_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/group_public_key_ZZZ.c
         ${CMAKE_CURRENT_SOURCE_DIR}/issuer_keypair_ZZZ.c
         ${CMAKE_CURRENT_SOURCE_DIR}/member_keypair_ZZZ.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/prng.c
         ${CMAKE_CURRENT_SOURCE_DIR}/signature_ZZZ.c
 
         ${CMAKE_CURRENT_SOURCE_DIR}/schnorr/schnorr_ZZZ.h

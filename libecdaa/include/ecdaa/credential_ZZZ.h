@@ -24,10 +24,11 @@
 extern "C" {
 #endif
 
+#include <ecdaa/rand.h>
+
 struct ecdaa_member_public_key_ZZZ;
 struct ecdaa_issuer_secret_key_ZZZ;
 struct ecdaa_group_public_key_ZZZ;
-struct ecdaa_prng;
 
 #include <amcl/ecp_ZZZ.h>
 #include <amcl/big_XXX.h>
@@ -68,7 +69,7 @@ int ecdaa_credential_ZZZ_generate(struct ecdaa_credential_ZZZ *cred_out,
                                   struct ecdaa_credential_ZZZ_signature *cred_sig_out,
                                   struct ecdaa_issuer_secret_key_ZZZ *isk,
                                   struct ecdaa_member_public_key_ZZZ *member_pk,
-                                  struct ecdaa_prng *prng);
+                                  ecdaa_rand_func get_random);
 
 /*
  * Validate a credential and its signature.

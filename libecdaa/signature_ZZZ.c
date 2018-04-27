@@ -22,7 +22,6 @@
 #include <ecdaa/group_public_key_ZZZ.h>
 #include <ecdaa/revocations_ZZZ.h>
 #include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/prng.h>
 
 #include "schnorr/schnorr_ZZZ.h"
 #include "amcl-extensions/big_XXX.h"
@@ -35,7 +34,7 @@
 
 static
 void randomize_credential_ZZZ(struct ecdaa_credential_ZZZ *cred,
-                              struct ecdaa_prng *prng,
+                              ecdaa_rand_func get_random,
                               struct ecdaa_signature_ZZZ *signature_out);
 
 size_t ecdaa_signature_ZZZ_length(void)
@@ -55,10 +54,10 @@ int ecdaa_signature_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
                              uint32_t basename_len,
                              struct ecdaa_member_secret_key_ZZZ *sk,
                              struct ecdaa_credential_ZZZ *cred,
-                             struct ecdaa_prng *prng)
+                             ecdaa_rand_func get_random)
 {
     // 1) Randomize credential
-    randomize_credential_ZZZ(cred, prng, signature_out);
+    randomize_credential_ZZZ(cred, get_random, signature_out);
 
     // 2) Create a Schnorr-like signature on W concatenated with the message,
     //  where the basepoint is S.
@@ -72,7 +71,7 @@ int ecdaa_signature_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
                                     sk->sk,
                                     basename,
                                     basename_len,
-                                    prng);
+                                    get_random);
 
     return sign_ret;
 }
@@ -236,12 +235,12 @@ void ecdaa_signature_ZZZ_access_pseudonym_in_serialized(uint8_t **pseudonym_out,
 }
 
 void randomize_credential_ZZZ(struct ecdaa_credential_ZZZ *cred,
-                              struct ecdaa_prng *prng,
+                              ecdaa_rand_func get_random,
                               struct ecdaa_signature_ZZZ *signature_out)
 {
     // 1) Choose random l <- Z_p
     BIG_XXX l;
-    ecp_ZZZ_random_mod_order(&l, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(&l, get_random);
 
     // 2) Multiply the four points in the credential by l,
     //  and save to the four points in the signature

@@ -82,7 +82,7 @@ int32_t ecp_ZZZ_fromhash(ECP_ZZZ *point_out, const uint8_t *message, uint32_t me
  * Output is normalized.
  */
 void ecp_ZZZ_random_mod_order(BIG_XXX *big_out,
-                              csprng *rng);
+                              void (*get_random)(void *buf, size_t buflen));
 
 #ifdef __cplusplus
 }

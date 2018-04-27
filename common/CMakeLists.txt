@@ -25,6 +25,8 @@ set(ECDAA_INTERNAL_UTILITIES_INPUT_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/amcl-extensions/pairing_ZZZ.c
         ${CMAKE_CURRENT_SOURCE_DIR}/internal-utilities/explicit_bzero.h
         ${CMAKE_CURRENT_SOURCE_DIR}/internal-utilities/explicit_bzero.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/internal-utilities/rand_pool.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/internal-utilities/rand_pool.c
         )
 
 foreach(template_file ${ECDAA_INTERNAL_UTILITIES_INPUT_FILES})

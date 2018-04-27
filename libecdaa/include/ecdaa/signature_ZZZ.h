@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+#include <ecdaa/rand.h>
+
 #include <amcl/big_XXX.h>
 #include <amcl/ecp_ZZZ.h>
 
@@ -31,7 +33,6 @@ struct ecdaa_credential_ZZZ;
 struct ecdaa_member_secret_key_ZZZ;
 struct ecdaa_revocations_ZZZ;
 struct ecdaa_group_public_key_ZZZ;
-struct ecdaa_prng;
 
 /*
  * ECDAA signature.
@@ -66,7 +67,7 @@ int ecdaa_signature_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
                              uint32_t basename_len,
                              struct ecdaa_member_secret_key_ZZZ *sk,
                              struct ecdaa_credential_ZZZ *cred,
-                             struct ecdaa_prng *prng);
+                             ecdaa_rand_func get_random);
 
 /*
  * Verify an ECDAA signature.

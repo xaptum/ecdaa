@@ -23,8 +23,6 @@
 #include "amcl-extensions/ecp_ZZZ.h"
 #include "amcl-extensions/ecp2_ZZZ.h"
 
-#include <ecdaa/prng.h>
-
 #include <amcl/ecp_ZZZ.h>
 #include <amcl/amcl.h>
 
@@ -46,13 +44,13 @@ int commit(ECP_ZZZ *P1,
            ECP_ZZZ *K,
            ECP_ZZZ *L,
            ECP_ZZZ *E,
-           struct ecdaa_prng *prng);
+           ecdaa_rand_func get_random);
 
 void schnorr_keygen_ZZZ(ECP_ZZZ *public_out,
                         BIG_XXX *private_out,
-                        struct ecdaa_prng *prng)
+                        ecdaa_rand_func get_random)
 {
-    ecp_ZZZ_random_mod_order(private_out, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(private_out, get_random);
 
     ecp_ZZZ_set_to_generator(public_out);
 
@@ -69,12 +67,12 @@ int schnorr_sign_ZZZ(BIG_XXX *c_out,
                      BIG_XXX private_key,
                      const uint8_t *basename,
                      uint32_t basename_len,
-                     struct ecdaa_prng *prng)
+                     ecdaa_rand_func get_random)
 {
     // 1) (Commit)
     ECP_ZZZ R, L, P2;
     BIG_XXX k;
-    int commit_ret = commit(basepoint, private_key, basename, basename_len, &k, &P2, K_out, &L, &R, prng);
+    int commit_ret = commit(basepoint, private_key, basename, basename_len, &k, &P2, K_out, &L, &R, get_random);
     if (0 != commit_ret)
         return -1;
     
@@ -207,7 +205,7 @@ int credential_schnorr_sign_ZZZ(BIG_XXX *c_out,
                                 ECP_ZZZ *D,
                                 BIG_XXX issuer_private_key_y,
                                 BIG_XXX credential_random,
-                                struct ecdaa_prng *prng)
+                                ecdaa_rand_func get_random)
 {
     // 1) Set generator
     ECP_ZZZ generator;
@@ -215,7 +213,7 @@ int credential_schnorr_sign_ZZZ(BIG_XXX *c_out,
 
     // 2) Choose random r <- Z_n
     BIG_XXX r;
-    ecp_ZZZ_random_mod_order(&r, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(&r, get_random);
 
     // 3) Multiply generator by r: U = r*generator
     ECP_ZZZ U;
@@ -326,7 +324,7 @@ int issuer_schnorr_sign_ZZZ(BIG_XXX *c_out,
                             ECP2_ZZZ *Y,
                             BIG_XXX issuer_private_key_x,
                             BIG_XXX issuer_private_key_y,
-                            struct ecdaa_prng *prng)
+                            ecdaa_rand_func get_random)
 {
     // 1) Set generator_2
     ECP2_ZZZ generator_2;
@@ -334,8 +332,8 @@ int issuer_schnorr_sign_ZZZ(BIG_XXX *c_out,
 
     // 2) Choose random rx, ry <- Z_n
     BIG_XXX rx, ry;
-    ecp_ZZZ_random_mod_order(&rx, get_csprng(prng));
-    ecp_ZZZ_random_mod_order(&ry, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(&rx, get_random);
+    ecp_ZZZ_random_mod_order(&ry, get_random);
 
     // 3) Multiply generator_2 by rx: Ux = rx*generator_2
     ECP2_ZZZ Ux;
@@ -446,14 +444,14 @@ int commit(ECP_ZZZ *P1,
            ECP_ZZZ *K,
            ECP_ZZZ *L,
            ECP_ZZZ *E,
-           struct ecdaa_prng *prng)
+           ecdaa_rand_func get_random)
 {
     // 1) Verify P1 belongs to group
     // NOTE: We assume the P1 was obtained from a call to set_to_generator,
     //  which means it's valid.
 
     // 2) Choose random k <- Z_n
-    ecp_ZZZ_random_mod_order(k, get_csprng(prng));
+    ecp_ZZZ_random_mod_order(k, get_random);
 
     // 3) If s2 is provided,
     //  3i) Do K = [private_key](x2,y2),
