@@ -3,6 +3,7 @@
 import argparse
 import os
 import errno
+from sys import stderr
 
 big_pattern = 'XXX'
 fp_pattern = 'YYY'
@@ -115,6 +116,9 @@ if __name__ == '__main__':
     curve_list = args.curves.split(',')
     if args.use_tpm:
         curve_list = list(filter(set(curve_list).__contains__, tpm_allowed_curves))
+        if not curve_list:
+            print('If enabling ECDAA_TPM_SUPPORT, must use at least one of the allowed TPM curves: ' + str(tpm_allowed_curves), file=stderr)
+            exit(1)
     output_directory = args.out_dir
     toplevel_dir = args.top_level_dir
 

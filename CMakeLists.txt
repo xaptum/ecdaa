@@ -97,7 +97,13 @@ macro(expand_template template_file srcs_list use_tpm)
                                         --top-level-dir ${PROJECT_SOURCE_DIR}
                                         --names-only
                                         ${use_tpm_flag}
+                RESULT_VARIABLE processed_file_result
+                ERROR_VARIABLE processed_file_stderr
                 OUTPUT_VARIABLE processed_file_names)
+
+        if(NOT "${processed_file_result}" STREQUAL "0")
+                message(FATAL_ERROR "Error processing template ${template_file}: ${processed_file_stderr}")
+        endif()
 
         add_custom_command(OUTPUT ${processed_file_names}
                 COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
