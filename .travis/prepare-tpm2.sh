@@ -15,17 +15,14 @@
 
 set -e
 
-if [[ $# -ne 3 ]]; then
-        echo "usage: $0 <absolute-path-to-xaptum-tpm-installation-directory> <absolute-path-to-simulator> <absolute-path-to-save-public-key>"
+if [[ $# -ne 2 ]]; then
+        echo "usage: $0 <absolute-path-to-test-binary-directory> <absolute-path-to-save-public-key>"
         exit 1
 fi
 
-xaptum_tpm_dir="$1"
-tpm_sim_dir="$2"
-out_dir="$3"
+test_bin_dir="$1"
+out_dir="$2"
 
 tpm_sim_host=localhost
 
-${xaptum_tpm_dir}/.travis/install-ibm-tpm2.sh ${tpm_sim_dir}
-${xaptum_tpm_dir}/.travis/run-ibm-tpm2.sh ${tpm_sim_dir}
-${xaptum_tpm_dir}/build/testBin/create_load_evict-test "${tpm_sim_host}" "${out_dir}/pub_key.txt" "${out_dir}/handle.txt"
+${test_bin_dir}/create_tpm_key-util "${tpm_sim_host}" "${out_dir}/pub_key.txt" "${out_dir}/handle.txt"

@@ -33,6 +33,7 @@ struct tpm_test_context {
     struct ecdaa_tpm_context tpm_ctx;
     uint8_t serialized_public_key[ECP_ZZZ_LENGTH];
     ECP_ZZZ public_key;
+    unsigned char tcti_buffer[128];
     TSS2_TCTI_CONTEXT *tcti_context;
 };
 
@@ -58,7 +59,11 @@ int tpm_initialize(struct tpm_test_context *ctx)
         return -1;
     }
 
-    ctx->tcti_context = malloc(tss2_tcti_getsize_socket());
+    if (tss2_tcti_getsize_socket() > sizeof(ctx->tcti_buffer)) {
+        printf("Error: TCTI context size larger than pre-allocated buffer\n");
+        return -1;
+    }
+    ctx->tcti_context = (TSS2_TCTI_CONTEXT*)ctx->tcti_buffer;
     ret = tss2_tcti_init_socket(hostname, port, ctx->tcti_context);
     if (TSS2_RC_SUCCESS != ret) {
         printf("Error: Unable to initialize TCTI context\n");
@@ -80,7 +85,6 @@ void tpm_cleanup(struct tpm_test_context *ctx)
 
     if (NULL != ctx->tcti_context) {
         tss2_tcti_finalize(ctx->tcti_context);
-        free(ctx->tcti_context);
     }
 }
 

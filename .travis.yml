@@ -37,14 +37,16 @@ jobs:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
       - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
+      - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
       - mkdir -p ${ECDAA_BUILD_DIR}
       - pushd ${ECDAA_BUILD_DIR}
       - cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
       - popd
     script:
-      - .travis/run-tpm-simulator.sh ${XAPTUM_TPM_DIR} ${IBM_TPM_DIR} ${TPM_KEY_DIR}
       - pushd ${ECDAA_BUILD_DIR}
       - cmake --build . -- -j2
+      - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
+      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${ECDAA_BUILD_DIR}/testBin ${TPM_KEY_DIR}
       - ctest -VV
       - popd
 
@@ -56,14 +58,16 @@ jobs:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
       - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
+      - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
       - mkdir -p ${ECDAA_BUILD_DIR}
       - pushd ${ECDAA_BUILD_DIR}
       - cmake .. -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
       - popd
     script:
-      - .travis/run-tpm-simulator.sh ${XAPTUM_TPM_DIR} ${IBM_TPM_DIR} ${TPM_KEY_DIR}
       - pushd ${ECDAA_BUILD_DIR}
       - cmake --build . -- -j2
+      - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
+      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${ECDAA_BUILD_DIR}/testBin ${TPM_KEY_DIR}
       - ctest -VV
       - popd
     after_success:
@@ -76,14 +80,16 @@ jobs:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
       - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
+      - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
       - mkdir -p ${ECDAA_BUILD_DIR}
       - pushd ${ECDAA_BUILD_DIR}
       - cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
       - popd
     script:
-      - .travis/run-tpm-simulator.sh ${XAPTUM_TPM_DIR} ${IBM_TPM_DIR} ${TPM_KEY_DIR}
       - pushd ${ECDAA_BUILD_DIR}
       - cmake --build . -- -j2
+      - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
+      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${ECDAA_BUILD_DIR}/testBin ${TPM_KEY_DIR}
       - ctest -VV
       - popd
 
@@ -117,14 +123,16 @@ jobs:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
       - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
+      - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
       - mkdir -p ${ECDAA_BUILD_DIR}
       - pushd ${ECDAA_BUILD_DIR}
       - cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
       - popd
     script:
-      - .travis/run-tpm-simulator.sh ${XAPTUM_TPM_DIR} ${IBM_TPM_DIR} ${TPM_KEY_DIR}
       - pushd ${ECDAA_BUILD_DIR}
       - cmake --build . -- -j2
+      - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
+      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${ECDAA_BUILD_DIR}/testBin ${TPM_KEY_DIR}
       - ctest -VV -E benchmarks -T memcheck
       - popd
     after_failure:
@@ -147,14 +155,16 @@ jobs:
       - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
       - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
+      - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
       - mkdir -p ${ECDAA_BUILD_DIR}
       - pushd ${ECDAA_BUILD_DIR}
       - cmake .. -DCMAKE_BUILD_TYPE=RelWithSanitize -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
       - popd
     script:
-      - .travis/run-tpm-simulator.sh ${XAPTUM_TPM_DIR} ${IBM_TPM_DIR} ${TPM_KEY_DIR}
       - pushd ${ECDAA_BUILD_DIR}
       - cmake --build . -- -j2
+      - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
+      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${ECDAA_BUILD_DIR}/testBin ${TPM_KEY_DIR}
       - ctest -VV -E benchmarks
       - popd
 
