@@ -16,6 +16,7 @@
  *
  *****************************************************************************/
 
+#include "examples_rand.h"
 #include "file_utils.h"
 
 #include <ecdaa.h>
@@ -43,17 +44,10 @@ int main(int argc, char *argv[])
     if (0 != parse_args(&args, argc, argv))
         return 1;
 
-    // Initialize PRNG
-    struct ecdaa_prng rng;
-    if (0 != ecdaa_prng_init(&rng)) {
-        fputs("Error initializing ecdaa_prng\n", stderr);
-        return 1;
-    }
-
     // Create issuer key-pair
     struct ecdaa_issuer_public_key_FP256BN ipk;
     struct ecdaa_issuer_secret_key_FP256BN isk;
-    if (0 != ecdaa_issuer_key_pair_FP256BN_generate(&ipk, &isk, &rng)) {
+    if (0 != ecdaa_issuer_key_pair_FP256BN_generate(&ipk, &isk, examples_rand)) {
         fprintf(stderr, "Error generating issuer key-pair\n");
         return 1;
     }

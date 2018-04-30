@@ -21,11 +21,10 @@
 #include <ecdaa/credential_ZZZ.h>
 #include <ecdaa/member_keypair_ZZZ.h>
 #include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/prng.h>
 
-#include "src/amcl-extensions/big_XXX.h"
-#include "src/amcl-extensions/ecp_ZZZ.h"
-#include "src/amcl-extensions/ecp2_ZZZ.h"
+#include "amcl-extensions/big_XXX.h"
+#include "amcl-extensions/ecp_ZZZ.h"
+#include "amcl-extensions/ecp2_ZZZ.h"
 
 #include <amcl/ecp_ZZZ.h>
 #include <amcl/ecp2_ZZZ.h>
@@ -33,8 +32,6 @@
 #include <string.h>
 
 typedef struct credential_test_fixture {
-    struct ecdaa_prng prng;
-
     struct ecdaa_member_public_key_ZZZ pk;
     struct ecdaa_member_secret_key_ZZZ sk;
 
@@ -58,24 +55,22 @@ int main()
 
 static void setup(credential_test_fixture* fixture)
 {
-    TEST_ASSERT(0 == ecdaa_prng_init(&fixture->prng));
-
-    ecp_ZZZ_random_mod_order(&fixture->isk.x, get_csprng(&fixture->prng));
+    ecp_ZZZ_random_mod_order(&fixture->isk.x, test_randomness);
     ecp2_ZZZ_set_to_generator(&fixture->ipk.gpk.X);
     ECP2_ZZZ_mul(&fixture->ipk.gpk.X, fixture->isk.x);
 
-    ecp_ZZZ_random_mod_order(&fixture->isk.y, get_csprng(&fixture->prng));
+    ecp_ZZZ_random_mod_order(&fixture->isk.y, test_randomness);
     ecp2_ZZZ_set_to_generator(&fixture->ipk.gpk.Y);
     ECP2_ZZZ_mul(&fixture->ipk.gpk.Y, fixture->isk.y);
 
     ecp_ZZZ_set_to_generator(&fixture->pk.Q);
-    ecp_ZZZ_random_mod_order(&fixture->sk.sk, get_csprng(&fixture->prng));
+    ecp_ZZZ_random_mod_order(&fixture->sk.sk, test_randomness);
     ECP_ZZZ_mul(&fixture->pk.Q, fixture->sk.sk);
 }
 
 static void teardown(credential_test_fixture* fixture)
 {
-    ecdaa_prng_free(&fixture->prng);
+    (void)fixture;
 }
 
 static void cred_generate_then_validate()
@@ -87,7 +82,7 @@ static void cred_generate_then_validate()
 
     struct ecdaa_credential_ZZZ cred;
     struct ecdaa_credential_ZZZ_signature cred_sig;
-    TEST_ASSERT(0 == ecdaa_credential_ZZZ_generate(&cred, &cred_sig, &fixture.isk, &fixture.pk, &fixture.prng));
+    TEST_ASSERT(0 == ecdaa_credential_ZZZ_generate(&cred, &cred_sig, &fixture.isk, &fixture.pk, test_randomness));
 
     TEST_ASSERT(0 == ecdaa_credential_ZZZ_validate(&cred, &cred_sig, &fixture.pk, &fixture.ipk.gpk));
 
@@ -116,7 +111,7 @@ static void cred_generate_then_serialize_deserialize()
 
     struct ecdaa_credential_ZZZ cred;
     struct ecdaa_credential_ZZZ_signature cred_sig;
-    TEST_ASSERT(0 == ecdaa_credential_ZZZ_generate(&cred, &cred_sig, &fixture.isk, &fixture.pk, &fixture.prng));
+    TEST_ASSERT(0 == ecdaa_credential_ZZZ_generate(&cred, &cred_sig, &fixture.isk, &fixture.pk, test_randomness));
 
     uint8_t cred_buffer[ECDAA_CREDENTIAL_ZZZ_LENGTH];
     uint8_t sig_buffer[ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH];

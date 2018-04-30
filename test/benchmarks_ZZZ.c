@@ -18,10 +18,10 @@
 
 #include "ecdaa-test-utils.h"
 
-#include "src/internal/schnorr_ZZZ.h"
-#include "src/amcl-extensions/big_XXX.h"
-#include "src/amcl-extensions/ecp_ZZZ.h"
-#include "src/amcl-extensions/ecp2_ZZZ.h"
+#include "schnorr/schnorr_ZZZ.h"
+#include "amcl-extensions/big_XXX.h"
+#include "amcl-extensions/ecp_ZZZ.h"
+#include "amcl-extensions/ecp2_ZZZ.h"
 
 #include <ecdaa/credential_ZZZ.h>
 #include <ecdaa/member_keypair_ZZZ.h>
@@ -30,7 +30,7 @@
 #include <ecdaa/signature_ZZZ.h>
 #include <ecdaa/group_public_key_ZZZ.h>
 #include <ecdaa/revocations_ZZZ.h>
-#include <ecdaa/prng.h>
+#include <ecdaa/rand.h>
 
 #include <sys/time.h>
 #include <string.h>
@@ -41,7 +41,6 @@ static void sign_benchmark();
 static void verify_benchmark();
 
 typedef struct sign_and_verify_fixture {
-    struct ecdaa_prng prng;
     uint8_t *msg;
     uint32_t msg_len;
     uint8_t *basename;
@@ -67,22 +66,20 @@ int main()
 
 static void setup(sign_and_verify_fixture* fixture)
 {
-    TEST_ASSERT(0 == ecdaa_prng_init(&fixture->prng));
-
-    ecp_ZZZ_random_mod_order(&fixture->isk.x, get_csprng(&fixture->prng));
+    ecp_ZZZ_random_mod_order(&fixture->isk.x, test_randomness);
     ecp2_ZZZ_set_to_generator(&fixture->ipk.gpk.X);
     ECP2_ZZZ_mul(&fixture->ipk.gpk.X, fixture->isk.x);
 
-    ecp_ZZZ_random_mod_order(&fixture->isk.y, get_csprng(&fixture->prng));
+    ecp_ZZZ_random_mod_order(&fixture->isk.y, test_randomness);
     ecp2_ZZZ_set_to_generator(&fixture->ipk.gpk.Y);
     ECP2_ZZZ_mul(&fixture->ipk.gpk.Y, fixture->isk.y);
 
     ecp_ZZZ_set_to_generator(&fixture->pk.Q);
-    ecp_ZZZ_random_mod_order(&fixture->sk.sk, get_csprng(&fixture->prng));
+    ecp_ZZZ_random_mod_order(&fixture->sk.sk, test_randomness);
     ECP_ZZZ_mul(&fixture->pk.Q, fixture->sk.sk);
 
     struct ecdaa_credential_ZZZ_signature cred_sig;
-    ecdaa_credential_ZZZ_generate(&fixture->cred, &cred_sig, &fixture->isk, &fixture->pk, &fixture->prng);
+    ecdaa_credential_ZZZ_generate(&fixture->cred, &cred_sig, &fixture->isk, &fixture->pk, test_randomness);
 
     fixture->msg = (uint8_t*) "Test message";
     fixture->msg_len = strlen((char*)fixture->msg);
@@ -98,7 +95,7 @@ static void setup(sign_and_verify_fixture* fixture)
 
 static void teardown(sign_and_verify_fixture* fixture)
 {
-    ecdaa_prng_free(&fixture->prng);
+    (void)fixture;
 }
 
 void schnorr_sign_benchmark()
@@ -110,10 +107,7 @@ void schnorr_sign_benchmark()
     ECP_ZZZ public;
     BIG_XXX private;
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
-    schnorr_keygen_ZZZ(&public, &private, &prng);
+    schnorr_keygen_ZZZ(&public, &private, test_randomness);
 
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
@@ -126,7 +120,7 @@ void schnorr_sign_benchmark()
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
     for (unsigned i = 0; i < rounds; i++) {
-        schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, &prng);
+        schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness);
     }
 
     struct timeval tv2;
@@ -137,9 +131,6 @@ void schnorr_sign_benchmark()
     printf("%llu usec (%6llu signs/s)\n",
             elapsed,
             rounds * 1000000ULL / elapsed);
-
-    ecdaa_prng_free(&prng);
-
 }
 
 static void sign_benchmark()
@@ -157,7 +148,7 @@ static void sign_benchmark()
     gettimeofday(&tv1, NULL);
 
     for (unsigned i = 0; i < rounds; i++) {
-        TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.sk, &fixture.cred, &fixture.prng));
+        TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.sk, &fixture.cred, test_randomness));
     }
 
     struct timeval tv2;
@@ -183,7 +174,7 @@ static void verify_benchmark()
 
     struct ecdaa_signature_ZZZ sig;
 
-    TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.sk, &fixture.cred, &fixture.prng));
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.sk, &fixture.cred, test_randomness));
 
     struct timeval tv1;
     gettimeofday(&tv1, NULL);

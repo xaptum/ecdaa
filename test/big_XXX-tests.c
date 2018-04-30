@@ -18,9 +18,10 @@
 
 #include "ecdaa-test-utils.h"
 
-#include "src/amcl-extensions/big_XXX.h"
+#include "amcl-extensions/big_XXX.h"
 
 #include <amcl/ecp_ZZZ.h>
+#include <amcl/arch.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -206,11 +207,24 @@ void mul_and_add_normalization_works()
     TEST_ASSERT(0 == BIG_XXX_iszilch(modulus));
 
     // Just some random numbers, which make these non-normalized.
+#if CHUNK==64
     BIG_XXX m={12301239048798, INT64_MAX, 2034019249817234, INT64_MAX};
-    TEST_ASSERT(-1 == BIG_XXX_comp(m, modulus));
     BIG_XXX x={918741923908734908, 3984712409814, INT64_MAX, 2394871290871};
-    TEST_ASSERT(-1 == BIG_XXX_comp(x, modulus));
     BIG_XXX b={INT64_MAX, 13946129908734, 0, 19867128968128741};
+#elif CHUNK==32
+    BIG_XXX m={1239048798, INT32_MAX, 249817234, INT32_MAX};
+    BIG_XXX x={1908734908, 12409814, INT32_MAX, 871290871};
+    BIG_XXX b={INT32_MAX, 908734, 0, 968128741};
+#elif CHUNK==16
+    BIG_XXX m={8798, INT16_MAX, 17234, INT16_MAX};
+    BIG_XXX x={31908, 9814, INT16_MAX, 871};
+    BIG_XXX b={INT16_MAX, 8734, 0, 8741};
+#else
+#error Unknown CHUNK size
+#endif
+
+    TEST_ASSERT(-1 == BIG_XXX_comp(m, modulus));
+    TEST_ASSERT(-1 == BIG_XXX_comp(x, modulus));
     TEST_ASSERT(-1 == BIG_XXX_comp(b, modulus));
 
     BIG_XXX m_norm, x_norm, b_norm;

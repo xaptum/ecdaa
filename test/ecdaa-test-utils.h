@@ -17,7 +17,7 @@
  *****************************************************************************/
 
 #include <stdlib.h>
-#include <time.h>
+#include <stdio.h>
 
 #define TEST_ASSERT(cond) \
     do \
@@ -38,3 +38,14 @@
         } \
     } while(0);
 
+void test_randomness(void *buf, size_t buflen)
+{
+    // No need to worry about threading in these tests
+    static FILE *file_ptr = NULL;
+    if (NULL == file_ptr)
+        file_ptr = fopen("/dev/urandom", "r");
+    TEST_ASSERT(file_ptr != NULL);
+
+    size_t read_ret = fread(buf, 1, buflen, file_ptr);
+    TEST_ASSERT(read_ret == buflen);
+}

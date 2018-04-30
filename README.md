@@ -2,33 +2,60 @@
 
 A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures.
 
-Created to support the Xaptum Edge Network Fabric, an IoT Network Solution.
+Created to support the [Xaptum](https://www.xaptum.com) Edge Network
+Fabric, an IoT Network Solution.
 
 The project is self-contained, and provides all DAA functionality for Issuers, Members, and Verifiers.
 Pseudonym linking ("basename signatures") is optional, and secret-key revocation lists can be used.
 
-# Project Status
+## Project Status
 
 [![Build Status](https://travis-ci.org/xaptum/ecdaa.svg?branch=master)](https://travis-ci.org/xaptum/ecdaa)
 [![Coverage Status](https://coveralls.io/repos/github/xaptum/ecdaa/badge.svg?branch=master)](https://coveralls.io/github/xaptum/ecdaa?branch=master)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/13775/badge.svg)](https://scan.coverity.com/projects/xaptum-ecdaa)
 
-# Requirements
+## Installation
 
-- cmake version >= 3.0
-- python3
-  - For file generation during building
-- A C99-compliant compiler
-- milagro-crypto-c
-  - The milagro library must be built with support for the necessary curves
-- libsodium >= 1.0.11
-  - Optionally, see below
-- xaptum-tpm >= 0.4.0
-  - If building with TPM support
+`ecdaa` is available for the following distributions. It may also be
+built from source.
 
-# Building
+### Debian (Jessie or Stretch)
 
-`ecdaa` uses CMake as its build system:
+``` bash
+# Install the Xaptum API repo GPG signing key.
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys c615bfaa7fe1b4ca
+
+# Add the repository to your APT sources, replacing <dist> with either jessie or stretch.
+echo "deb http://dl.bintray.com/xaptum/deb <dist> main" > /etc/apt/sources.list.d/xaptum.list
+
+# Install the library.
+sudo apt-get install libecdaa-dev
+```
+
+### Homebrew (MacOS)
+
+``` bash
+# Tap the Xaptum Homebrew repository.
+brew tap xaptum/xaptum
+
+# Install the library.
+brew install xaptum-tpm
+```
+
+## Installation from Source
+
+### Build Dependencies
+
+* CMake (version 3.0 or higher)
+* Python3 (for file generation during build)
+* A C99-compliant compiler
+
+* [AMCL](https://github.com/milagro-crypto/milagro-crypto-c) (version 4.7)
+  * Built with the support for the necessary curves
+* [xaptum-tpm](https://github.com/xaptum/xaptum-tpm) (version 0.5.0 or higher)
+  * If building ECDAA with TPM support
+
+### Building
 
 ```bash
 # Create a subdirectory to hold the build
@@ -36,7 +63,7 @@ mkdir -p build
 cd build
 
 # Configure the build
-cmake .. -DBUILD_EXAMPLES=ON
+cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_EXAMPLES=ON
 
 # Build the library
 cmake --build .
@@ -46,62 +73,63 @@ cmake --build .
 
 The following CMake configuration options are supported.
 
-| Option                          | Values          | Default    | Description                                     |
-|---------------------------------|-----------------|------------|-------------------------------------------------|
-| ECDAA_TPM_SUPPORT               | ON, OFF         | ON         | Build with support for using a TPM2.0           |
-| BUILD_EXAMPLES                  | ON, OFF         | OFF        | Build example programs                          |
-| CMAKE_BUILD_TYPE                | Release         |            | With full optimizations.                        |
-|                                 | Debug           |            | With debug symbols.                             |
-|                                 | RelWithDebInfo  |            | With full optimizations and debug symbols.      |
-|                                 | RelWithSanitize |            | With address and undefined-behavior sanitizers. |
-| CMAKE_INSTALL_PREFIX            | <string>        | /usr/local | The directory to install the library in.        |
-| BUILD_SHARED_LIBS               | ON, OFF         | ON         | Build shared libraries.                         |
-| BUILD_STATIC_LIBS               | ON, OFF         | OFF        | Build static libraries.                         |
-| BUILD_TESTING                   | ON, OFF         | ON         | Build the test suite.                           |
-| STATIC_SUFFIX                   | <string>        | <none>     | Appends a suffix to the static lib name.        |
+| Option                              | Values          | Default    | Description                                     |
+|-------------------------------------|-----------------|------------|-------------------------------------------------|
+| ECDAA_TPM_SUPPORT                   | ON, OFF         | ON         | Build with support for using a TPM2.0           |
+| CMAKE_BUILD_TYPE                    | Release         |            | With full optimizations.                        |
+|                                     | Debug           |            | With debug symbols.                             |
+|                                     | RelWithDebInfo  |            | With full optimizations and debug symbols.      |
+|                                     | RelWithSanitize |            | With address and undefined-behavior sanitizers. |
+| CMAKE_INSTALL_PREFIX                | <string>        | /usr/local | The directory to install the library in.        |
+| BUILD_EXAMPLES                      | ON, OFF         | OFF        | Build example programs                          |
+| BUILD_SHARED_LIBS                   | ON, OFF         | ON         | Build shared libraries.                         |
+| BUILD_STATIC_LIBS                   | ON, OFF         | OFF        | Build static libraries.                         |
+| BUILD_TESTING                       | ON, OFF         | ON         | Build the test suite.                           |
+| STATIC_SUFFIX                       | <string>        | <none>     | Appends a suffix to the static lib name.        |
 
-
-## Installation
-
-CMake creates a target for installation.
-
-```bash
-cd build
-cmake --build . --target install
-```
-
-## Running the tests
+### Testing
 
 ```bash
 cd build
 ctest -V
 ```
 
-NOTE: If the `-DBUILD_EXAMPLES=ON` CMake option was not set, the "integration-tests"
-will NOT be run.
+Running the integration tests requires `-DBUILD_EXAMPLES=ON`.
 
-### Testing TPM support
+#### Testing TPM support
 
-If built with TPM support, the tests assume that a TPM2.0 simulator
-(for instance, [IBM's simulator](https://sourceforge.net/projects/ibmswtpm2/))
-is listening locally on TCP port 2321.
-Also, an ECDAA-capable signing key must be loaded in the TPM,
-and its public key (in x9.62 format) and TPM handle (as a hex-formatted integer)
-must be available in the text files
-`build/test/pub_key.txt` and `build/test/handle.txt`, respectively.
+The TPM tests require a [TPM 2.0
+simulator](https://sourceforge.net/projects/ibmswtpm2/) running
+locally on TCP port 2321.
 
-If using a local `xaptum-tpm` repo,
-a quick way to set up a TPM2.0 simulator with the required settings,
-in order to run the `ecdaa` tests,
-is to run:
+An ECDAA signing key must loaded in the simulator. The associated
+public key (in x9.62 format) and TPM handle (as a hex integer) must be
+in `build/test/tpm/pub_key.txt` and `build/test/tpm/handle.txt`.
+Currently, only the `TPM_ECC_NIST_P256` curve is supported in the tests.
+
+Convenience scripts in the `.travis` directory can be used to download
+and prepare a TPM2.0 simulator for the tests.
+After building `ecdaa` in the directory `build` with `ECDAA_TPM_SUPPORT=ON`,
+run the following steps:
+``` bash
+.travis/install-ibm-tpm2.sh ./ibm-tpm2-simulator
+.travis/run-ibm-tpm2.sh ./ibm-tpm2-simulator/
+.travis/prepare-tpm2.sh ./build/testBin/ ./build/test/tpm
 ```
-.travis/run-tpm-simulator.sh ${ABSOLUTE_PATH_TO_XAPTUM_TPM_PROJECT} $(pwd)/build/ibm-simulator $(pwd)/build/test
+
+The `ecdaa` tests will now be able to create signatures using the TPM2.0 simulator.
+
+### Installing
+
+```bash
+cd build
+cmake --build . --target install
 ```
 
 # Usage
 
-The only header that has to be included is `ecdaa.h`.
-The name of the library is `libecdaa`.
+The only header that has to be included is `ecdaa.h`.  The name of the
+library is `libecdaa`.
 
 The pairing-friendly curves supported by the library are set using the CMake
 variable `ECDAA_CURVES`, a comma-separated list of curve names.
@@ -143,25 +171,26 @@ where `credential` is an ECDAA credential obtained earlier and `prng` is an `ecd
 Notice that the signature thus created is not TPM-specific.
 This means that verification of a TPM-generated signature proceeds as usual, using `ecdaa_signature_FP256BN_verify`.
 
-## Random number generator
+## Cryptographically-secure random numbers
 
 Many of the functions provided by this library (particularly, those used by an Issuer or a Member)
-require a pseudo random number generator (type `ecdaa_prng`).
-The security of these algorithms depends critically on the proper seeding of this prng.
-This means that the first use of any `ecdaa_prng` MUST be preceeded by a call to
-`ecdaa_prng_init` (or `ecdaa_prng_init_custom`, see below) on the prng.
+require a source of cryptographically-secure random numbers.
 
-In `ecdaa_prng_init`, the seed for the `ecdaa_prng` is generated from Libsodium's
-`randombytes_buf` function.
-A discussion on how this function works and any caveats can be found at Libsodium's webpage.
+Such functions take a parameter of type `ecdaa_rand_func`,
+which is a function pointer for a function that will fill a buffer with a given
+number of random bytes.
+The expectation is that this function will use the system's source of randomness
+(e.g. `getrandom` on Linux, `getentropy` on OpenBSD, `arc4random` on Mac OS X,
+`RtlGenRandom` on Windows, or reading from `/dev/urandom` when these others aren't available).
+Note that a `ecdaa_rand_func` will never be called with a request large than 255 bytes
+(so functions like `getrandom` and `getentropy` that have such a limit are OK to use).
+Examples of such usage can be found in the implementation of the example programs,
+in `examples/examples_rand.c`.
 
-To use a different function for obtaining cryptographically-secure random data for a seed,
-pass the option `-DDISABLE_LIBSODIUM_RNG_SEED_FUNCTION=ON` to CMake (this will remove the dependency on libsodium)
-and use the function `ecdaa_prng_init_custom` rather than `ecdaa_prng_init`,
-passing in a buffer of cryptographically-strong random bytes of length at least `AMCL_SEED_SIZE`.
+The easiest way to satisfy the requirements of the `ecdaa_rand_func` is to use
+the libsodium function `randombytes_buf`, on systems supported by libsodium.
 
-When an `ecdaa_prng` is no longer needed, `ecdaa_prng_free` should be called on it
-to securely erase its sensitive memory.
+The security of this library depends critically on these random numbers.
 
 ## Naming Convention in API
 
@@ -186,6 +215,16 @@ where for simplicity communication between the Issuer, Member, and Verifier
 is done using regular files.
 
 The example programs use the FP256BN curve type.
+
+NOTE: If using these example programs on a system where `/dev/urandom` is the only
+option for cryptographically-secure random numbers
+(cf. `/examples/ecdaa_examples_randomness.c`),
+the proper seeding of `/dev/urandom`
+(i.e. the amount of entropy available) is not checked!
+Thus, in such situations, these programs are not safe to use in situations
+where the system random number generator may not be seeded
+(e.g. early in the boot process on some systems).
+The example programs must be explicitly adapted for use in such situations.
 
 ### Creating a New DAA Group
 
@@ -377,7 +416,7 @@ The fork currently required by this project is available on github [here](https:
 The upstream repository can be found [here](https://github.com/milagro-crypto/milagro-crypto-c).
 
 # License
-Copyright 2017 Xaptum, Inc.
+Copyright 2017-2018 Xaptum, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this work except in compliance with the License. You may obtain a copy of
