@@ -20,7 +20,6 @@ env:
   global:
     - INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/usr
     - CMAKE_PREFIX_PATH=${INSTALL_PREFIX}
-    - LIBSODIUM_DIR=${TRAVIS_BUILD_DIR}/libsodium
     - AMCL_DIR=${TRAVIS_BUILD_DIR}/milagro-crypto-c/install
     - XAPTUM_TPM_DIR=${TRAVIS_BUILD_DIR}/xaptum-tpm/
     - IBM_TPM_DIR=${TRAVIS_BUILD_DIR}/ibm-tpm-simulator
@@ -34,7 +33,6 @@ jobs:
   # Release build, gcc
   - env: TYPE=RELEASE
     before_script:
-      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
       - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
       - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
@@ -55,7 +53,6 @@ jobs:
     before_install:
       - pip install --user cpp-coveralls
     before_script:
-      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
       - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
       - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
@@ -71,13 +68,12 @@ jobs:
       - ctest -VV
       - popd
     after_success:
-      - coveralls --exclude examples --exclude amcl --exclude ${LIBSODIUM_DIR}
+      - coveralls --exclude examples --exclude amcl
 
   # Release build, clang
   - env: TYPE=RELEASE-WITH-CLANG
     compiler: clang
     before_script:
-      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
       - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
       - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
@@ -100,7 +96,6 @@ jobs:
         packages:
           - cppcheck
     before_script:
-      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
       - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
       - mkdir -p ${ECDAA_BUILD_DIR}
@@ -120,7 +115,6 @@ jobs:
         packages:
           - valgrind
     before_script:
-      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
       - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
       - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
@@ -141,7 +135,6 @@ jobs:
   # Scan-build
   - env: TYPE=SCAN_BUILD
     before_script:
-      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
       - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
     script:
@@ -152,7 +145,6 @@ jobs:
     sudo: true
     compiler: clang
     before_script:
-      - .travis/install-libsodium.sh ${LIBSODIUM_DIR}
       - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
       - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
       - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
@@ -179,7 +171,7 @@ jobs:
           name: "xaptum/ecdaa"
           description: "A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures"
         notification_email: ecdaa-coverity-reports@xaptum.com
-        build_command_prepend: ".travis/install-libsodium.sh ${LIBSODIUM_DIR} && .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} && .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES} && mkdir -p ${ECDAA_BUILD_DIR} && pushd ${ECDAA_BUILD_DIR} && cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON && popd"
+        build_command_prepend: ".travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} && .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES} && mkdir -p ${ECDAA_BUILD_DIR} && pushd ${ECDAA_BUILD_DIR} && cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON && popd"
         build_command:   "pushd ${ECDAA_BUILD_DIR} && cmake --build . && popd"
         branch_pattern: coverity_scan
 
