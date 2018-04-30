@@ -1,2 +1,2 @@
-/usr/lib/*/*.so.*
+/usr/lib/*/libecdaa.so.*
 /usr/bin/ecdaa*
