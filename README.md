@@ -54,8 +54,6 @@ brew install xaptum-tpm
   * Built with the support for the necessary curves
 * [xaptum-tpm](https://github.com/xaptum/xaptum-tpm) (version 0.5.0 or higher)
   * If building ECDAA with TPM support
-* [libsodium](https://github.com/jedisct1/libsodium) (version 1.0.11 or higher)
-  * Not required if DISABLE_LIBSODIUM_RNG_SEED_FUNCTION is ON
 
 ### Building
 
@@ -88,7 +86,6 @@ The following CMake configuration options are supported.
 | BUILD_STATIC_LIBS                   | ON, OFF         | OFF        | Build static libraries.                         |
 | BUILD_TESTING                       | ON, OFF         | ON         | Build the test suite.                           |
 | STATIC_SUFFIX                       | <string>        | <none>     | Appends a suffix to the static lib name.        |
-| DISABLE_LIBSODIUM_RNG_SEED_FUNCTION | ON, OFF         | OFF        | Do not use libsodium to seed the PRNG.          |
 
 ### Testing
 
@@ -174,25 +171,26 @@ where `credential` is an ECDAA credential obtained earlier and `prng` is an `ecd
 Notice that the signature thus created is not TPM-specific.
 This means that verification of a TPM-generated signature proceeds as usual, using `ecdaa_signature_FP256BN_verify`.
 
-## Random number generator
+## Cryptographically-secure random numbers
 
 Many of the functions provided by this library (particularly, those used by an Issuer or a Member)
-require a pseudo random number generator (type `ecdaa_prng`).
-The security of these algorithms depends critically on the proper seeding of this prng.
-This means that the first use of any `ecdaa_prng` MUST be preceeded by a call to
-`ecdaa_prng_init` (or `ecdaa_prng_init_custom`, see below) on the prng.
+require a source of cryptographically-secure random numbers.
 
-In `ecdaa_prng_init`, the seed for the `ecdaa_prng` is generated from Libsodium's
-`randombytes_buf` function.
-A discussion on how this function works and any caveats can be found at Libsodium's webpage.
+Such functions take a parameter of type `ecdaa_rand_func`,
+which is a function pointer for a function that will fill a buffer with a given
+number of random bytes.
+The expectation is that this function will use the system's source of randomness
+(e.g. `getrandom` on Linux, `getentropy` on OpenBSD, `arc4random` on Mac OS X,
+`RtlGenRandom` on Windows, or reading from `/dev/urandom` when these others aren't available).
+Note that a `ecdaa_rand_func` will never be called with a request large than 255 bytes
+(so functions like `getrandom` and `getentropy` that have such a limit are OK to use).
+Examples of such usage can be found in the implementation of the example programs,
+in `examples/examples_rand.c`.
 
-To use a different function for obtaining cryptographically-secure random data for a seed,
-pass the option `-DDISABLE_LIBSODIUM_RNG_SEED_FUNCTION=ON` to CMake (this will remove the dependency on libsodium)
-and use the function `ecdaa_prng_init_custom` rather than `ecdaa_prng_init`,
-passing in a buffer of cryptographically-strong random bytes of length at least `AMCL_SEED_SIZE`.
+The easiest way to satisfy the requirements of the `ecdaa_rand_func` is to use
+the libsodium function `randombytes_buf`, on systems supported by libsodium.
 
-When an `ecdaa_prng` is no longer needed, `ecdaa_prng_free` should be called on it
-to securely erase its sensitive memory.
+The security of this library depends critically on these random numbers.
 
 ## Naming Convention in API
 
@@ -217,6 +215,16 @@ where for simplicity communication between the Issuer, Member, and Verifier
 is done using regular files.
 
 The example programs use the FP256BN curve type.
+
+NOTE: If using these example programs on a system where `/dev/urandom` is the only
+option for cryptographically-secure random numbers
+(cf. `/examples/ecdaa_examples_randomness.c`),
+the proper seeding of `/dev/urandom`
+(i.e. the amount of entropy available) is not checked!
+Thus, in such situations, these programs are not safe to use in situations
+where the system random number generator may not be seeded
+(e.g. early in the boot process on some systems).
+The example programs must be explicitly adapted for use in such situations.
 
 ### Creating a New DAA Group
 
