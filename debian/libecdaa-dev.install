@@ -1,5 +1,5 @@
-/usr/include
-/usr/lib/*/*.so
-/usr/lib/*/*.a
+/usr/include/ecdaa
+/usr/lib/*/libecdaa.so
+/usr/lib/*/libecdaa.a
 /usr/lib/*/cmake/*/*.cmake
-/usr/lib/*/pkgconfig/*.pc
+/usr/lib/*/pkgconfig/ecdaa.pc

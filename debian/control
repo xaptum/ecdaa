@@ -19,7 +19,24 @@ Package: libecdaa-dev
 Section: libdevel
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, libecdaa0 (= ${binary:Version}), libxaptum-tpm-dev (>= 0.5), libamcl-dev (>= 4.7)
+Depends: ${misc:Depends}, libecdaa0 (= ${binary:Version}), libamcl-dev (>= 4.7)
 Description: Elliptic-curve-based Direct Anonymous Attestation signatures
+ .
+ This package contains the development files.
+
+Package: libecdaa-tpm0
+Section: libs
+Architecture: any
+Pre-Depends: multiarch-support
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Elliptic-curve-based Direct Anonymous Attestation signatures, with support for a TPM2.0
+ .
+ This package contains the library.  
+
+Package: libecdaa-tpm-dev
+Section: libdevel
+Architecture: any
+Depends: ${misc:Depends}, libecdaa-tpm0 (= ${binary:Version}), libecdaa-dev (= ${binary:Version}), libxaptum-tpm-dev (>= 0.5)
+Description: Elliptic-curve-based Direct Anonymous Attestation signatures, with support for a TPM2.0
  .
  This package contains the development files.
