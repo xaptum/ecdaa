@@ -19,7 +19,6 @@
 #include "ecdaa-test-utils.h"
 
 #include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/prng.h>
 
 static void issuer_secrets_are_valid();
 static void generated_validates();
@@ -38,12 +37,9 @@ void issuer_secrets_are_valid()
 {
     printf("Starting issuer_keypair::issuer_secrets_are_valid...\n");
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
     struct ecdaa_issuer_secret_key_ZZZ sk1;
     struct ecdaa_issuer_public_key_ZZZ pk1;
-    ecdaa_issuer_key_pair_ZZZ_generate(&pk1, &sk1, &prng);
+    ecdaa_issuer_key_pair_ZZZ_generate(&pk1, &sk1, test_randomness);
 
     TEST_ASSERT(BIG_XXX_comp(sk1.x, sk1.y) != 0);
     TEST_ASSERT(!pk1.gpk.X.inf);
@@ -51,11 +47,9 @@ void issuer_secrets_are_valid()
 
     struct ecdaa_issuer_secret_key_ZZZ sk2;
     struct ecdaa_issuer_public_key_ZZZ pk2;
-    ecdaa_issuer_key_pair_ZZZ_generate(&pk2, &sk2, &prng);
+    ecdaa_issuer_key_pair_ZZZ_generate(&pk2, &sk2, test_randomness);
     TEST_ASSERT(BIG_XXX_comp(sk1.x, sk2.x) != 0);
     TEST_ASSERT(BIG_XXX_comp(sk1.y, sk2.y) != 0);
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -64,12 +58,9 @@ static void generated_validates()
 {
     printf("Starting issuer_keypair::generated_validates...\n");
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
     struct ecdaa_issuer_secret_key_ZZZ isk;
     struct ecdaa_issuer_public_key_ZZZ ipk;
-    ecdaa_issuer_key_pair_ZZZ_generate(&ipk, &isk, &prng);
+    ecdaa_issuer_key_pair_ZZZ_generate(&ipk, &isk, test_randomness);
 
     TEST_ASSERT(0 == ecdaa_issuer_public_key_ZZZ_validate(&ipk));
 
@@ -91,12 +82,9 @@ static void generate_then_serialize_deserialize()
 {
     printf("Starting issuer_keypair::generate_then_serialize_deserialize...\n");
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
     struct ecdaa_issuer_secret_key_ZZZ isk;
     struct ecdaa_issuer_public_key_ZZZ ipk;
-    ecdaa_issuer_key_pair_ZZZ_generate(&ipk, &isk, &prng);
+    ecdaa_issuer_key_pair_ZZZ_generate(&ipk, &isk, test_randomness);
 
     uint8_t public_buffer[ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH];
     ecdaa_issuer_public_key_ZZZ_serialize(public_buffer, &ipk);

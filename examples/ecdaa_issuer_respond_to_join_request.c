@@ -16,6 +16,7 @@
  *
  *****************************************************************************/
 
+#include "examples_rand.h"
 #include "file_utils.h"
 
 #include <ecdaa.h>
@@ -44,13 +45,6 @@ int main(int argc, char *argv[])
     struct command_line_args args;
     if (0 != parse_args(&args, argc, argv))
         return 1;
-
-    // Initialize PRNG
-    struct ecdaa_prng rng;
-    if (0 != ecdaa_prng_init(&rng)) {
-        fputs("Error initializing ecdaa_prng\n", stderr);
-        return 1;
-    }
 
     // Read member public key from disk.
     // NOTE: If this Join procedure is being done remotely,
@@ -91,7 +85,7 @@ int main(int argc, char *argv[])
     // Generate new credential for this member, along with a credential signature.
     struct ecdaa_credential_FP256BN cred;
     struct ecdaa_credential_FP256BN_signature cred_sig;
-    if (0 != ecdaa_credential_FP256BN_generate(&cred, &cred_sig, &isk, &pk, &rng)) {
+    if (0 != ecdaa_credential_FP256BN_generate(&cred, &cred_sig, &isk, &pk, examples_rand)) {
         fputs("Error generating credential\n", stderr);
         return 1;
     }

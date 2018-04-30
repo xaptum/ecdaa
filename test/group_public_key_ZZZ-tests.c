@@ -20,7 +20,7 @@
 
 #include <ecdaa/group_public_key_ZZZ.h>
 
-#include "src/amcl-extensions/ecp2_ZZZ.h"
+#include "amcl-extensions/ecp2_ZZZ.h"
 
 #include <stdio.h>
 #include <string.h>

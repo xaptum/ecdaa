@@ -18,20 +18,16 @@ add_definitions("-Wno-unused-function")
 
 set(CURRENT_PROGRAMS_BINARY_DIR ${TOPLEVEL_BINARY_DIR}/bin/)
 
-set(ECDAA_PROGRAM_MAIN_FILES
-        ecdaa_extract_group_public_key.c
-        ecdaa_issuer_create_group.c
-        ecdaa_issuer_respond_to_join_request.c
-        ecdaa_member_process_join_response.c
-        ecdaa_member_request_join.c
-        ecdaa_member_sign.c
-        ecdaa_verify.c
+add_library(ecdaa_examples_rand OBJECT ${CMAKE_CURRENT_SOURCE_DIR}/examples_rand.c)
+
+macro(add_example example_file)
+        get_filename_component(program_name ${example_file} NAME_WE)
+
+        add_executable(${program_name} ${example_file} $<TARGET_OBJECTS:ecdaa_examples_rand>)
+
+        target_include_directories(${program_name}
+          PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
         )
-
-foreach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
-        get_filename_component(program_name ${main_file} NAME_WE)
-
-        add_executable(${program_name} ${main_file})
 
         if(BUILD_SHARED_LIBS)
               target_link_libraries(${program_name} PRIVATE ecdaa)
@@ -44,4 +40,22 @@ foreach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
         )
 
         install(TARGETS ${program_name} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-endforeach(main_file ${ECDAA_PROGRAM_MAIN_FILES})
+endmacro()
+
+set(ECDAA_EXAMPLE_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_extract_group_public_key.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_issuer_create_group.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_issuer_respond_to_join_request.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_member_process_join_response.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_member_request_join.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_member_sign.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa_verify.c
+        )
+
+foreach(template_file ${ECDAA_EXAMPLE_FILES})
+  expand_template(${template_file} ECDAA_EXAMPLE_SRCS FALSE)
+endforeach()
+
+foreach(example_file ${ECDAA_EXAMPLE_SRCS})
+  add_example(${example_file})
+endforeach()
