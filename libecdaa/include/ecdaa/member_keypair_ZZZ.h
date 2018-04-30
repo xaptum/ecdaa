@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-struct ecdaa_prng;
+#include <ecdaa/rand.h>
 
 #include <amcl/big_XXX.h>
 #include <amcl/ecp_ZZZ.h>
@@ -64,7 +64,7 @@ int ecdaa_member_key_pair_ZZZ_generate(struct ecdaa_member_public_key_ZZZ *pk_ou
                                        struct ecdaa_member_secret_key_ZZZ *sk_out,
                                        uint8_t *nonce,
                                        uint32_t nonce_length,
-                                       struct ecdaa_prng *prng);
+                                       ecdaa_rand_func get_random);
 
 /*
  * Check the signature on an `ecdaa_member_public_key_ZZZ`.

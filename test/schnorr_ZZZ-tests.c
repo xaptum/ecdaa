@@ -25,7 +25,6 @@
 #include "amcl-extensions/ecp2_ZZZ.h"
 
 #include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/prng.h>
 
 #include <amcl/big_XXX.h>
 #include <amcl/ecp_ZZZ.h>
@@ -70,19 +69,14 @@ void schnorr_keygen_sane()
     ECP_ZZZ public_one, public_two;
     BIG_XXX private_one, private_two;
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
-    schnorr_keygen_ZZZ(&public_one, &private_one, &prng);
-    schnorr_keygen_ZZZ(&public_two, &private_two, &prng);
+    schnorr_keygen_ZZZ(&public_one, &private_one, test_randomness);
+    schnorr_keygen_ZZZ(&public_two, &private_two, test_randomness);
 
     TEST_ASSERT(0 != BIG_XXX_comp(private_one, private_two));
     TEST_ASSERT(1 != ECP_ZZZ_equals(&public_one, &public_two));
 
     TEST_ASSERT(!public_one.inf);
     TEST_ASSERT(!public_two.inf);
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -91,13 +85,10 @@ void schnorr_sign_sane()
 {
     printf("Starting schnorr::schnorr_sign_sane...\n");
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
     ECP_ZZZ public;
     BIG_XXX private;
 
-    ecp_ZZZ_random_mod_order(&private, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&private, test_randomness);
     ecp_ZZZ_set_to_generator(&public);
 
     ECP_ZZZ_mul(&public, private);
@@ -109,14 +100,12 @@ void schnorr_sign_sane()
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, &prng));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
 
     TEST_ASSERT(0 == BIG_XXX_iszilch(c));
     TEST_ASSERT(0 == BIG_XXX_iszilch(s));
     TEST_ASSERT(0 == BIG_XXX_isunity(c));
     TEST_ASSERT(0 == BIG_XXX_isunity(s));
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -128,11 +117,8 @@ void schnorr_verify_wrong_key()
     ECP_ZZZ public, public_wrong;
     BIG_XXX private, private_wrong;
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
-    schnorr_keygen_ZZZ(&public, &private, &prng);
-    schnorr_keygen_ZZZ(&public_wrong, &private_wrong, &prng);
+    schnorr_keygen_ZZZ(&public, &private, test_randomness);
+    schnorr_keygen_ZZZ(&public_wrong, &private_wrong, test_randomness);
 
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
@@ -141,11 +127,9 @@ void schnorr_verify_wrong_key()
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, &prng));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
 
     TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, NULL, msg, msg_len, &basepoint, &public_wrong, NULL, 0));
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -157,10 +141,7 @@ void schnorr_verify_wrong_msg()
     ECP_ZZZ public;
     BIG_XXX private;
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
-    schnorr_keygen_ZZZ(&public, &private, &prng);
+    schnorr_keygen_ZZZ(&public, &private, test_randomness);
 
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
@@ -171,11 +152,9 @@ void schnorr_verify_wrong_msg()
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, &prng));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
 
     TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, NULL, msg_wrong, msg_len_wrong, &basepoint, &public, NULL, 0));
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -187,10 +166,7 @@ void schnorr_verify_bad_sig()
     ECP_ZZZ public;
     BIG_XXX private;
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
-    schnorr_keygen_ZZZ(&public, &private, &prng);
+    schnorr_keygen_ZZZ(&public, &private, test_randomness);
 
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
@@ -200,8 +176,6 @@ void schnorr_verify_bad_sig()
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
     TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, NULL, msg, msg_len, &basepoint, &public, NULL, 0));
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -213,10 +187,7 @@ void schnorr_sign_integration()
     ECP_ZZZ public;
     BIG_XXX private;
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
-    schnorr_keygen_ZZZ(&public, &private, &prng);
+    schnorr_keygen_ZZZ(&public, &private, test_randomness);
 
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
@@ -225,11 +196,9 @@ void schnorr_sign_integration()
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, &prng));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
 
     TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, NULL, msg, msg_len, &basepoint, &public, NULL, 0));
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -237,9 +206,6 @@ void schnorr_sign_integration()
 void schnorr_sign_integration_other_basepoint()
 {
     printf("Starting schnorr::schnorr_sign_integration_other_points...\n");
-
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
 
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
@@ -249,20 +215,18 @@ void schnorr_sign_integration_other_basepoint()
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
     BIG_XXX rand;
-    ecp_ZZZ_random_mod_order(&rand, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&rand, test_randomness);
     ECP_ZZZ_mul(&basepoint, rand);
 
     ECP_ZZZ public;
     BIG_XXX private;
-    ecp_ZZZ_random_mod_order(&private, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&private, test_randomness);
     ECP_ZZZ_copy(&public, &basepoint);
     ECP_ZZZ_mul(&public, private);
 
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, &prng));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
 
     TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, NULL, msg, msg_len, &basepoint, &public, NULL, 0));
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -271,13 +235,10 @@ static void schnorr_basename()
 {
     printf("Starting schnorr::schnorr_basename...\n");
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
     ECP_ZZZ public;
     BIG_XXX private;
 
-    schnorr_keygen_ZZZ(&public, &private, &prng);
+    schnorr_keygen_ZZZ(&public, &private, test_randomness);
 
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
@@ -290,11 +251,9 @@ static void schnorr_basename()
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &K, msg, msg_len, &basepoint, &public, private, basename, basename_len, &prng));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &K, msg, msg_len, &basepoint, &public, private, basename, basename_len, test_randomness));
 
     TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, &K, msg, msg_len, &basepoint, &public, basename, basename_len));
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -303,13 +262,10 @@ static void schnorr_wrong_basename_fails()
 {
     printf("Starting schnorr::schnorr_wrong_basename_fails...\n");
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
     ECP_ZZZ public;
     BIG_XXX private;
 
-    schnorr_keygen_ZZZ(&public, &private, &prng);
+    schnorr_keygen_ZZZ(&public, &private, test_randomness);
 
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
@@ -324,11 +280,9 @@ static void schnorr_wrong_basename_fails()
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &K, msg, msg_len, &basepoint, &public, private, basename, basename_len, &prng));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &K, msg, msg_len, &basepoint, &public, private, basename, basename_len, test_randomness));
 
     TEST_ASSERT(0 != schnorr_verify_ZZZ(c, s, &K, msg, msg_len, &basepoint, &public, wrong_basename, wrong_basename_len));
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -349,24 +303,19 @@ void schnorr_credential_sign_sane()
 
     BIG_XXX c, s;
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
+    ecp_ZZZ_random_mod_order(&credential_random, test_randomness);
 
-    ecp_ZZZ_random_mod_order(&credential_random, get_csprng(&prng));
-
-    ecp_ZZZ_random_mod_order(&member_private, get_csprng(&prng));
-    ecp_ZZZ_random_mod_order(&issuer_private, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&member_private, test_randomness);
+    ecp_ZZZ_random_mod_order(&issuer_private, test_randomness);
     ecp_ZZZ_set_to_generator(&member_public);
     ECP_ZZZ_mul(&member_public, member_private);
 
-    TEST_ASSERT(0 == credential_schnorr_sign_ZZZ(&c, &s, &B, &member_public, &D, issuer_private, credential_random, &prng));
+    TEST_ASSERT(0 == credential_schnorr_sign_ZZZ(&c, &s, &B, &member_public, &D, issuer_private, credential_random, test_randomness));
 
     TEST_ASSERT(0 == BIG_XXX_iszilch(c));
     TEST_ASSERT(0 == BIG_XXX_iszilch(s));
     TEST_ASSERT(0 == BIG_XXX_isunity(c));
     TEST_ASSERT(0 == BIG_XXX_isunity(s));
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -374,9 +323,6 @@ void schnorr_credential_sign_sane()
 void schnorr_credential_sign_integration()
 {
     printf("Starting schnorr::schnorr_credential_sign_integration...\n");
-
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
 
     BIG_XXX member_private = {2718, 0};
     ECP_ZZZ member_public;
@@ -399,11 +345,9 @@ void schnorr_credential_sign_integration()
 
     BIG_XXX c, s;
 
-    TEST_ASSERT(0 == credential_schnorr_sign_ZZZ(&c, &s, &B, &member_public, &D, issuer_private_key_y, credential_random, &prng));
+    TEST_ASSERT(0 == credential_schnorr_sign_ZZZ(&c, &s, &B, &member_public, &D, issuer_private_key_y, credential_random, test_randomness));
 
     TEST_ASSERT(0 == credential_schnorr_verify_ZZZ(c, s, &B, &member_public, &D));
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }
@@ -412,13 +356,10 @@ void schnorr_issuer_sign_sane()
 {
     printf("Starting schnorr::schnorr_issuer_sign_sane...\n");
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
     BIG_XXX issuer_private_x;
-    ecp_ZZZ_random_mod_order(&issuer_private_x, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&issuer_private_x, test_randomness);
     BIG_XXX issuer_private_y;
-    ecp_ZZZ_random_mod_order(&issuer_private_y, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&issuer_private_y, test_randomness);
     ECP2_ZZZ issuer_public_X;
     ECP2_ZZZ issuer_public_Y;
     ecp2_ZZZ_set_to_generator(&issuer_public_X);
@@ -428,7 +369,7 @@ void schnorr_issuer_sign_sane()
 
     BIG_XXX c, sx, sy;
 
-    TEST_ASSERT(0 == issuer_schnorr_sign_ZZZ(&c, &sx, &sy, &issuer_public_X, &issuer_public_Y, issuer_private_x, issuer_private_y, &prng));
+    TEST_ASSERT(0 == issuer_schnorr_sign_ZZZ(&c, &sx, &sy, &issuer_public_X, &issuer_public_Y, issuer_private_x, issuer_private_y, test_randomness));
 
     TEST_ASSERT(0 == BIG_XXX_iszilch(c));
     TEST_ASSERT(0 == BIG_XXX_iszilch(sx));
@@ -437,8 +378,6 @@ void schnorr_issuer_sign_sane()
     TEST_ASSERT(0 == BIG_XXX_isunity(sx));
     TEST_ASSERT(0 == BIG_XXX_isunity(sy));
 
-    ecdaa_prng_free(&prng);
-
     printf("\tsuccess\n");
 }
 
@@ -446,28 +385,23 @@ void schnorr_issuer_sign_integration()
 {
     printf("Starting schnorr::schnorr_issuer_sign_integration...\n");
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
     BIG_XXX issuer_private_x;
-    ecp_ZZZ_random_mod_order(&issuer_private_x, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&issuer_private_x, test_randomness);
     ECP2_ZZZ issuer_public_X;
     ecp2_ZZZ_set_to_generator(&issuer_public_X);
     ECP2_ZZZ_mul(&issuer_public_X, issuer_private_x);
 
     BIG_XXX issuer_private_y;
-    ecp_ZZZ_random_mod_order(&issuer_private_y, get_csprng(&prng));
+    ecp_ZZZ_random_mod_order(&issuer_private_y, test_randomness);
     ECP2_ZZZ issuer_public_Y;
     ecp2_ZZZ_set_to_generator(&issuer_public_Y);
     ECP2_ZZZ_mul(&issuer_public_Y, issuer_private_y);
 
     BIG_XXX c, sx, sy;
 
-    TEST_ASSERT(0 == issuer_schnorr_sign_ZZZ(&c, &sx, &sy, &issuer_public_X, &issuer_public_Y, issuer_private_x, issuer_private_y, &prng));
+    TEST_ASSERT(0 == issuer_schnorr_sign_ZZZ(&c, &sx, &sy, &issuer_public_X, &issuer_public_Y, issuer_private_x, issuer_private_y, test_randomness));
 
     TEST_ASSERT(0 == issuer_schnorr_verify_ZZZ(c, sx, sy, &issuer_public_X, &issuer_public_Y));
-
-    ecdaa_prng_free(&prng);
 
     printf("\tsuccess\n");
 }

@@ -1,6 +1,5 @@
 get_filename_component(ecdaa_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
-set(DISABLE_LIBSODIUM_RNG_SEED_FUNCTION @DISABLE_LIBSODIUM_RNG_SEED_FUNCTION@)
 set(ECDAA_TPM_SUPPORT @ECDAA_TPM_SUPPORT@)
 
 ################################################################################
@@ -10,9 +9,6 @@ include(CMakeFindDependencyMacro)
 list(APPEND CMAKE_MODULE_PATH ${ecdaa_CMAKE_DIR})
 
 find_dependency(AMCL 4.7.0)
-if(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
-  find_dependency(sodium 1.0.11)
-endif()
 if(ECDAA_TPM_SUPPORT)
   find_dependency(xaptum-tpm 0.5.0)
 endif()
@@ -35,8 +31,6 @@ if(ecdaa_FIND_COMPONENTS)
   foreach(comp ${ecdaa_FIND_COMPONENTS})
     if(comp STREQUAL "tpm" AND ECDAA_TPM_SUPPORT)
       set(ecdaa_tpm_FOUND 1)
-    elseif(comp STREQUAL "sodium" AND NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
-      set(ecdaa_sodium_FOUND 1)
     else()
       set(ecdaa_${comp}_FOUND 0)
       if(ecdaa_FIND_REQUIRED_${comp})

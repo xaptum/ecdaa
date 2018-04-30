@@ -31,7 +31,6 @@
 #include <ecdaa-tpm/signature_TPM_ZZZ.h>
 #include <ecdaa/group_public_key_ZZZ.h>
 #include <ecdaa/revocations_ZZZ.h>
-#include <ecdaa/prng.h>
 #include <ecdaa-tpm/tpm_context.h>
 
 #include <string.h>
@@ -43,7 +42,6 @@ static void sign_then_verify_bad_basename_fails();
 static void sign_then_verify_no_basename();
 
 typedef struct sign_and_verify_fixture {
-    struct ecdaa_prng prng;
     uint8_t *msg;
     uint32_t msg_len;
     uint8_t *basename;
@@ -71,13 +69,11 @@ static void setup(sign_and_verify_fixture* fixture)
 {
     TEST_ASSERT(0 == tpm_initialize(&fixture->tpm_ctx));
 
-    TEST_ASSERT(0 == ecdaa_prng_init(&fixture->prng));
-
-    ecp_ZZZ_random_mod_order(&fixture->isk.x, get_csprng(&fixture->prng));
+    ecp_ZZZ_random_mod_order(&fixture->isk.x, test_randomness);
     ecp2_ZZZ_set_to_generator(&fixture->ipk.gpk.X);
     ECP2_ZZZ_mul(&fixture->ipk.gpk.X, fixture->isk.x);
 
-    ecp_ZZZ_random_mod_order(&fixture->isk.y, get_csprng(&fixture->prng));
+    ecp_ZZZ_random_mod_order(&fixture->isk.y, test_randomness);
     ecp2_ZZZ_set_to_generator(&fixture->ipk.gpk.Y);
     ECP2_ZZZ_mul(&fixture->ipk.gpk.Y, fixture->isk.y);
 
@@ -86,7 +82,7 @@ static void setup(sign_and_verify_fixture* fixture)
     TEST_ASSERT(0 == ecdaa_member_key_pair_TPM_ZZZ_generate(&fixture->pk, fixture->tpm_ctx.serialized_public_key, nonce, nonce_len, &fixture->tpm_ctx.tpm_ctx));
 
     struct ecdaa_credential_ZZZ_signature cred_sig;
-    ecdaa_credential_ZZZ_generate(&fixture->cred, &cred_sig, &fixture->isk, &fixture->pk, &fixture->prng);
+    ecdaa_credential_ZZZ_generate(&fixture->cred, &cred_sig, &fixture->isk, &fixture->pk, test_randomness);
 
     fixture->msg = (uint8_t*) "Test message";
     fixture->msg_len = (uint32_t)strlen((char*)fixture->msg);
@@ -102,7 +98,7 @@ static void setup(sign_and_verify_fixture* fixture)
 
 static void teardown(sign_and_verify_fixture *fixture)
 {
-    ecdaa_prng_free(&fixture->prng);
+    (void)fixture;
     tpm_cleanup(&fixture->tpm_ctx);
 }
 
@@ -114,7 +110,7 @@ static void sign_then_verify_good()
     setup(&fixture);
 
     struct ecdaa_signature_ZZZ sig;
-    TEST_ASSERT(0 == ecdaa_signature_TPM_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.cred, &fixture.prng, &fixture.tpm_ctx.tpm_ctx));
+    TEST_ASSERT(0 == ecdaa_signature_TPM_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.cred, test_randomness, &fixture.tpm_ctx.tpm_ctx));
 
     TEST_ASSERT(0 == ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len));
 
@@ -134,7 +130,7 @@ static void sign_then_verify_bad_basename_fails()
     uint32_t wrong_basename_len = strlen((char*)wrong_basename);
 
     struct ecdaa_signature_ZZZ sig;
-    TEST_ASSERT(0 == ecdaa_signature_TPM_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.cred, &fixture.prng, &fixture.tpm_ctx.tpm_ctx));
+    TEST_ASSERT(0 == ecdaa_signature_TPM_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.cred, test_randomness, &fixture.tpm_ctx.tpm_ctx));
 
     TEST_ASSERT(0 != ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, wrong_basename, wrong_basename_len));
 
@@ -151,7 +147,7 @@ static void sign_then_verify_no_basename()
     setup(&fixture);
 
     struct ecdaa_signature_ZZZ sig;
-    TEST_ASSERT(0 == ecdaa_signature_TPM_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, NULL, 0, &fixture.cred, &fixture.prng, &fixture.tpm_ctx.tpm_ctx));
+    TEST_ASSERT(0 == ecdaa_signature_TPM_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, NULL, 0, &fixture.cred, test_randomness, &fixture.tpm_ctx.tpm_ctx));
 
     TEST_ASSERT(0 == ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, NULL, 0));
 

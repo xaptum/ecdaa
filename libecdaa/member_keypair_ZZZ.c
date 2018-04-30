@@ -18,8 +18,6 @@
 
 #include <ecdaa/member_keypair_ZZZ.h>
 
-#include <ecdaa/prng.h>
-
 #include "amcl-extensions/ecp_ZZZ.h"
 #include "schnorr/schnorr_ZZZ.h"
 
@@ -39,10 +37,10 @@ int ecdaa_member_key_pair_ZZZ_generate(struct ecdaa_member_public_key_ZZZ *pk,
                                        struct ecdaa_member_secret_key_ZZZ *sk,
                                        uint8_t *nonce,
                                        uint32_t nonce_length,
-                                       struct ecdaa_prng *prng)
+                                       ecdaa_rand_func get_random)
 {
     // 1) Generate Schnorr-type keypair,
-    schnorr_keygen_ZZZ(&pk->Q, &sk->sk, prng);
+    schnorr_keygen_ZZZ(&pk->Q, &sk->sk, get_random);
 
     // 2) and a Schnorr-type signature on the Schnorr-type public_key itself concatenated with the nonce.
     ECP_ZZZ basepoint;
@@ -57,7 +55,7 @@ int ecdaa_member_key_pair_ZZZ_generate(struct ecdaa_member_public_key_ZZZ *pk,
                                     sk->sk,
                                     NULL,
                                     0,
-                                    prng);
+                                    get_random);
 
     return sign_ret;
 }

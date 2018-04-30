@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-struct ecdaa_prng;
+#include <ecdaa/rand.h>
 
 #include <amcl/big_XXX.h>
 #include <amcl/ecp_ZZZ.h>
@@ -40,7 +40,7 @@ struct ecdaa_prng;
  */
 void schnorr_keygen_ZZZ(ECP_ZZZ *public_out,
                         BIG_XXX *private_out,
-                        struct ecdaa_prng *prng);
+                        ecdaa_rand_func get_random);
 
 /*
  * Perform Schnorr signature of msg_in, allowing for a non-standard basepoint and basename.
@@ -70,7 +70,7 @@ int schnorr_sign_ZZZ(BIG_XXX *c_out,
                      BIG_XXX private_key,
                      const uint8_t *basename,
                      uint32_t basename_len,
-                     struct ecdaa_prng *prng);
+                     ecdaa_rand_func get_random);
 
 /*
  * Verify that (c, s) is a valid Schnorr signature of msg_in, allowing for a non-standard basepoint.
@@ -116,7 +116,7 @@ int credential_schnorr_sign_ZZZ(BIG_XXX *c_out,
                                 ECP_ZZZ *D,
                                 BIG_XXX issuer_private_key_y,
                                 BIG_XXX credential_random,
-                                struct ecdaa_prng *prng);
+                                ecdaa_rand_func get_random);
 
 /*
  * Verify that (c, s) is a valid 'credential-Schnorr' signature.
@@ -161,7 +161,7 @@ int issuer_schnorr_sign_ZZZ(BIG_XXX *c_out,
                             ECP2_ZZZ *Y,
                             BIG_XXX issuer_private_key_x,
                             BIG_XXX issuer_private_key_y,
-                            struct ecdaa_prng *prng);
+                            ecdaa_rand_func get_random);
 
 /*
  * Verify that (c, sx, sy) is a valid 'issuer-Schnorr' signature.

@@ -24,10 +24,6 @@ include(GNUInstallDirs)
 include(CTest)
 include(DetermineWordSize)
 
-option(DISABLE_LIBSODIUM_RNG_SEED_FUNCTION
-        "Disable the default Libsodium-based seed function"
-        OFF)
-
 option(BUILD_SHARED_LIBS "Build as a shared library" ON)
 option(BUILD_STATIC_LIBS "Build as a static library" OFF)
 
@@ -58,13 +54,6 @@ set(ECDAA_SOVERSION ${PROJECT_VERSION_MAJOR})
 find_package(AMCL 4.7.0 REQUIRED QUIET)
 if(ECDAA_TPM_SUPPORT)
   find_package(xaptum-tpm 0.5.0 REQUIRED QUIET)
-endif()
-
-if(NOT DISABLE_LIBSODIUM_RNG_SEED_FUNCTION)
-  find_package(sodium 1.0.11 REQUIRED QUIET)
-  SET(ECDAA_SEED_LIBRARY sodium)
-else()
-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDISABLE_LIBSODIUM_RNG_SEED_FUNCTION")
 endif()
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -std=c99 -Wno-missing-field-initializers")
@@ -170,7 +159,6 @@ configure_package_config_file(${PROJECT_SOURCE_DIR}/ecdaa-config.cmake.in
 )
 
 install(FILES
-  ${PROJECT_SOURCE_DIR}/cmake/Findsodium.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config-version.cmake
   DESTINATION ${INSTALL_CONFIGDIR}

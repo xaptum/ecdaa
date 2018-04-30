@@ -53,7 +53,6 @@ set(ECDAA_TEST_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/group_public_key_ZZZ-tests.c
         ${CMAKE_CURRENT_SOURCE_DIR}/issuer_keypair_ZZZ-tests.c
         ${CMAKE_CURRENT_SOURCE_DIR}/member_keypair_ZZZ-tests.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/prng-tests.c
         ${CMAKE_CURRENT_SOURCE_DIR}/schnorr_ZZZ-tests.c
         ${CMAKE_CURRENT_SOURCE_DIR}/signature_ZZZ-tests.c
         )

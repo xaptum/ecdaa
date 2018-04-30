@@ -20,8 +20,6 @@
 
 #include "amcl-extensions/ecp_ZZZ.h"
 
-#include <ecdaa/prng.h>
-
 #include <stdio.h>
 #include <string.h>
 
@@ -118,20 +116,20 @@ void random_num_mod_order_is_valid()
     BIG_XXX curve_order;
     BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
 
-    struct ecdaa_prng prng;
-    TEST_ASSERT(0 == ecdaa_prng_init(&prng));
-
     BIG_XXX num;
-    for (int i = 0; i < 500; ++i) {
-        ecp_ZZZ_random_mod_order(&num, get_csprng(&prng));
+    BIG_XXX prev_num;
+    BIG_XXX_one(prev_num);
+    for (int i = 0; i < 50000; ++i) {
+        ecp_ZZZ_random_mod_order(&num, test_randomness);
 
         TEST_ASSERT(BIG_XXX_iszilch(num) == 0);
         TEST_ASSERT(BIG_XXX_isunity(num) == 0);
 
         TEST_ASSERT(BIG_XXX_comp(num, curve_order) == -1);
-    }
 
-    ecdaa_prng_free(&prng);
+        TEST_ASSERT(BIG_XXX_comp(num, prev_num) != 0);
+        BIG_XXX_copy(prev_num, num);
+    }
 
     printf("\tsuccess\n");
 }

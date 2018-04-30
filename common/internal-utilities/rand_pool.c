@@ -16,16 +16,27 @@
  *
  *****************************************************************************/
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
-#pragma once
+#include "rand_pool.h"
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/rand.h>
-#include <ecdaa/revocations_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
+void ecdaa_rand_pool_init(struct ecdaa_rand_pool *pool,
+                          size_t requested_size,
+                          void (*get_random)(void *buf, size_t buflen))
+{
+    // Fill our pool with randomness (will be replenished if needed)
+    pool->size = requested_size>sizeof(pool->pool) ? sizeof(pool->pool) : requested_size;
+    get_random(pool->pool, pool->size);
+    pool->pool_ptr = pool->pool;
+    pool->get_random = get_random;
+}
 
-#endif
+uint8_t get_random_byte(struct ecdaa_rand_pool *pool)
+{
+    if (pool->pool_ptr >= (pool->pool + pool->size)) {
+        pool->get_random(pool->pool, pool->size);
+        pool->pool_ptr = pool->pool;
+    }
+
+    pool->pool_ptr += 1;
+    return *(pool->pool_ptr - 1);
+}
+

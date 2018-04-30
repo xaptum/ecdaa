@@ -25,10 +25,9 @@ extern "C" {
 #endif
 
 #include <ecdaa/group_public_key_ZZZ.h>
+#include <ecdaa/rand.h>
 
 #include <amcl/big_XXX.h>
-
-struct ecdaa_prng;
 
 /*
  * Issuer's public key.
@@ -63,7 +62,7 @@ size_t ecdaa_issuer_secret_key_ZZZ_length(void);
  */
 int ecdaa_issuer_key_pair_ZZZ_generate(struct ecdaa_issuer_public_key_ZZZ *pk_out,
                                        struct ecdaa_issuer_secret_key_ZZZ *sk_out,
-                                       struct ecdaa_prng *prng);
+                                       ecdaa_rand_func get_random);
 
 /*
  * Check the signature on an `ecdaa_issuer_public_key_ZZZ`.

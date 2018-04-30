@@ -19,6 +19,8 @@
 #include "./ecp_ZZZ.h"
 #include "./big_XXX.h"
 
+#include "internal-utilities/rand_pool.h"
+
 size_t ecp_ZZZ_length(void)
 {
     return ECP_ZZZ_LENGTH;
@@ -122,11 +124,36 @@ int32_t ecp_ZZZ_fromhash(ECP_ZZZ *point_out, const uint8_t *message, uint32_t me
 }
 
 void ecp_ZZZ_random_mod_order(BIG_XXX *big_out,
-                              csprng *rng)
+                              void (*get_random)(void *buf, size_t buflen))
 {
+    // 1) Get the order of the group
     BIG_XXX curve_order;
     BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
 
-    BIG_XXX_randomnum(*big_out, curve_order, rng);
+    // 2) Initialize our randomness
+    struct ecdaa_rand_pool rand_pool;
+    size_t needed_random_bytes = (size_t)(1 + 2*BIG_XXX_nbits(curve_order) / 8);
+    ecdaa_rand_pool_init(&rand_pool, needed_random_bytes, get_random);
+
+    // 3) Generate a random BIG bit-by-bit,
+    //      then reduce it modulo the group order.
+    // Adapted from AMCL big.c.in::BIG_XXX_randomnum() function
+    int i,b,j=0;
+    uint8_t r=0;
+    DBIG_XXX d;
+    BIG_XXX_dzero(d);
+    /* generate random DBIG */
+    for (i=0; i<2*BIG_XXX_nbits(curve_order); i++)
+    {
+        if (j==0) r=get_random_byte(&rand_pool);
+        else r>>=1;
+        b=r&1;
+        BIG_XXX_dshl(d,1);
+        d[0]+=b;
+        j++;
+        j&=7;
+    }
+    /* reduce modulo a BIG. Removes bias */
+    BIG_XXX_dmod(*big_out,d,curve_order);
 }
 

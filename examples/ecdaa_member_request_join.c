@@ -16,6 +16,7 @@
  *
  *****************************************************************************/
 
+#include "examples_rand.h"
 #include "file_utils.h"
 
 #include <ecdaa.h>
@@ -43,13 +44,6 @@ int main(int argc, char *argv[])
     if (0 != parse_args(&args, argc, argv))
         return 1;
 
-    // Initialize PRNG
-    struct ecdaa_prng rng;
-    if (0 != ecdaa_prng_init(&rng)) {
-        fputs("Error initializing ecdaa_prng\n", stderr);
-        return 1;
-    }
-
     // Generate member key-pair
     size_t nonce_len = strlen(args.nonce);
     if (nonce_len > 1048576) {    // 1MiB
@@ -58,7 +52,7 @@ int main(int argc, char *argv[])
     }
     struct ecdaa_member_public_key_FP256BN pk;
     struct ecdaa_member_secret_key_FP256BN sk;
-    if (0 != ecdaa_member_key_pair_FP256BN_generate(&pk, &sk, (uint8_t*)args.nonce, (uint32_t)nonce_len, &rng)) {
+    if (0 != ecdaa_member_key_pair_FP256BN_generate(&pk, &sk, (uint8_t*)args.nonce, (uint32_t)nonce_len, examples_rand)) {
         fprintf(stderr, "Error generating member key-pair\n");
         return 1;
     }

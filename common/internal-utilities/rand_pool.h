@@ -16,16 +16,38 @@
  *
  *****************************************************************************/
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
+#ifndef ECDAA_COMMON_RANDPOOL_H
+#define ECDAA_COMMON_RANDPOOL_H
 #pragma once
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/rand.h>
-#include <ecdaa/revocations_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stddef.h>
+#include <stdint.h>
+
+// NOTE: We promise our users that this MUST be <256.
+//  This is so getrandom (on Linux) and getentropy (on OpenBSD)
+//  can be used as the the source of randomness
+#define MAX_RAND_POOL_SIZE 255
+
+struct ecdaa_rand_pool {
+    uint8_t pool[MAX_RAND_POOL_SIZE];
+    size_t size;
+    uint8_t *pool_ptr;
+    void (*get_random)(void *buf, size_t buflen);
+};
+
+void ecdaa_rand_pool_init(struct ecdaa_rand_pool *pool,
+                          size_t requested_size,
+                          void (*get_random)(void *buf, size_t buflen));
+
+uint8_t get_random_byte(struct ecdaa_rand_pool *pool);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
+
