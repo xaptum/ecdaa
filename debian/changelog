@@ -1,3 +1,38 @@
+ecdaa (0.9.0-1) unstable; urgency=medium
+
+  [ David R. Bild ]
+  * readme: add installation instructions and tighten some writing
+  * readme: fix formatting
+  * readme: add link to libsodium page
+  * readme: add intro to installation section
+
+  [ Zane Beckwith ]
+  * An `apt-get` in the README should be `apt-key`
+  * Our travis builds were using AMCL 4.7 but CMake/README used 4.6
+
+  [ David R. Bild ]
+  * cmake: add helper module to determine wordsize
+  * cmake: use word_size when expanding templates
+  * Do not hardcode BIG_256_66 for TPM
+  * Do not hardcode BIG_256_56 for tests
+  * Do not hardcode BIG_256_56 for examples
+
+  [ Zane Beckwith ]
+  * Make test vectors in BIG test chunk-size-dependent.
+  * Move TPM-things into separate library, and only allow certain TPM curves
+  * Print usable CMake error message if ECDAA_TPM_SUPPORT=ON but no TPM-allowed curve selected.
+  * Use local copies of tpm-simulator scripts, and make a tpm-create-key utility
+  * Use static allocation, not malloc, for TPM structs in tests.
+  * Update the README
+  * Use a user-provided source of randomness, not a user-space CSPRNG
+  * Update README to explain new randomness.
+  * Remove libsodium linking requirements.
+  * Improve randomness tests in ecp-tests
+  * Bump minor version number
+  * Split debian packaging in two: libecdaa and libecdaa-tpm
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Mon, 30 Apr 2018 20:43:46 +0000
+
 ecdaa (0.8.5-2) unstable; urgency=medium
 
   [ Zane Beckwith ]
