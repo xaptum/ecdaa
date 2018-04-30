@@ -51,7 +51,7 @@ void examples_rand(void *buf, size_t buflen)
     arc4random_buf(buf, buflen);
 }
 
-#elif defined(RNDGETENTCNT)
+#else
 
 void examples_rand(void *buf, size_t buflen)
 {
