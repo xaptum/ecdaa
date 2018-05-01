@@ -1,3 +1,10 @@
+ecdaa (0.9.0-2) unstable; urgency=medium
+
+  [ Zane Beckwith ]
+  * Make sure to install omnibus headers.
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Tue, 01 May 2018 21:42:45 +0000
+
 ecdaa (0.9.0-1) unstable; urgency=medium
 
   [ David R. Bild ]
