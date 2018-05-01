@@ -1,4 +1,5 @@
 /usr/include/ecdaa
+/usr/include/ecdaa.h
 /usr/lib/*/libecdaa.so
 /usr/lib/*/libecdaa.a
 /usr/lib/*/cmake/*/*.cmake
