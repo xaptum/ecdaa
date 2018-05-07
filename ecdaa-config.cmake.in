@@ -28,9 +28,18 @@ set(ecdaa_LIBRARIES ecdaa::ecdaa)
 # Verify that required components were included in build
 ################################################################################
 if(ecdaa_FIND_COMPONENTS)
+
+  if(NOT ecdaa_FIND_QUIETLY)
+    message(STATUS "Found the following ECDAA components:")
+  endif()
+
   foreach(comp ${ecdaa_FIND_COMPONENTS})
     if(comp STREQUAL "tpm" AND ECDAA_TPM_SUPPORT)
       set(ecdaa_tpm_FOUND 1)
+      if(NOT ecdaa_FIND_QUIETLY)
+        message(STATUS "  ${comp}")
+      endif()
+      list(APPEND ecdaa_LIBRARIES ecdaa::ecdaa-tpm)
     else()
       set(ecdaa_${comp}_FOUND 0)
       if(ecdaa_FIND_REQUIRED_${comp})
@@ -38,4 +47,5 @@ if(ecdaa_FIND_COMPONENTS)
       endif()
     endif()
   endforeach()
+
 endif()
