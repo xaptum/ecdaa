@@ -83,36 +83,48 @@ endif ()
 ################################################################################
 # Static Libary
 ################################################################################
-if (BUILD_STATIC_LIBS)
-        add_library(ecdaa-tpm_static STATIC ${ECDAA_TPM_SRCS} $<TARGET_OBJECTS:ecdaa_utilities>)
+# If also building shared, add a suffix to target to avoid conflict
+if (BUILD_SHARED_LIBS)
+  set(STATIC_TARGET "ecdaa-tpm_static")
+else()
+  set(STATIC_TARGET "ecdaa-tpm")
+endif()
 
-        set_target_properties(ecdaa-tpm_static PROPERTIES
+if (BUILD_STATIC_LIBS)
+        add_library(${STATIC_TARGET} STATIC ${ECDAA_TPM_SRCS} $<TARGET_OBJECTS:ecdaa_utilities>)
+
+        set_target_properties(${STATIC_TARGET} PROPERTIES
                 OUTPUT_NAME "ecdaa-tpm${STATIC_SUFFIX}"
                 VERSION "${ECDAA_VERSION}"
                 SOVERSION "${ECDAA_SOVERSION}"
         )
 
-        target_include_directories(ecdaa-tpm_static PUBLIC
+        target_include_directories(${STATIC_TARGET} PUBLIC
                 $<BUILD_INTERFACE:${ECDAA_TPM_GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
-        target_link_libraries(ecdaa-tpm_static
+        target_link_libraries(${STATIC_TARGET}
           PUBLIC ecdaa_static
-          PUBLIC xaptum-tpm::xaptum-tpm 
+          PUBLIC xaptum-tpm::xaptum-tpm
           PUBLIC AMCL::AMCL
         )
 
-        install(TARGETS ecdaa-tpm_static
+        install(TARGETS ${STATIC_TARGET}
                 EXPORT ecdaa-targets
                 RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
                 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
                 ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
 
-        add_dependencies(ecdaa-tpm_static ecdaa_tpm_toplevel_header)
+        add_dependencies(${STATIC_TARGET} ecdaa_tpm_toplevel_header)
 endif ()
+
+# If not building shared, add an alias with the suffixed variant
+if (NOT BUILD_SHARED_LIBS)
+  add_library(ecdaa-tpm_static ALIAS ecdaa-tpm)
+endif()
 
 ################################################################################
 # Headers

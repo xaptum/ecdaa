@@ -83,35 +83,47 @@ endif ()
 ################################################################################
 # Static Libary
 ################################################################################
-if (BUILD_STATIC_LIBS)
-        add_library(ecdaa_static STATIC ${ECDAA_SRCS} $<TARGET_OBJECTS:ecdaa_utilities>)
+# If also building shared, add a suffix to target to avoid conflict
+if (BUILD_SHARED_LIBS)
+  set(STATIC_TARGET "ecdaa_static")
+else()
+  set(STATIC_TARGET "ecdaa")
+endif()
 
-        set_target_properties(ecdaa_static PROPERTIES
+if (BUILD_STATIC_LIBS)
+        add_library(${STATIC_TARGET} STATIC ${ECDAA_SRCS} $<TARGET_OBJECTS:ecdaa_utilities>)
+
+        set_target_properties(${STATIC_TARGET} PROPERTIES
                 OUTPUT_NAME "ecdaa${STATIC_SUFFIX}"
                 VERSION "${ECDAA_VERSION}"
                 SOVERSION "${ECDAA_SOVERSION}"
         )
 
-        target_include_directories(ecdaa_static PUBLIC
+        target_include_directories(${STATIC_TARGET} PUBLIC
                 $<BUILD_INTERFACE:${ECDAA_GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
-        target_link_libraries(ecdaa_static
+        target_link_libraries(${STATIC_TARGET}
           PUBLIC  AMCL::AMCL
           PRIVATE ${ECDAA_SEED_LIBRARY}
         )
 
-        install(TARGETS ecdaa_static
+        install(TARGETS ${STATIC_TARGET}
                 EXPORT ecdaa-targets
                 RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
                 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
                 ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
 
-        add_dependencies(ecdaa_static toplevel_header)
+        add_dependencies(${STATIC_TARGET} toplevel_header)
 endif ()
+
+# If not building shared, add an alias with the suffixed variant
+if (NOT BUILD_SHARED_LIBS)
+  add_library(ecdaa_static ALIAS ecdaa)
+endif()
 
 ################################################################################
 # Headers
