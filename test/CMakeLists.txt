@@ -45,7 +45,6 @@ endmacro()
 set(CURRENT_TEST_BINARY_DIR ${TOPLEVEL_BINARY_DIR}/testBin/)
 
 set(ECDAA_TEST_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks_ZZZ.c
         ${CMAKE_CURRENT_SOURCE_DIR}/big_XXX-tests.c
         ${CMAKE_CURRENT_SOURCE_DIR}/credential_ZZZ-tests.c
         ${CMAKE_CURRENT_SOURCE_DIR}/ecp2_ZZZ-tests.c
