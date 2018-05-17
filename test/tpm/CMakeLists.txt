@@ -18,6 +18,7 @@ expand_template(${CMAKE_CURRENT_SOURCE_DIR}/tpm_ZZZ-test-utils.h ECDAA_TPM_UTILS
 
 macro(add_tpm_test_case case_file)
   get_filename_component(case_name ${case_file} NAME_WE)
+  set(case_name "ecdaa-${case_name}")
 
   add_executable(${case_name} ${case_file} $<TARGET_OBJECTS:ecdaa_utilities> ${ECDAA_TPM_UTILS_LIST})
 
