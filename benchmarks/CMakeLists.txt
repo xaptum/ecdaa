@@ -14,51 +14,40 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-expand_template(${CMAKE_CURRENT_SOURCE_DIR}/tpm_ZZZ-test-utils.h ECDAA_TPM_UTILS_LIST TRUE)
-
-macro(add_tpm_test_case case_file)
+macro(add_benchmark case_file)
   get_filename_component(case_name ${case_file} NAME_WE)
-  set(case_name "ecdaa-${case_name}")
 
-  add_executable(${case_name} ${case_file} $<TARGET_OBJECTS:ecdaa_utilities> ${ECDAA_TPM_UTILS_LIST})
+  add_executable(${case_name} ${case_file} $<TARGET_OBJECTS:ecdaa_utilities>)
 
   if(BUILD_SHARED_LIBS)
           target_link_libraries(${case_name} PRIVATE
-                                ecdaa-tpm)
+                                ecdaa)
   else()
           target_link_libraries(${case_name} PRIVATE
-                                ecdaa-tpm_static)
+                                ecdaa_static)
   endif()
 
   target_include_directories(${case_name}
           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
                   $<BUILD_INTERFACE:${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}>
                   ${TOPLEVEL_BINARY_DIR}/libecdaa
-                  ${TOPLEVEL_BINARY_DIR}/libecdaa-tpm
   )
 
   set_target_properties(${case_name} PROPERTIES
-          RUNTIME_OUTPUT_DIRECTORY ${CURRENT_TEST_BINARY_DIR}
+          RUNTIME_OUTPUT_DIRECTORY ${CURRENT_BENCHMARKS_BINARY_DIR}
   )
-
-  if(NOT case_file MATCHES ".*create_tpm_key-util.*")
-    add_test(NAME ${case_name}
-            COMMAND ${CURRENT_TEST_BINARY_DIR}/${case_name}
-    )
-  endif()
 endmacro()
 
-set(ECDAA_TPM_TEST_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/schnorr_TPM_ZZZ-tests.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/signature_TPM_ZZZ-tests.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/tpm_ZZZ-test.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/create_tpm_key-util.c
-        )
+set(CURRENT_BENCHMARKS_BINARY_DIR ${TOPLEVEL_BINARY_DIR}/benchmarksBin/)
 
-foreach(template_file ${ECDAA_TPM_TEST_FILES})
-        expand_template(${template_file} ECDAA_TPM_TEST_SRCS TRUE)
+set(ECDAA_BENCHMARKS_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks_ZZZ.c
+)
+
+foreach(template_file ${ECDAA_BENCHMARKS_FILES})
+        expand_template(${template_file} ECDAA_BENCHMARKS_SRCS FALSE)
 endforeach()
 
-foreach(case_file ${ECDAA_TPM_TEST_SRCS})
-        add_tpm_test_case(${case_file})
+foreach(benchmark ${ECDAA_BENCHMARKS_SRCS})
+        add_benchmark(${benchmark})
 endforeach()

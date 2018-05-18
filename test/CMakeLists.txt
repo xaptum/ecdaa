@@ -16,6 +16,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 macro(add_test_case case_file)
   get_filename_component(case_name ${case_file} NAME_WE)
+  set(case_name "ecdaa-${case_name}")
 
   add_executable(${case_name} ${case_file} $<TARGET_OBJECTS:ecdaa_utilities>)
 
@@ -45,7 +46,6 @@ endmacro()
 set(CURRENT_TEST_BINARY_DIR ${TOPLEVEL_BINARY_DIR}/testBin/)
 
 set(ECDAA_TEST_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks_ZZZ.c
         ${CMAKE_CURRENT_SOURCE_DIR}/big_XXX-tests.c
         ${CMAKE_CURRENT_SOURCE_DIR}/credential_ZZZ-tests.c
         ${CMAKE_CURRENT_SOURCE_DIR}/ecp2_ZZZ-tests.c
@@ -67,9 +67,9 @@ endforeach()
 
 # Add the integration-tests python script
 if(BUILD_EXAMPLES)
-        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/integration-tests.py ${CURRENT_TEST_BINARY_DIR}/integration-tests.py)
-        add_test(NAME integration-tests
-                COMMAND python "${CURRENT_TEST_BINARY_DIR}/integration-tests.py" "${TOPLEVEL_BINARY_DIR}/bin/")
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/integration-tests.py ${CURRENT_TEST_BINARY_DIR}/ecdaa-integration-tests.py)
+        add_test(NAME ecdaa-integration-tests
+                COMMAND python "${CURRENT_TEST_BINARY_DIR}/ecdaa-integration-tests.py" "${TOPLEVEL_BINARY_DIR}/bin/")
 endif()
 
 ################################################################################
