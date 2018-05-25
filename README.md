@@ -1,5 +1,10 @@
 # ecdaa
 
+[![Release](https://img.shields.io/github/release/xaptum/ecdaa.svg)](https://github.com/xaptum/ecdaa/releases)
+[![Build Status](https://travis-ci.org/xaptum/ecdaa.svg?branch=master)](https://travis-ci.org/xaptum/ecdaa)
+[![Coverage Status](https://coveralls.io/repos/github/xaptum/ecdaa/badge.svg?branch=master)](https://coveralls.io/github/xaptum/ecdaa?branch=master)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/13775/badge.svg)](https://scan.coverity.com/projects/xaptum-ecdaa)
+
 A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures.
 
 Created to support the [Xaptum](https://www.xaptum.com) Edge Network
@@ -7,12 +12,6 @@ Fabric, an IoT Network Solution.
 
 The project is self-contained, and provides all DAA functionality for Issuers, Members, and Verifiers.
 Pseudonym linking ("basename signatures") is optional, and secret-key revocation lists can be used.
-
-## Project Status
-
-[![Build Status](https://travis-ci.org/xaptum/ecdaa.svg?branch=master)](https://travis-ci.org/xaptum/ecdaa)
-[![Coverage Status](https://coveralls.io/repos/github/xaptum/ecdaa/badge.svg?branch=master)](https://coveralls.io/github/xaptum/ecdaa?branch=master)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/13775/badge.svg)](https://scan.coverity.com/projects/xaptum-ecdaa)
 
 ## Installation
 
