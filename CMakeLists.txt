@@ -18,7 +18,7 @@ list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
 project(ecdaa
         LANGUAGES C
-        VERSION "0.9.0")
+        VERSION "0.9.1")
 
 include(GNUInstallDirs)
 include(CTest)
@@ -30,9 +30,9 @@ option(BUILD_STATIC_LIBS "Build as a static library" OFF)
 # If not building as a shared library, force build as a static.  This
 # is to match the CMake default semantics of using
 # BUILD_SHARED_LIBS = OFF to indicate a static build.
-if (NOT DEFINED BUILD_SHARED_LIBS OR NOT  "${BUILD_SHARED_LIBS}")
+if(NOT BUILD_SHARED_LIBS)
   set(BUILD_STATIC_LIBS ON CACHE BOOL "Build as a static library" FORCE)
-endif ()
+endif()
 
 option(ECDAA_TPM_SUPPORT "Include ECDAA functions that require a TPM" ON)
 
