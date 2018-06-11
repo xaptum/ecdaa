@@ -1,3 +1,18 @@
+ecdaa (0.9.1-1) unstable; urgency=medium
+
+  [ Zane Beckwith ]
+  * Use urandom in examples as fall-through (don't check RNDGETENTROPY)
+
+  [ David R. Bild ]
+  * cmake: simplify checking of BUILD_SHARED_LIBS
+  * cmake: same target name if only building static or shared
+  * cmake: include ecdaa-tpm in ecdaa_Libraries
+
+  [ Zane Beckwith ]
+  * Bump patch number
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Mon, 11 Jun 2018 15:58:48 +0000
+
 ecdaa (0.9.0-3) unstable; urgency=medium
 
   [ Zane Beckwith ]
