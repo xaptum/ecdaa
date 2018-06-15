@@ -27,7 +27,7 @@
             printf("exiting"); \
             exit(1); \
         } \
-    } while(0);
+    } while(0)
 
 #define TEST_EXPECT(cond) \
     do \
@@ -36,7 +36,7 @@
             printf("Condition \'%s\' failed\n\tin file: \'%s\'\n\tin function: \'%s\'\n\tat line: %d\n", #cond,__FILE__,  __func__, __LINE__); \
             printf("continuing"); \
         } \
-    } while(0);
+    } while(0)
 
 void test_randomness(void *buf, size_t buflen)
 {
