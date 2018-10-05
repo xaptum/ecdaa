@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2017 Xaptum, Inc.
+ * Copyright 2018 Xaptum, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,20 +15,23 @@
  *    limitations under the License
  *
  *****************************************************************************/
+#include <ecdaa.h>
+#include "ecdaa_member_request_join.h"
+#include <string.h>
+#include <stdio.h>
+#include <stdint.h>
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
-#pragma once
+int ecdaa_member_request_join(const char* nonce, const char* public_key_file, const char* secret_key_file)
+{
+    // Generate member key-pair
+    size_t nonce_len = strlen(nonce);
+    if (nonce_len > 1048576) {    // 1MiB
+        return NONCE_OVERFLOW;
+    }
+    int ret = ecdaa_member_key_pair_FP256BN_generate_file(public_key_file, secret_key_file, (uint8_t*)nonce, (uint32_t)nonce_len, examples_rand);
+    if (0 != ret) {
+        return ret;
+    }
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/rand.h>
-#include <ecdaa/revocations_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
-#include <ecdaa/util/file_utils.h>
-#include <ecdaa/util/rand_util.h>
-#include <ecdaa/util/util_errors.h>
-
-#endif
+    return SUCCESS;
+}

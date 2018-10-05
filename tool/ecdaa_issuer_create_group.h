@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2017 Xaptum, Inc.
+ * Copyright 2018 Xaptum, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,20 +15,26 @@
  *    limitations under the License
  *
  *****************************************************************************/
+ #ifndef ECDAA_UTIL_CREATE_GROUP_H
+ #define ECDAA_UTIL_CREATE_GROUP_H
+ #pragma once
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
-#pragma once
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/rand.h>
-#include <ecdaa/revocations_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
-#include <ecdaa/util/file_utils.h>
-#include <ecdaa/util/rand_util.h>
-#include <ecdaa/util/util_errors.h>
+ /*
+  * Creates a issuer key pair and then serializes the public and secret keys
+  *
+  * Returns:
+  * 0                           on success
+  * KEY_CREATION_ERROR          an error occurred creating the keypair
+  * WRITE_TO_FILE_ERROR         an error occurred writing keys to files
+ */
+int ecdaa_create_group(const char* public_key_file, const char* secret_key_file);
 
-#endif
+ #ifdef __cplusplus
+ }
+ #endif
+
+ #endif

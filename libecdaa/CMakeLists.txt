@@ -1,11 +1,11 @@
 # Copyright 2017-2018 Xaptum, Inc.
-# 
+#
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
 #    You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #    Unless required by applicable law or agreed to in writing, software
 #    distributed under the License is distributed on an "AS IS" BASIS,
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,12 +23,18 @@ set(ECDAA_INPUT_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/revocations_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/signature_ZZZ.h
 
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/util/file_utils.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/util/rand_util.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/util/util_errors.h
+
         ${CMAKE_CURRENT_SOURCE_DIR}/credential_ZZZ.c
         ${CMAKE_CURRENT_SOURCE_DIR}/group_public_key_ZZZ.c
         ${CMAKE_CURRENT_SOURCE_DIR}/issuer_keypair_ZZZ.c
         ${CMAKE_CURRENT_SOURCE_DIR}/member_keypair_ZZZ.c
         ${CMAKE_CURRENT_SOURCE_DIR}/signature_ZZZ.c
 
+        ${CMAKE_CURRENT_SOURCE_DIR}/util/file_utils.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/util/rand_util.c
         ${CMAKE_CURRENT_SOURCE_DIR}/schnorr/schnorr_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/schnorr/schnorr_ZZZ.c
         )

@@ -15,20 +15,19 @@
  *    limitations under the License
  *
  *****************************************************************************/
+#include "ecdaa_issuer_create_group.h"
+#include <ecdaa.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
-#pragma once
+int ecdaa_create_group(const char* public_key_file, const char* secret_key_file)
+{
+    int ret = ecdaa_issuer_key_pair_FP256BN_generate_file(public_key_file, secret_key_file, examples_rand);
+    if (0 != ret) {
+        return ret;
+    }
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/rand.h>
-#include <ecdaa/revocations_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
-#include <ecdaa/util/file_utils.h>
-#include <ecdaa/util/rand_util.h>
-#include <ecdaa/util/util_errors.h>
-
-#endif
+    return 0;
+}

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2017 Xaptum, Inc.
+ * Copyright 2018 Xaptum, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,20 +15,27 @@
  *    limitations under the License
  *
  *****************************************************************************/
+ #ifndef ECDAA_UTIL_EXTRACT_GPK_H
+ #define ECDAA_UTIL_EXTRACT_GPK_H
+ #pragma once
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
-#pragma once
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/rand.h>
-#include <ecdaa/revocations_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
-#include <ecdaa/util/file_utils.h>
-#include <ecdaa/util/rand_util.h>
-#include <ecdaa/util/util_errors.h>
+ /*
+  * Creates a issuer key pair and then serializes the public and secret keys
+  *
+  * Returns:
+  * SUCCESS                     on success
+  * DESERIALIZE_KEY_ERROR       an error occurred deserializing the issuer public key
+  * READ_FROM_FILE_ERROR        an error occurred reading in a file
+  * WRITE_TO_FILE_ERROR         an error occurred writing to a file
+ */
+int ecdaa_extract_gpk(const char* public_key_file, const char* gpk_file);
 
-#endif
+ #ifdef __cplusplus
+ }
+ #endif
+
+ #endif

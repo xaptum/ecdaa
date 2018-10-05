@@ -104,6 +104,13 @@ void ecdaa_signature_ZZZ_serialize(uint8_t *buffer_out,
                                    struct ecdaa_signature_ZZZ *signature,
                                    int has_nym);
 
+int ecdaa_signature_ZZZ_serialize_file(const char* file,
+                                   struct ecdaa_signature_ZZZ *signature,
+                                   int has_nym);
+
+int ecdaa_signature_ZZZ_serialize_fp(FILE* fp,
+                                   struct ecdaa_signature_ZZZ *signature,
+                                   int has_nym);
 /*
  * De-serialize an `ecdaa_signature_ZZZ`, but _don't_ verify it.
  *

@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -64,6 +64,13 @@ int ecdaa_issuer_key_pair_ZZZ_generate(struct ecdaa_issuer_public_key_ZZZ *pk_ou
                                        struct ecdaa_issuer_secret_key_ZZZ *sk_out,
                                        ecdaa_rand_func get_random);
 
+int ecdaa_issuer_key_pair_ZZZ_generate_file(const char *pk_file,
+                                       const char *sk_file,
+                                       ecdaa_rand_func get_random);
+
+int ecdaa_issuer_key_pair_ZZZ_generate_fp(FILE *pk_file,
+                                       FILE *sk_file,
+                                       ecdaa_rand_func get_random);
 /*
  * Check the signature on an `ecdaa_issuer_public_key_ZZZ`.
  *
@@ -84,7 +91,15 @@ int ecdaa_issuer_public_key_ZZZ_validate(struct ecdaa_issuer_public_key_ZZZ *ipk
  * The provided buffer is assumed to be large enough.
  */
 void ecdaa_issuer_public_key_ZZZ_serialize(uint8_t *buffer_out,
+                                            struct ecdaa_issuer_public_key_ZZZ *ipk);
+
+int ecdaa_issuer_public_key_ZZZ_serialize_fp(FILE *p,
+                                            struct ecdaa_issuer_public_key_ZZZ *ipk);
+
+int ecdaa_issuer_public_key_ZZZ_serialize_file(const char* file,
                                            struct ecdaa_issuer_public_key_ZZZ *ipk);
+
+
 
 /*
  * De-serialize an `ecdaa_issuer_public_key_ZZZ` and check its validity and signature.
@@ -98,10 +113,16 @@ void ecdaa_issuer_public_key_ZZZ_serialize(uint8_t *buffer_out,
  *  0 on success
  *  -1 if gpk is invalid
  *  -1 if format of c, sx, or sy is invalid
- *  -2 if (c, sx, sy) don't verify 
+ *  -2 if (c, sx, sy) don't verify
  */
 int ecdaa_issuer_public_key_ZZZ_deserialize(struct ecdaa_issuer_public_key_ZZZ *ipk_out,
-                                            uint8_t *buffer_in);
+                                             uint8_t *buffer_in);
+
+int ecdaa_issuer_public_key_ZZZ_deserialize_file(struct ecdaa_issuer_public_key_ZZZ *ipk_out,
+                                            const char* file);
+
+int ecdaa_issuer_public_key_ZZZ_deserialize_fp(struct ecdaa_issuer_public_key_ZZZ *ipk_out,
+                                            FILE* fp);
 
 /*
  * Serialize an `ecdaa_issuer_secret_key_ZZZ`
@@ -115,6 +136,12 @@ int ecdaa_issuer_public_key_ZZZ_deserialize(struct ecdaa_issuer_public_key_ZZZ *
 void ecdaa_issuer_secret_key_ZZZ_serialize(uint8_t *buffer_out,
                                            struct ecdaa_issuer_secret_key_ZZZ *isk);
 
+int ecdaa_issuer_secret_key_ZZZ_serialize_file(const char* file, struct ecdaa_issuer_secret_key_ZZZ *isk);
+
+int ecdaa_issuer_secret_key_ZZZ_serialize_fp(FILE* fp, struct ecdaa_issuer_secret_key_ZZZ *isk);
+
+
+
 /*
  * De-serialize an `ecdaa_issuer_secret_key_ZZZ`
  *
@@ -126,11 +153,17 @@ void ecdaa_issuer_secret_key_ZZZ_serialize(uint8_t *buffer_out,
  *  0 on success
  */
 int ecdaa_issuer_secret_key_ZZZ_deserialize(struct ecdaa_issuer_secret_key_ZZZ *isk_out,
-                                            uint8_t *buffer_in);
+                                             uint8_t *buffer_in);
+
+int ecdaa_issuer_secret_key_ZZZ_deserialize_file(struct ecdaa_issuer_secret_key_ZZZ *isk_out,
+                                            const char* file);
+
+int ecdaa_issuer_secret_key_ZZZ_deserialize_fp(struct ecdaa_issuer_secret_key_ZZZ *isk_out,
+                                            FILE* fp);
+
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-
