@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,50 +16,21 @@
  *
  *****************************************************************************/
 
-#include <tss2/tss2_sys.h>
-#include <tss2/tss2_tcti_socket.h>
-
-char *hostname_g = "localhost";
-const char *port_g = "2321";
-char *pub_key_filename_g = "pub_key.txt";
-char *handle_filename_g = "handle.txt";
+#include "../ecdaa-test-utils.h"
+#include "tpm_ZZZ-test-utils.h"
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
-#define TEST_ASSERT(cond) \
-    do \
-    { \
-        if (!(cond)) { \
-            printf("Condition \'%s\' failed\n\tin file: \'%s\'\n\tin function: \'%s\'\n\tat line: %d\n", #cond,__FILE__,  __func__, __LINE__); \
-            printf("exiting\n"); \
-            exit(1); \
-        } \
-    } while(0);
+void parse_cmd_args(int argc, char *argv[]) {
+    if (3 != argc) {
+        printf("usage: %s <public key output file> <handle output file>\n", argv[0]);
+        exit(1);
+    }
 
-#define TEST_EXPECT(cond) \
-    do \
-    { \
-        if (!(cond)) { \
-            printf("Condition \'%s\' failed\n\tin file: \'%s\'\n\tin function: \'%s\'\n\tat line: %d\n", #cond,__FILE__,  __func__, __LINE__); \
-            printf("continuing\n"); \
-        } \
-    } while(0);
-
-#define parse_cmd_args(argc, argv) \
-    do \
-    { \
-        if (argc >= 2) { \
-            hostname_g = argv[1]; \
-        } \
-        printf("Connecting to %s:%s for TPM testing\n", hostname_g, port_g); \
-        if (argc == 4) { \
-            pub_key_filename_g = argv[2]; \
-            handle_filename_g = argv[3]; \
-        } \
-        printf("Saving public key to %s and handle to %s\n", pub_key_filename_g, handle_filename_g);\
-    } while(0);
+    pub_key_filename = argv[1];
+    handle_filename = argv[2];
+    printf("Saving public key to %s and handle to %s\n", pub_key_filename, handle_filename);
+}
 
 struct test_context {
     TSS2_SYS_CONTEXT *sapi_ctx;
@@ -68,7 +39,7 @@ struct test_context {
     TPM_HANDLE persistent_key_handle;
     TPM2B_PUBLIC out_public;
     TPM2B_PRIVATE out_private;
-    unsigned char tcti_buffer[128];
+    unsigned char tcti_buffer[256];
     unsigned char sapi_buffer[4200];
 
 };
@@ -86,26 +57,53 @@ static int evict_control(struct test_context *ctx);
 
 int main(int argc, char *argv[])
 {
+    // Included in the utils header, but we don't need them.
+    (void)tpm_initialize;
+    (void)tpm_cleanup;
+
     parse_cmd_args(argc, argv);
 
-    create_key(pub_key_filename_g, handle_filename_g);
+    create_key(pub_key_filename, handle_filename);
 }
 
 void initialize(struct test_context *ctx)
 {
-    TSS2_TCTI_CONTEXT *tcti_ctx = (TSS2_TCTI_CONTEXT*)ctx->tcti_buffer;
-    size_t tcti_ctx_size = tss2_tcti_getsize_socket();
-    TEST_ASSERT(sizeof(ctx->tcti_buffer) >= tcti_ctx_size);
-    
-    TSS2_RC init_ret;
+    const char *hostname = "localhost";
+    const char *port = "2321";
+    const char *dev_filepath = "/dev/tpm0";
 
-    init_ret = tss2_tcti_init_socket(hostname_g, port_g, tcti_ctx);
-    TEST_ASSERT(TSS2_RC_SUCCESS == init_ret);
+    int init_ret;
+
+    TSS2_TCTI_CONTEXT *tcti_ctx = (TSS2_TCTI_CONTEXT*)ctx->tcti_buffer;
+#ifdef USE_TCP_TPM
+    (void)dev_filepath;
+    if (tss2_tcti_getsize_socket() > sizeof(ctx->tcti_buffer)) {
+        printf("Error: socket TCTI context size larger than pre-allocated buffer\n");
+        exit(1);
+    }
+    init_ret = tss2_tcti_init_socket(hostname, port, tcti_ctx);
+    if (TSS2_RC_SUCCESS != init_ret) {
+        printf("Error: Unable to initialize socket TCTI context\n");
+        exit(1);
+    }
+#else
+    (void)hostname;
+    (void)port;
+    if (tss2_tcti_getsize_device() > sizeof(ctx->tcti_buffer)) {
+        printf("Error: device TCTI context size larger than pre-allocated buffer\n");
+        exit(1);
+    }
+    init_ret = tss2_tcti_init_device(dev_filepath, strlen(dev_filepath), tcti_ctx);
+    if (TSS2_RC_SUCCESS != init_ret) {
+        printf("Error: Unable to initialize device TCTI context\n");
+        exit(1);
+    }
+#endif
 
     ctx->sapi_ctx = (TSS2_SYS_CONTEXT*)ctx->sapi_buffer;
     size_t sapi_ctx_size = Tss2_Sys_GetContextSize(0);
     TEST_ASSERT(sizeof(ctx->sapi_buffer) >= sapi_ctx_size);
-    
+
     TSS2_ABI_VERSION abi_version = TSS2_ABI_CURRENT_VERSION;
     init_ret = Tss2_Sys_Initialize(ctx->sapi_ctx,
                                    sapi_ctx_size,
@@ -299,7 +297,7 @@ int create_primary(struct test_context *ctx)
 
     TPM2B_NAME name = {.size=sizeof(TPMU_NAME)};
 
-    TPM2B_PUBLIC public_key; 
+    TPM2B_PUBLIC public_key;
 
     TSS2_RC ret = Tss2_Sys_CreatePrimary(ctx->sapi_ctx,
                                          hierarchy,

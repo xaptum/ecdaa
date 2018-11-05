@@ -23,6 +23,4 @@ fi
 test_bin_dir="$1"
 out_dir="$2"
 
-tpm_sim_host=localhost
-
-${test_bin_dir}/ecdaa-create_tpm_key-util "${tpm_sim_host}" "${out_dir}/pub_key.txt" "${out_dir}/handle.txt"
+${test_bin_dir}/ecdaa-create_tpm_key-util "${out_dir}/pub_key.txt" "${out_dir}/handle.txt"

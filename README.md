@@ -97,14 +97,20 @@ Running the integration tests requires `-DBUILD_EXAMPLES=ON`.
 
 #### Testing TPM support
 
+By default, the tests use a device-file-based TCTI.
+For this reason, `sudo` privileges may be required to run them.
+
+The tests can instead be built to use a TCP-socket-based TCTI,
+by using the CMake option `TEST_USE_TCP_TPM=ON`.
+
 The TPM tests require a [TPM 2.0
 simulator](https://sourceforge.net/projects/ibmswtpm2/) running
 locally on TCP port 2321.
 
-An ECDAA signing key must loaded in the simulator. The associated
+An ECDAA signing key must loaded in the TPM. The associated
 public key (in x9.62 format) and TPM handle (as a hex integer) must be
 in `build/test/tpm/pub_key.txt` and `build/test/tpm/handle.txt`.
-Currently, only the `TPM_ECC_NIST_P256` curve is supported in the tests.
+Currently, only the `TPM_ECC_BN_P256` curve is supported in the tests.
 
 Convenience scripts in the `.travis` directory can be used to download
 and prepare a TPM2.0 simulator for the tests.
