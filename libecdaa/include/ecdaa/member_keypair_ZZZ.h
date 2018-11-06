@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,9 +38,10 @@ struct ecdaa_member_public_key_ZZZ {
     ECP_ZZZ Q;
     BIG_XXX c;
     BIG_XXX s;
+    BIG_XXX n;
 };
 
-#define ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH ((2*MODBYTES_XXX + 1) + MODBYTES_XXX + MODBYTES_XXX)
+#define ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH ((2*MODBYTES_XXX + 1) + MODBYTES_XXX + MODBYTES_XXX + MODBYTES_XXX)
 size_t ecdaa_member_public_key_ZZZ_length(void);
 
 /*
@@ -68,7 +69,7 @@ int ecdaa_member_key_pair_ZZZ_generate(struct ecdaa_member_public_key_ZZZ *pk_ou
 
 /*
  * Check the signature on an `ecdaa_member_public_key_ZZZ`.
- * 
+ *
  * Returns:
  * 0 on success
  * -1 if signature is not valid.
@@ -81,7 +82,7 @@ int ecdaa_member_public_key_ZZZ_validate(struct ecdaa_member_public_key_ZZZ *pk,
  * Serialize an `ecdaa_member_public_key_ZZZ`
  *
  * The serialized format is:
- *  ( 0x04 | Q.x-coord | Q.y-coord | c | s )
+ *  ( 0x04 | Q.x-coord | Q.y-coord | c | s | n)
  *  where all numbers are zero-padded and in big-endian byte-order.
  *
  * The provided buffer is assumed to be large enough.
@@ -96,13 +97,13 @@ void ecdaa_member_public_key_ZZZ_serialize(uint8_t *buffer_out,
  *  provided by the Issuer when the Member generated this public key.
  *
  * The serialized format is expected to be:
- *  ( 0x04 | Q.x-coord | Q.y-coord | c | s )
+ *  ( 0x04 | Q.x-coord | Q.y-coord | c | s | n)
  *  where all numbers are zero-padded and in big-endian byte-order.
  *
  * Returns:
  * 0 on success
  * -1 if the format is incorrect
- * -2 if  (c,s) don't verify
+ * -2 if  (c,s,n) don't verify
  */
 int ecdaa_member_public_key_ZZZ_deserialize(struct ecdaa_member_public_key_ZZZ *pk_out,
                                             uint8_t *buffer_in,
@@ -113,7 +114,7 @@ int ecdaa_member_public_key_ZZZ_deserialize(struct ecdaa_member_public_key_ZZZ *
  * De-serialize an `ecdaa_member_public_key_ZZZ`, check its validity, but NOT its signature.
  *
  * The serialized format is expected to be:
- *  ( 0x04 | Q.x-coord | Q.y-coord | c | s )
+ *  ( 0x04 | Q.x-coord | Q.y-coord | c | s | n)
  *  where all numbers are zero-padded and in big-endian byte-order.
  *
  *  NOTE: The full public key (including the signature) is de-serialized,

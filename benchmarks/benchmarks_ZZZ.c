@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -112,7 +112,7 @@ void schnorr_sign_benchmark()
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
 
-    BIG_XXX c, s;
+    BIG_XXX c, s, n;
 
     struct timeval tv1;
     gettimeofday(&tv1, NULL);
@@ -120,7 +120,7 @@ void schnorr_sign_benchmark()
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
     for (unsigned i = 0; i < rounds; i++) {
-        schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, benchmark_randomness);
+        schnorr_sign_ZZZ(&c, &s, &n, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, benchmark_randomness);
     }
 
     struct timeval tv2;

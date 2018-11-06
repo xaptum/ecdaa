@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -63,6 +63,7 @@ int ecdaa_signature_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
     //  where the basepoint is S.
     int sign_ret = schnorr_sign_ZZZ(&signature_out->c,
                                     &signature_out->s,
+                                    &signature_out->n,
                                     &signature_out->K,
                                     message,
                                     message_len,
@@ -89,10 +90,11 @@ int ecdaa_signature_ZZZ_verify(struct ecdaa_signature_ZZZ *signature,
     // 1) Check R,S,T,W for membership in group, and R and S for !=inf
     // NOTE: We assume the signature was obtained from a call to `deserialize`,
     //  which already checked the validity of the points R,S,T,W
-    
+
     // 2) Check Schnorr-type signature
     int schnorr_ret = schnorr_verify_ZZZ(signature->c,
                                          signature->s,
+                                         signature->n,
                                          &signature->K,
                                          message,
                                          message_len,
@@ -158,8 +160,10 @@ void ecdaa_signature_ZZZ_serialize(uint8_t *buffer_out,
     ecp_ZZZ_serialize(buffer_out + 2*MODBYTES_XXX + 2*ECP_ZZZ_LENGTH, &signature->T);
     ecp_ZZZ_serialize(buffer_out + 2*MODBYTES_XXX + 3*ECP_ZZZ_LENGTH, &signature->W);
 
+    BIG_XXX_toBytes((char*)(buffer_out + 2*MODBYTES_XXX + 4*ECP_ZZZ_LENGTH), signature->n);
+
     if (has_nym) {
-        ecp_ZZZ_serialize(buffer_out + 2*MODBYTES_XXX + 4*ECP_ZZZ_LENGTH, &signature->K);
+        ecp_ZZZ_serialize(buffer_out + 3*MODBYTES_XXX + 4*ECP_ZZZ_LENGTH, &signature->K);
     }
 }
 
@@ -184,8 +188,10 @@ int ecdaa_signature_ZZZ_deserialize(struct ecdaa_signature_ZZZ *signature_out,
     if (0 != ecp_ZZZ_deserialize(&signature_out->W, buffer_in + 2*MODBYTES_XXX + 3*ECP_ZZZ_LENGTH))
         ret = -1;
 
+    BIG_XXX_fromBytes(signature_out->n, (char*)(buffer_in + 2*MODBYTES_XXX + 4*ECP_ZZZ_LENGTH));
+
     if (has_nym) {
-        if (0 != ecp_ZZZ_deserialize(&signature_out->K, buffer_in + 2*MODBYTES_XXX + 4*ECP_ZZZ_LENGTH))
+        if (0 != ecp_ZZZ_deserialize(&signature_out->K, buffer_in + 3*MODBYTES_XXX + 4*ECP_ZZZ_LENGTH))
             ret = -1;
     } else {
         ecp_ZZZ_set_to_generator(&signature_out->K);
@@ -229,7 +235,7 @@ void ecdaa_signature_ZZZ_access_pseudonym_in_serialized(uint8_t **pseudonym_out,
                                                         uint32_t *pseudonym_length_out,
                                                         uint8_t *signature_in)
 {
-    *pseudonym_out = signature_in + 2*MODBYTES_XXX + 4*ECP_ZZZ_LENGTH;
+    *pseudonym_out = signature_in + 3*MODBYTES_XXX + 4*ECP_ZZZ_LENGTH;
 
     *pseudonym_length_out = ECP_ZZZ_LENGTH;
 }

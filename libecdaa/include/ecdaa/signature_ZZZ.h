@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,13 +44,14 @@ struct ecdaa_signature_ZZZ {
     ECP_ZZZ S;
     ECP_ZZZ T;
     ECP_ZZZ W;
+    BIG_XXX n;
     ECP_ZZZ K;
 };
 
-#define ECDAA_SIGNATURE_ZZZ_LENGTH (2*MODBYTES_XXX + 4*(2*MODBYTES_XXX + 1))
+#define ECDAA_SIGNATURE_ZZZ_LENGTH (3*MODBYTES_XXX + 4*(2*MODBYTES_XXX + 1))
 size_t ecdaa_signature_ZZZ_length(void);
 
-#define ECDAA_SIGNATURE_ZZZ_WITH_NYM_LENGTH (2*MODBYTES_XXX + 5*(2*MODBYTES_XXX + 1))
+#define ECDAA_SIGNATURE_ZZZ_WITH_NYM_LENGTH (3*MODBYTES_XXX + 5*(2*MODBYTES_XXX + 1))
 size_t ecdaa_signature_ZZZ_with_nym_length(void);
 
 /*
@@ -94,6 +95,7 @@ int ecdaa_signature_ZZZ_verify(struct ecdaa_signature_ZZZ *signature,
  *    0x04 | S.x-coord | S.y-coord |
  *    0x04 | T.x-coord | T.y-coord |
  *    0x04 | W.x-coord | W.y-coord |
+ *    n |
  *    0x04 | K.x-coord | K.y-coord ) <- If has_nym==1
  *
  * The provided buffer is assumed to be large enough.
@@ -111,6 +113,7 @@ void ecdaa_signature_ZZZ_serialize(uint8_t *buffer_out,
  *    0x04 | S.x-coord | S.y-coord |
  *    0x04 | T.x-coord | T.y-coord |
  *    0x04 | W.x-coord | W.y-coord |
+ *    n |
  *    0x04 | K.x-coord | K.y-coord ) <- If has_nym==1
  *
  *  NOTE: The four G1 points are checked as being on the curve,
@@ -133,6 +136,7 @@ int ecdaa_signature_ZZZ_deserialize(struct ecdaa_signature_ZZZ *signature_out,
  *    0x04 | S.x-coord | S.y-coord |
  *    0x04 | T.x-coord | T.y-coord |
  *    0x04 | W.x-coord | W.y-coord |
+ *    n |
  *    0x04 | K.x-coord | K.y-coord ) <- If has_nym==1
  *
  * Returns:

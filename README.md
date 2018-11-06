@@ -143,6 +143,10 @@ If no `ECDAA_CURVES` is set, the default is to build `FP256BN`.
 
 ## Using a TPM
 
+This implementation has been tested against the following TCG TPM2.0 specifications:
+- Specification v1.38
+- Specification v1.16 with Errata v1.5
+
 Signatures can be created with the help of a Trusted Platform Module (TPM).
 
 To do so, a signing key must first be created and loaded in the TPM.
@@ -335,9 +339,12 @@ ecdaa_verify message.bin sig.bin gpk.bin sk_revocation_list.bin num-sks-in-sk_re
 
 The signature algorithm is that of
 [Camenisch et al., 2016](https://doi.org/10.1007/978-3-662-49387-8_10),
-with the exception that the "fix by Xi et al." discussed in Section 5.2 is NOT used
+with two exceptions:
+- The "fix by Xi et al." discussed in Section 5.2 is NOT used
 when creating TPM-enabled signatures (the current TPM2.0 specification doesn't allow
 such signatures to be created).
+- During signing, a random nonce is included in the message hash, as discussed in
+section 5.2.2 of [Camenisch et al., 2017](https://eprint.iacr.org/2017/639).
 
 # Testing and Analysis
 
