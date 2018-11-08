@@ -64,7 +64,7 @@ int schnorr_sign_TPM_ZZZ(BIG_XXX *c_out,
         ECP_ZZZ P2;
         int32_t hash_ret = ecp_ZZZ_fromhash(&P2, basename, basename_len);
         if (hash_ret < 0)
-            return -1;
+            return -3;
 
         // 2ii) Compute c' = Hash( R | basepoint | public_key | L | P2 | K_out | basename | msg_in )
         uint8_t hash_input_begin[SIX_ECP_LENGTH];

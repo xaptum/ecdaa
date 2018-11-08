@@ -134,8 +134,6 @@ int schnorr_verify_ZZZ(BIG_XXX c,
                        const uint8_t *basename,
                        uint32_t basename_len)
 {
-    int ret = 0;
-
     // 1) Check public key for validity
     // NOTE: We assume the public key was obtained from `deserialize`,
     //  which checked its validity.
@@ -165,7 +163,7 @@ int schnorr_verify_ZZZ(BIG_XXX c,
         // 1ii) Find P2 by hashing basename
         int32_t hash_ret = ecp_ZZZ_fromhash(&P2, basename, basename_len);
         if (hash_ret < 0)
-            return -1;
+            return -2;
 
         // 2ii) Multiply P2 by s (L = s*P2)
         ECP_ZZZ_copy(&L, &P2);
@@ -213,10 +211,10 @@ int schnorr_verify_ZZZ(BIG_XXX c,
 
     // 6) Compare c' and c
     if (0 != BIG_XXX_comp(c_prime, c)) {
-        ret = -1;
+        return -1;
     }
 
-    return ret;
+    return 0;
 }
 
 int credential_schnorr_sign_ZZZ(BIG_XXX *c_out,
@@ -278,8 +276,6 @@ int credential_schnorr_verify_ZZZ(BIG_XXX c,
                                   ECP_ZZZ *member_public_key,
                                   ECP_ZZZ *D)
 {
-    int ret = 0;
-
     // 1) Set generator
     ECP_ZZZ generator;
     ecp_ZZZ_set_to_generator(&generator);
@@ -332,10 +328,10 @@ int credential_schnorr_verify_ZZZ(BIG_XXX c,
 
     // 6) Compare c' and c
     if (0 != BIG_XXX_comp(c_prime, c)) {
-        ret = -1;
+        return -1;
     }
 
-    return ret;
+    return 0;
 }
 
 int issuer_schnorr_sign_ZZZ(BIG_XXX *c_out,
@@ -397,8 +393,6 @@ int issuer_schnorr_verify_ZZZ(BIG_XXX c,
                               ECP2_ZZZ *X,
                               ECP2_ZZZ *Y)
 {
-    int ret = 0;
-
     // 1) Set generator_2
     ECP2_ZZZ generator_2;
     ecp2_ZZZ_set_to_generator(&generator_2);
@@ -450,10 +444,10 @@ int issuer_schnorr_verify_ZZZ(BIG_XXX c,
 
     // 6) Compare c' and c
     if (0 != BIG_XXX_comp(c_prime, c)) {
-        ret = -1;
+        return -1;
     }
 
-    return ret;
+    return 0;
 }
 
 int commit(ECP_ZZZ *P1,
