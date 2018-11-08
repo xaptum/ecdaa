@@ -119,7 +119,7 @@ run the following steps:
 ``` bash
 .travis/install-ibm-tpm2.sh ./ibm-tpm2-simulator
 .travis/run-ibm-tpm2.sh ./ibm-tpm2-simulator/
-.travis/prepare-tpm2.sh ./build/testBin/ ./build/test/tpm
+.travis/prepare-tpm2.sh ./ibm-tpm2-simulator ./build/test/tpm
 ```
 
 The `ecdaa` tests will now be able to create signatures using the TPM2.0 simulator.

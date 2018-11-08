@@ -26,14 +26,6 @@ pkill tpm_server || true
 
 pushd $installation_dir
 
-pushd tpm
-./tpm_server -rm &
-sleep 2
-popd
-
-pushd tss/utils/
-./powerup
-./startup
-popd
+./simulator.sh start
 
 popd
