@@ -58,6 +58,7 @@ int schnorr_sign_TPM_ZZZ(BIG_XXX *c_out,
     }
 
     // 2) (Sign 1) Compute first hash
+    //      (modular-reduce c', too).
     BIG_XXX c_prime;
     if (basename_len != 0) {
         // 2i) Find P2 by hashing basename
@@ -85,13 +86,11 @@ int schnorr_sign_TPM_ZZZ(BIG_XXX *c_out,
         ecp_ZZZ_serialize(hash_input_begin+2*ECP_ZZZ_LENGTH, public_key);
         big_XXX_from_two_message_hash(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
     }
-
-    // 3) (Sign 2) Modular-reduce c'
     BIG_XXX curve_order;
     BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
     BIG_XXX_mod(c_prime, curve_order);
 
-    // 4) (Sign 3) (Call TPM2_Sign)
+    // 3) (Sign 2) (Call TPM2_Sign)
     TPMT_SIGNATURE signature;
     TPM2B_DIGEST digest = {.size=MODBYTES_XXX, .buffer={0}};
     BIG_XXX_toBytes((char*)digest.buffer, c_prime);
@@ -99,23 +98,25 @@ int schnorr_sign_TPM_ZZZ(BIG_XXX *c_out,
     if (0 != ret)
         return -2;
 
-    // 5) (Output) Convert TPMS_SIGNATURE_ECC.signatureS into BIG_XXX
+    // 4) (Output) Convert TPMS_SIGNATURE_ECC.signatureS into BIG_XXX
     BIG_XXX_fromBytesLen(*s_out,
                          (char*)signature.signature.ecdaa.signatureS.buffer,
                          signature.signature.ecdaa.signatureS.size);
 
-    // 6) (Output) Convert TPMS_SIGNATURE_ECC.signatureR into BIG_XXX
+    // 5) (Output) Convert TPMS_SIGNATURE_ECC.signatureR into BIG_XXX
     BIG_XXX_fromBytesLen(*n_out,
                          (char*)signature.signature.ecdaa.signatureR.buffer,
                          signature.signature.ecdaa.signatureR.size);
 
-    // 7) (Output) Compute final hash
+    // 6) (Output) Compute final hash
     //      c_out = Hash(n | c')
+    //      Mod-reduce final hash, too
     big_XXX_from_two_message_hash(c_out,
                                   signature.signature.ecdaa.signatureR.buffer,
                                   signature.signature.ecdaa.signatureR.size,
                                   digest.buffer,
                                   digest.size);
+    BIG_XXX_mod(*c_out, curve_order);
 
     return 0;
 }
