@@ -100,12 +100,14 @@ int schnorr_sign_TPM_ZZZ(BIG_XXX *c_out,
         return -2;
 
     // 5) (Output) Convert TPMS_SIGNATURE_ECC.signatureS into BIG_XXX
-    assert(MODBYTES_XXX == signature.signature.ecdaa.signatureS.size);
-    BIG_XXX_fromBytes(*s_out, (char*)signature.signature.ecdaa.signatureS.buffer);
+    BIG_XXX_fromBytesLen(*s_out,
+                         (char*)signature.signature.ecdaa.signatureS.buffer,
+                         signature.signature.ecdaa.signatureS.size);
 
     // 6) (Output) Convert TPMS_SIGNATURE_ECC.signatureR into BIG_XXX
-    assert(MODBYTES_XXX == signature.signature.ecdaa.signatureR.size);
-    BIG_XXX_fromBytes(*n_out, (char*)signature.signature.ecdaa.signatureR.buffer);
+    BIG_XXX_fromBytesLen(*n_out,
+                         (char*)signature.signature.ecdaa.signatureR.buffer,
+                         signature.signature.ecdaa.signatureR.size);
 
     // 7) (Output) Compute final hash
     //      c_out = Hash(n | c')

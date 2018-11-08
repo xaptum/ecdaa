@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -163,10 +163,14 @@ int tpm_to_amcl_format(ECP_ZZZ *point_out, TPM2B_ECC_POINT *tpm_in)
         return -2;
 
     BIG_XXX x;
-    BIG_XXX_fromBytes(x, (char*)tpm_in->point.x.buffer);
+    BIG_XXX_fromBytesLen(x,
+                         (char*)tpm_in->point.x.buffer,
+                         tpm_in->point.x.size);
 
     BIG_XXX y;
-    BIG_XXX_fromBytes(y, (char*)tpm_in->point.y.buffer);
+    BIG_XXX_fromBytesLen(y,
+                      (char*)tpm_in->point.y.buffer,
+                      tpm_in->point.y.size);
 
     if (1 == ECP_ZZZ_set(point_out, x, y)) {
         return 0;
