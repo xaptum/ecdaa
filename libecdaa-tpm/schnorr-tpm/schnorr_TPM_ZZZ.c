@@ -26,6 +26,19 @@
 
 #include <assert.h>
 
+static
+int try_tpm_sign(TPMT_SIGNATURE *signature_out,
+                 TPM2B_DIGEST *digest,
+                 ECP_ZZZ *K_out,
+                 const uint8_t *msg_in,
+                 uint32_t msg_len,
+                 ECP_ZZZ *basepoint,
+                 ECP_ZZZ *public_key,
+                 const uint8_t *basename,
+                 uint32_t basename_len,
+                 BIG_XXX *curve_order,
+                 struct ecdaa_tpm_context *tpm_ctx);
+
 enum {
     THREE_ECP_LENGTH = 3*ECP_ZZZ_LENGTH,
     SIX_ECP_LENGTH = 6*ECP_ZZZ_LENGTH
@@ -43,6 +56,79 @@ int schnorr_sign_TPM_ZZZ(BIG_XXX *c_out,
                          uint32_t basename_len,
                          struct ecdaa_tpm_context *tpm_ctx)
 {
+    // If we're not creating a basename-signature, but K_out != NULL,
+    //  set K_out:=g1_generator (so it de-serializes OK).
+    if (0 == basename_len && NULL != K_out) {
+        ecp_ZZZ_set_to_generator(K_out);
+    }
+
+    BIG_XXX curve_order;
+    BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
+
+    int attempts = 1;
+    TPMT_SIGNATURE signature;
+    TPM2B_DIGEST digest = {.size=MODBYTES_XXX, .buffer={0}};
+    while (attempts < MAX_TPM_SIGN_ATTEMPTS) {
+        int ret = try_tpm_sign(&signature,
+                               &digest,
+                               K_out,
+                               msg_in,
+                               msg_len,
+                               basepoint,
+                               public_key,
+                               basename,
+                               basename_len,
+                               &curve_order,
+                               tpm_ctx);
+        if (0 != ret)
+            return ret;
+
+        // The TPM spec appears to specify that a nonce with fewer than MODBYTES_XXX significant bytes
+        // should have leading 0's trimmed before getting put into the hash for the DAA signature.
+        // This is problematic, so we demand that the nonce always be MODBYTES_XX bytes in length.
+        if (MODBYTES_XXX == signature.signature.ecdaa.signatureR.size)
+            break;
+
+        ++attempts;
+    }
+    if (attempts >= MAX_TPM_SIGN_ATTEMPTS)
+        return -4;
+
+    // 4) (Output) Convert TPMS_SIGNATURE_ECC.signatureS into BIG_XXX
+    BIG_XXX_fromBytesLen(*s_out,
+                         (char*)signature.signature.ecdaa.signatureS.buffer,
+                         signature.signature.ecdaa.signatureS.size);
+
+    // 5) (Output) Convert TPMS_SIGNATURE_ECC.signatureR into BIG_XXX
+    BIG_XXX_fromBytesLen(*n_out,
+                         (char*)signature.signature.ecdaa.signatureR.buffer,
+                         signature.signature.ecdaa.signatureR.size);
+
+    // 6) (Output) Compute final hash
+    //      c_out = Hash(n | c')
+    //      Mod-reduce final hash, too
+    big_XXX_from_two_message_hash(c_out,
+                                  signature.signature.ecdaa.signatureR.buffer,
+                                  signature.signature.ecdaa.signatureR.size,
+                                  digest.buffer,
+                                  digest.size);
+    BIG_XXX_mod(*c_out, curve_order);
+
+    return 0;
+}
+
+int try_tpm_sign(TPMT_SIGNATURE *signature_out,
+                 TPM2B_DIGEST *digest,
+                 ECP_ZZZ *K_out,
+                 const uint8_t *msg_in,
+                 uint32_t msg_len,
+                 ECP_ZZZ *basepoint,
+                 ECP_ZZZ *public_key,
+                 const uint8_t *basename,
+                 uint32_t basename_len,
+                 BIG_XXX *curve_order,
+                 struct ecdaa_tpm_context *tpm_ctx)
+{
     int ret = 0;
 
     // 1) (Commit) (call TPM2_Commit)
@@ -50,12 +136,6 @@ int schnorr_sign_TPM_ZZZ(BIG_XXX *c_out,
     ret = tpm_commit_ZZZ(tpm_ctx, basepoint, basename, basename_len, K_out, &L, &R);
     if (0 != ret)
         return -1;
-
-    // If we're not creating a basename-signature, but K_out != NULL,
-    //  set K_out:=g1_generator (so it de-serializes OK).
-    if (0 == basename_len && NULL != K_out) {
-        ecp_ZZZ_set_to_generator(K_out);
-    }
 
     // 2) (Sign 1) Compute first hash
     //      (modular-reduce c', too).
@@ -86,37 +166,13 @@ int schnorr_sign_TPM_ZZZ(BIG_XXX *c_out,
         ecp_ZZZ_serialize(hash_input_begin+2*ECP_ZZZ_LENGTH, public_key);
         big_XXX_from_two_message_hash(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
     }
-    BIG_XXX curve_order;
-    BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
-    BIG_XXX_mod(c_prime, curve_order);
+    BIG_XXX_mod(c_prime, *curve_order);
 
     // 3) (Sign 2) (Call TPM2_Sign)
-    TPMT_SIGNATURE signature;
-    TPM2B_DIGEST digest = {.size=MODBYTES_XXX, .buffer={0}};
-    BIG_XXX_toBytes((char*)digest.buffer, c_prime);
-    ret = tpm_sign(tpm_ctx, &digest, &signature);
+    BIG_XXX_toBytes((char*)digest->buffer, c_prime);
+    ret = tpm_sign(tpm_ctx, digest, signature_out);
     if (0 != ret)
         return -2;
-
-    // 4) (Output) Convert TPMS_SIGNATURE_ECC.signatureS into BIG_XXX
-    BIG_XXX_fromBytesLen(*s_out,
-                         (char*)signature.signature.ecdaa.signatureS.buffer,
-                         signature.signature.ecdaa.signatureS.size);
-
-    // 5) (Output) Convert TPMS_SIGNATURE_ECC.signatureR into BIG_XXX
-    BIG_XXX_fromBytesLen(*n_out,
-                         (char*)signature.signature.ecdaa.signatureR.buffer,
-                         signature.signature.ecdaa.signatureR.size);
-
-    // 6) (Output) Compute final hash
-    //      c_out = Hash(n | c')
-    //      Mod-reduce final hash, too
-    big_XXX_from_two_message_hash(c_out,
-                                  signature.signature.ecdaa.signatureR.buffer,
-                                  signature.signature.ecdaa.signatureR.size,
-                                  digest.buffer,
-                                  digest.size);
-    BIG_XXX_mod(*c_out, curve_order);
 
     return 0;
 }
