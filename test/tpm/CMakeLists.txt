@@ -59,6 +59,8 @@ set(ECDAA_TPM_TEST_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/signature_TPM_ZZZ-tests.c
         ${CMAKE_CURRENT_SOURCE_DIR}/tpm_ZZZ-test.c
         ${CMAKE_CURRENT_SOURCE_DIR}/create_tpm_key-util.c
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/schnorr_TPM_ZZZ-fuzz.c
         )
 
 foreach(template_file ${ECDAA_TPM_TEST_FILES})
