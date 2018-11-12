@@ -38,13 +38,13 @@ jobs:
       - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
       - mkdir -p ${ECDAA_BUILD_DIR}
       - pushd ${ECDAA_BUILD_DIR}
-      - cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
+      - cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON -DTEST_USE_TCP_TPM=ON
       - popd
     script:
       - pushd ${ECDAA_BUILD_DIR}
       - cmake --build . -- -j2
       - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${ECDAA_BUILD_DIR}/testBin ${TPM_KEY_DIR}
+      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
       - ctest -VV
       - popd
 
@@ -58,13 +58,13 @@ jobs:
       - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
       - mkdir -p ${ECDAA_BUILD_DIR}
       - pushd ${ECDAA_BUILD_DIR}
-      - cmake .. -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
+      - cmake .. -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON -DTEST_USE_TCP_TPM=ON
       - popd
     script:
       - pushd ${ECDAA_BUILD_DIR}
       - cmake --build . -- -j2
       - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${ECDAA_BUILD_DIR}/testBin ${TPM_KEY_DIR}
+      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
       - ctest -VV
       - popd
     after_success:
@@ -79,13 +79,13 @@ jobs:
       - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
       - mkdir -p ${ECDAA_BUILD_DIR}
       - pushd ${ECDAA_BUILD_DIR}
-      - cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
+      - cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON -DTEST_USE_TCP_TPM=ON
       - popd
     script:
       - pushd ${ECDAA_BUILD_DIR}
       - cmake --build . -- -j2
       - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${ECDAA_BUILD_DIR}/testBin ${TPM_KEY_DIR}
+      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
       - ctest -VV
       - popd
 
@@ -120,14 +120,14 @@ jobs:
       - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
       - mkdir -p ${ECDAA_BUILD_DIR}
       - pushd ${ECDAA_BUILD_DIR}
-      - cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
+      - cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON -DTEST_USE_TCP_TPM=ON
       - popd
     script:
       - pushd ${ECDAA_BUILD_DIR}
       - cmake --build . -- -j2
       - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${ECDAA_BUILD_DIR}/testBin ${TPM_KEY_DIR}
-      - ctest -VV -E benchmarks -T memcheck
+      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
+      - ctest -VV -E benchmarks\|fuzz -T memcheck
       - popd
     after_failure:
       - .travis/show-memcheck-results.sh ${TRAVIS_BUILD_DIR}
@@ -150,13 +150,13 @@ jobs:
       - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
       - mkdir -p ${ECDAA_BUILD_DIR}
       - pushd ${ECDAA_BUILD_DIR}
-      - cmake .. -DCMAKE_BUILD_TYPE=RelWithSanitize -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON
+      - cmake .. -DCMAKE_BUILD_TYPE=RelWithSanitize -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON -DTEST_USE_TCP_TPM=ON
       - popd
     script:
       - pushd ${ECDAA_BUILD_DIR}
       - cmake --build . -- -j2
       - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${ECDAA_BUILD_DIR}/testBin ${TPM_KEY_DIR}
+      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
       - ctest -VV -E benchmarks
       - popd
 

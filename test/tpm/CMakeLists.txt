@@ -14,10 +14,17 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
+option(TEST_USE_TCP_TPM "Use the socket-based TCTI in the tests" OFF)
+
+if(TEST_USE_TCP_TPM)
+        add_definitions(-DUSE_TCP_TPM)
+endif()
+
 expand_template(${CMAKE_CURRENT_SOURCE_DIR}/tpm_ZZZ-test-utils.h ECDAA_TPM_UTILS_LIST TRUE)
 
 macro(add_tpm_test_case case_file)
   get_filename_component(case_name ${case_file} NAME_WE)
+  set(case_name "ecdaa-${case_name}")
 
   add_executable(${case_name} ${case_file} $<TARGET_OBJECTS:ecdaa_utilities> ${ECDAA_TPM_UTILS_LIST})
 
@@ -52,6 +59,8 @@ set(ECDAA_TPM_TEST_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/signature_TPM_ZZZ-tests.c
         ${CMAKE_CURRENT_SOURCE_DIR}/tpm_ZZZ-test.c
         ${CMAKE_CURRENT_SOURCE_DIR}/create_tpm_key-util.c
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/schnorr_TPM_ZZZ-fuzz.c
         )
 
 foreach(template_file ${ECDAA_TPM_TEST_FILES})

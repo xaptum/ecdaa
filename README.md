@@ -1,5 +1,10 @@
 # ecdaa
 
+[![Release](https://img.shields.io/github/release/xaptum/ecdaa.svg)](https://github.com/xaptum/ecdaa/releases)
+[![Build Status](https://travis-ci.org/xaptum/ecdaa.svg?branch=master)](https://travis-ci.org/xaptum/ecdaa)
+[![Coverage Status](https://coveralls.io/repos/github/xaptum/ecdaa/badge.svg?branch=master)](https://coveralls.io/github/xaptum/ecdaa?branch=master)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/13775/badge.svg)](https://scan.coverity.com/projects/xaptum-ecdaa)
+
 A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures.
 
 Created to support the [Xaptum](https://www.xaptum.com) Edge Network
@@ -7,12 +12,6 @@ Fabric, an IoT Network Solution.
 
 The project is self-contained, and provides all DAA functionality for Issuers, Members, and Verifiers.
 Pseudonym linking ("basename signatures") is optional, and secret-key revocation lists can be used.
-
-## Project Status
-
-[![Build Status](https://travis-ci.org/xaptum/ecdaa.svg?branch=master)](https://travis-ci.org/xaptum/ecdaa)
-[![Coverage Status](https://coveralls.io/repos/github/xaptum/ecdaa/badge.svg?branch=master)](https://coveralls.io/github/xaptum/ecdaa?branch=master)
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/13775/badge.svg)](https://scan.coverity.com/projects/xaptum-ecdaa)
 
 ## Installation
 
@@ -98,14 +97,20 @@ Running the integration tests requires `-DBUILD_EXAMPLES=ON`.
 
 #### Testing TPM support
 
+By default, the tests use a device-file-based TCTI.
+For this reason, `sudo` privileges may be required to run them.
+
+The tests can instead be built to use a TCP-socket-based TCTI,
+by using the CMake option `TEST_USE_TCP_TPM=ON`.
+
 The TPM tests require a [TPM 2.0
 simulator](https://sourceforge.net/projects/ibmswtpm2/) running
 locally on TCP port 2321.
 
-An ECDAA signing key must loaded in the simulator. The associated
+An ECDAA signing key must loaded in the TPM. The associated
 public key (in x9.62 format) and TPM handle (as a hex integer) must be
 in `build/test/tpm/pub_key.txt` and `build/test/tpm/handle.txt`.
-Currently, only the `TPM_ECC_NIST_P256` curve is supported in the tests.
+Currently, only the `TPM_ECC_BN_P256` curve is supported in the tests.
 
 Convenience scripts in the `.travis` directory can be used to download
 and prepare a TPM2.0 simulator for the tests.
@@ -114,7 +119,7 @@ run the following steps:
 ``` bash
 .travis/install-ibm-tpm2.sh ./ibm-tpm2-simulator
 .travis/run-ibm-tpm2.sh ./ibm-tpm2-simulator/
-.travis/prepare-tpm2.sh ./build/testBin/ ./build/test/tpm
+.travis/prepare-tpm2.sh ./ibm-tpm2-simulator ./build/test/tpm
 ```
 
 The `ecdaa` tests will now be able to create signatures using the TPM2.0 simulator.
@@ -137,6 +142,10 @@ All curves supported by the `milagro-crypto-c` pairing-based-crypto library are 
 If no `ECDAA_CURVES` is set, the default is to build `FP256BN`.
 
 ## Using a TPM
+
+This implementation has been tested against the following TCG TPM2.0 specifications:
+- Specification v1.38
+- Specification v1.16 with Errata v1.5
 
 Signatures can be created with the help of a Trusted Platform Module (TPM).
 
@@ -330,9 +339,12 @@ ecdaa_verify message.bin sig.bin gpk.bin sk_revocation_list.bin num-sks-in-sk_re
 
 The signature algorithm is that of
 [Camenisch et al., 2016](https://doi.org/10.1007/978-3-662-49387-8_10),
-with the exception that the "fix by Xi et al." discussed in Section 5.2 is NOT used
+with two exceptions:
+- The "fix by Xi et al." discussed in Section 5.2 is NOT used
 when creating TPM-enabled signatures (the current TPM2.0 specification doesn't allow
 such signatures to be created).
+- During signing, a random nonce is included in the message hash, as discussed in
+section 5.2.2 of [Camenisch et al., 2017](https://eprint.iacr.org/2017/639).
 
 # Testing and Analysis
 

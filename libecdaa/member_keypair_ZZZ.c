@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,6 +47,7 @@ int ecdaa_member_key_pair_ZZZ_generate(struct ecdaa_member_public_key_ZZZ *pk,
     ecp_ZZZ_set_to_generator(&basepoint);
     int sign_ret = schnorr_sign_ZZZ(&pk->c,
                                     &pk->s,
+                                    &pk->n,
                                     NULL,
                                     nonce,
                                     nonce_length,
@@ -65,11 +66,12 @@ int ecdaa_member_public_key_ZZZ_validate(struct ecdaa_member_public_key_ZZZ *pk,
                                          uint32_t nonce_length)
 {
     int ret = 0;
-    
+
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
     int sign_ret = schnorr_verify_ZZZ(pk->c,
                                       pk->s,
+                                      pk->n,
                                       NULL,
                                       nonce_in,
                                       nonce_length,
@@ -89,6 +91,7 @@ void ecdaa_member_public_key_ZZZ_serialize(uint8_t *buffer_out,
     ecp_ZZZ_serialize(buffer_out, &pk->Q);
     BIG_XXX_toBytes((char*)(buffer_out + ecp_ZZZ_length()), pk->c);
     BIG_XXX_toBytes((char*)(buffer_out + ecp_ZZZ_length() + MODBYTES_XXX), pk->s);
+    BIG_XXX_toBytes((char*)(buffer_out + ecp_ZZZ_length() + MODBYTES_XXX + MODBYTES_XXX), pk->n);
 }
 
 int ecdaa_member_public_key_ZZZ_deserialize(struct ecdaa_member_public_key_ZZZ *pk_out,
@@ -127,6 +130,7 @@ int ecdaa_member_public_key_ZZZ_deserialize_no_check(struct ecdaa_member_public_
     // 2) Deserialize the schnorr signature
     BIG_XXX_fromBytes(pk_out->c, (char*)(buffer_in + ecp_ZZZ_length()));
     BIG_XXX_fromBytes(pk_out->s, (char*)(buffer_in + ecp_ZZZ_length() + MODBYTES_XXX));
+    BIG_XXX_fromBytes(pk_out->n, (char*)(buffer_in + ecp_ZZZ_length() + MODBYTES_XXX + MODBYTES_XXX));
 
     return ret;
 }

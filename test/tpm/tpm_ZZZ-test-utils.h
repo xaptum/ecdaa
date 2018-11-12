@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,12 @@
 
 #include <tss2/tss2_sys.h>
 #include <tss2/tss2_tcti_socket.h>
+#include <tss2/tss2_tcti_device.h>
+
+#include <string.h>
+
+const char *pub_key_filename = "pub_key.txt";
+const char *handle_filename = "handle.txt";
 
 static
 int read_public_key_from_files(uint8_t *public_key,
@@ -33,17 +39,16 @@ struct tpm_test_context {
     struct ecdaa_tpm_context tpm_ctx;
     uint8_t serialized_public_key[ECP_ZZZ_LENGTH];
     ECP_ZZZ public_key;
-    unsigned char tcti_buffer[128];
+    unsigned char tcti_buffer[256];
     TSS2_TCTI_CONTEXT *tcti_context;
 };
 
 static
 int tpm_initialize(struct tpm_test_context *ctx)
 {
-    const char *pub_key_filename = "pub_key.txt";
-    const char *handle_filename = "handle.txt";
     const char *hostname = "localhost";
     const char *port = "2321";
+    const char *dev_filepath = "/dev/tpm0";
 
     int ret = 0;
 
@@ -59,16 +64,32 @@ int tpm_initialize(struct tpm_test_context *ctx)
         return -1;
     }
 
+    ctx->tcti_context = (TSS2_TCTI_CONTEXT*)ctx->tcti_buffer;
+#ifdef USE_TCP_TPM
+    (void)dev_filepath;
     if (tss2_tcti_getsize_socket() > sizeof(ctx->tcti_buffer)) {
-        printf("Error: TCTI context size larger than pre-allocated buffer\n");
+        printf("Error: socket TCTI context size larger than pre-allocated buffer\n");
         return -1;
     }
-    ctx->tcti_context = (TSS2_TCTI_CONTEXT*)ctx->tcti_buffer;
     ret = tss2_tcti_init_socket(hostname, port, ctx->tcti_context);
     if (TSS2_RC_SUCCESS != ret) {
-        printf("Error: Unable to initialize TCTI context\n");
+        printf("Error: Unable to initialize socket TCTI context\n");
         return -1;
     }
+#else
+    (void)hostname;
+    (void)port;
+    if (tss2_tcti_getsize_device() > sizeof(ctx->tcti_buffer)) {
+        printf("Error: device TCTI context size larger than pre-allocated buffer\n");
+        return -1;
+    }
+    ret = tss2_tcti_init_device(dev_filepath, strlen(dev_filepath), ctx->tcti_context);
+    if (TSS2_RC_SUCCESS != ret) {
+        printf("Error: Unable to initialize device TCTI context\n");
+        return -1;
+    }
+#endif
+
     ret = ecdaa_tpm_context_init(&ctx->tpm_ctx, key_handle, NULL, 0, ctx->tcti_context);
     if (0 != ret) {
         printf("Error: ecdaa_tpm_context_init failed: 0x%x\n", ret);

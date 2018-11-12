@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -96,16 +96,18 @@ void schnorr_sign_sane()
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
 
-    BIG_XXX c, s;
+    BIG_XXX c, s, n;
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &n, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
 
     TEST_ASSERT(0 == BIG_XXX_iszilch(c));
     TEST_ASSERT(0 == BIG_XXX_iszilch(s));
+    TEST_ASSERT(0 == BIG_XXX_iszilch(n));
     TEST_ASSERT(0 == BIG_XXX_isunity(c));
     TEST_ASSERT(0 == BIG_XXX_isunity(s));
+    TEST_ASSERT(0 == BIG_XXX_isunity(n));
 
     printf("\tsuccess\n");
 }
@@ -123,13 +125,13 @@ void schnorr_verify_wrong_key()
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
 
-    BIG_XXX c, s;
+    BIG_XXX c, s, n;
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &n, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
 
-    TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, NULL, msg, msg_len, &basepoint, &public_wrong, NULL, 0));
+    TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, n, NULL, msg, msg_len, &basepoint, &public_wrong, NULL, 0));
 
     printf("\tsuccess\n");
 }
@@ -148,13 +150,13 @@ void schnorr_verify_wrong_msg()
     uint8_t *msg_wrong = (uint8_t*) "Wrong message";
     uint32_t msg_len_wrong = strlen((char*)msg_wrong);
 
-    BIG_XXX c, s;
+    BIG_XXX c, s, n;
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &n, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
 
-    TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, NULL, msg_wrong, msg_len_wrong, &basepoint, &public, NULL, 0));
+    TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, n, NULL, msg_wrong, msg_len_wrong, &basepoint, &public, NULL, 0));
 
     printf("\tsuccess\n");
 }
@@ -171,11 +173,11 @@ void schnorr_verify_bad_sig()
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
 
-    BIG_XXX c={314,0}, s={2718,0};   // Just set these to random values
+    BIG_XXX c={314,0}, s={2718,0}, n={57721,0};   // Just set these to random values
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, NULL, msg, msg_len, &basepoint, &public, NULL, 0));
+    TEST_ASSERT(-1 == schnorr_verify_ZZZ(c, s, n, NULL, msg, msg_len, &basepoint, &public, NULL, 0));
 
     printf("\tsuccess\n");
 }
@@ -192,13 +194,13 @@ void schnorr_sign_integration()
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
 
-    BIG_XXX c, s;
+    BIG_XXX c, s, n;
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &n, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
 
-    TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, NULL, msg, msg_len, &basepoint, &public, NULL, 0));
+    TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, n, NULL, msg, msg_len, &basepoint, &public, NULL, 0));
 
     printf("\tsuccess\n");
 }
@@ -210,7 +212,7 @@ void schnorr_sign_integration_other_basepoint()
     uint8_t *msg = (uint8_t*) "Test message";
     uint32_t msg_len = strlen((char*)msg);
 
-    BIG_XXX c, s;
+    BIG_XXX c, s, n;
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
@@ -224,9 +226,9 @@ void schnorr_sign_integration_other_basepoint()
     ECP_ZZZ_copy(&public, &basepoint);
     ECP_ZZZ_mul(&public, private);
 
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &n, NULL, msg, msg_len, &basepoint, &public, private, NULL, 0, test_randomness));
 
-    TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, NULL, msg, msg_len, &basepoint, &public, NULL, 0));
+    TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, n, NULL, msg, msg_len, &basepoint, &public, NULL, 0));
 
     printf("\tsuccess\n");
 }
@@ -246,14 +248,14 @@ static void schnorr_basename()
     uint8_t *basename = (uint8_t*) "BASENAME";
     uint32_t basename_len = strlen((char*)basename);
 
-    BIG_XXX c, s;
+    BIG_XXX c, s, n;
     ECP_ZZZ K;
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &K, msg, msg_len, &basepoint, &public, private, basename, basename_len, test_randomness));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &n, &K, msg, msg_len, &basepoint, &public, private, basename, basename_len, test_randomness));
 
-    TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, &K, msg, msg_len, &basepoint, &public, basename, basename_len));
+    TEST_ASSERT(0 == schnorr_verify_ZZZ(c, s, n, &K, msg, msg_len, &basepoint, &public, basename, basename_len));
 
     printf("\tsuccess\n");
 }
@@ -275,14 +277,14 @@ static void schnorr_wrong_basename_fails()
     uint8_t *wrong_basename = (uint8_t*) "WRONGBASENAME";
     uint32_t wrong_basename_len = strlen((char*)wrong_basename);
 
-    BIG_XXX c, s;
+    BIG_XXX c, s, n;
     ECP_ZZZ K;
 
     ECP_ZZZ basepoint;
     ecp_ZZZ_set_to_generator(&basepoint);
-    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &K, msg, msg_len, &basepoint, &public, private, basename, basename_len, test_randomness));
+    TEST_ASSERT(0 == schnorr_sign_ZZZ(&c, &s, &n, &K, msg, msg_len, &basepoint, &public, private, basename, basename_len, test_randomness));
 
-    TEST_ASSERT(0 != schnorr_verify_ZZZ(c, s, &K, msg, msg_len, &basepoint, &public, wrong_basename, wrong_basename_len));
+    TEST_ASSERT(0 != schnorr_verify_ZZZ(c, s, n, &K, msg, msg_len, &basepoint, &public, wrong_basename, wrong_basename_len));
 
     printf("\tsuccess\n");
 }

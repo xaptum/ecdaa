@@ -23,19 +23,11 @@ fi
 installation_dir="$1"
 
 if [[ ! -d "$installation_dir" ]]; then
-        git clone https://github.com/zanebeckwith/ibm-tpm2-simulator-mirror "$installation_dir"
+        git clone https://github.com/xaptum-eng/ibm-tpm2-simulator-mirror "$installation_dir"
 fi
 
 pushd $installation_dir 
 
-pushd ./tpm
 make
-popd
-
-pushd ./tss
-pushd ./utils/
-make
-popd
-popd
 
 popd

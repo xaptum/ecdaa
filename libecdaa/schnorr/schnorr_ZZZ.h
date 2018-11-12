@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -45,11 +45,13 @@ void schnorr_keygen_ZZZ(ECP_ZZZ *public_out,
 /*
  * Perform Schnorr signature of msg_in, allowing for a non-standard basepoint and basename.
  *
+ * n_out = RAND(Z_p)
  * if basename:
- *  c_out = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | RAND(Z_p)*P2 | P2 | [private_key]P2 | basename | msg_in )
+ *  c = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | RAND(Z_p)*P2 | P2 | [private_key]P2 | basename | msg_in )
  *      where P2 = the curve point hashed from basename (cf. `ecp_ZZZ_fromhash`)
  * else:
- *  c_out = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | msg_in )
+ *  c = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | msg_in )
+ * c_out = Hash ( n_out | c )
  * s_out = RAND(Z_p) + c_out * private_key
  *
  * public_key = private_key * basepoint
@@ -62,6 +64,7 @@ void schnorr_keygen_ZZZ(ECP_ZZZ *public_out,
  */
 int schnorr_sign_ZZZ(BIG_XXX *c_out,
                      BIG_XXX *s_out,
+                     BIG_XXX *n_out,
                      ECP_ZZZ *K_out,
                      const uint8_t *msg_in,
                      uint32_t msg_len,
@@ -73,9 +76,9 @@ int schnorr_sign_ZZZ(BIG_XXX *c_out,
                      ecdaa_rand_func get_random);
 
 /*
- * Verify that (c, s) is a valid Schnorr signature of msg_in, allowing for a non-standard basepoint.
+ * Verify that (c, s, n) is a valid Schnorr signature of msg_in, allowing for a non-standard basepoint.
  *
- * Check c = Hash( s*basepoint - c*public_key | basepoint | public_key | msg_in )
+ * Check c = Hash(n | Hash( s*basepoint - c*public_key | basepoint | public_key | msg_in ) )
  *
  * c and s must be reduced modulo group order (and thus normalized, too), first
  *
@@ -84,9 +87,11 @@ int schnorr_sign_ZZZ(BIG_XXX *c_out,
  * Returns:
  *  0 on success
  *  -1 if (c, s) is not a valid signature
+ *  -2 if basename_len != 0 and the basename fails to hash to a G1 point
  */
 int schnorr_verify_ZZZ(BIG_XXX c,
                        BIG_XXX s,
+                       BIG_XXX n,
                        ECP_ZZZ *K,
                        const uint8_t *msg_in,
                        uint32_t msg_len,

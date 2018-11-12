@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,6 +59,7 @@ void schnorr_keygen_ZZZ(ECP_ZZZ *public_out,
 
 int schnorr_sign_ZZZ(BIG_XXX *c_out,
                      BIG_XXX *s_out,
+                     BIG_XXX *n_out,
                      ECP_ZZZ *K_out,
                      const uint8_t *msg_in,
                      uint32_t msg_len,
@@ -75,10 +76,12 @@ int schnorr_sign_ZZZ(BIG_XXX *c_out,
     int commit_ret = commit(basepoint, private_key, basename, basename_len, &k, &P2, K_out, &L, &R, get_random);
     if (0 != commit_ret)
         return -1;
-    
-    // 2) (Sign 1) Compute hash
+
+    // 2) (Sign 1) Compute first hash
+    //      (modular-reduce c', too).
+    BIG_XXX c_prime;
     if (basename_len != 0) {
-        // Compute c = Hash( R | basepoint | public_key | L | P2 | K_out | basename | msg_in )
+        // Compute c' = Hash( R | basepoint | public_key | L | P2 | K_out | basename | msg_in )
         uint8_t hash_input_begin[SIX_ECP_LENGTH];
         assert(6*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
         ecp_ZZZ_serialize(hash_input_begin, &R);
@@ -87,20 +90,31 @@ int schnorr_sign_ZZZ(BIG_XXX *c_out,
         ecp_ZZZ_serialize(hash_input_begin+3*ECP_ZZZ_LENGTH, &L);
         ecp_ZZZ_serialize(hash_input_begin+4*ECP_ZZZ_LENGTH, &P2);
         ecp_ZZZ_serialize(hash_input_begin+5*ECP_ZZZ_LENGTH, K_out);
-        big_XXX_from_three_message_hash(c_out, hash_input_begin, sizeof(hash_input_begin), basename, basename_len, msg_in, msg_len);
+        big_XXX_from_three_message_hash(&c_prime, hash_input_begin, sizeof(hash_input_begin), basename, basename_len, msg_in, msg_len);
     } else {
-        // Compute c = Hash( R | basepoint | public_key | msg_in )
+        // Compute c' = Hash( R | basepoint | public_key | msg_in )
         uint8_t hash_input_begin[THREE_ECP_LENGTH];
         assert(3*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
         ecp_ZZZ_serialize(hash_input_begin, &R);
         ecp_ZZZ_serialize(hash_input_begin+ECP_ZZZ_LENGTH, basepoint);
         ecp_ZZZ_serialize(hash_input_begin+2*ECP_ZZZ_LENGTH, public_key);
-        big_XXX_from_two_message_hash(c_out, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
+        big_XXX_from_two_message_hash(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
     }
-
-    // 3) (Sign 2) Compute s = k + c * private_key
     BIG_XXX curve_order;
     BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
+    BIG_XXX_mod(c_prime, curve_order);
+
+    // 3) (Sign 2) Compute n <- Z_n
+    ecp_ZZZ_random_mod_order(n_out, get_random);
+
+    // 4) (Sign 3) Compute final hash
+    //      c_out = Hash(n | c')
+    uint8_t final_hash_input_begin[2*MODBYTES_XXX];
+    BIG_XXX_toBytes((char*)final_hash_input_begin, *n_out);
+    BIG_XXX_toBytes((char*)(final_hash_input_begin+MODBYTES_XXX), c_prime);
+    big_XXX_from_hash(c_out, final_hash_input_begin, sizeof(final_hash_input_begin));
+
+    // 5) (Sign 4) Compute s = k + c_out * private_key
     big_XXX_mod_mul_and_add(s_out, k, *c_out, private_key, curve_order);    // normalizes and mod-reduces s_out and c_out
 
     // Clear intermediate, sensitive memory.
@@ -111,6 +125,7 @@ int schnorr_sign_ZZZ(BIG_XXX *c_out,
 
 int schnorr_verify_ZZZ(BIG_XXX c,
                        BIG_XXX s,
+                       BIG_XXX n,
                        ECP_ZZZ *K,
                        const uint8_t *msg_in,
                        uint32_t msg_len,
@@ -119,8 +134,6 @@ int schnorr_verify_ZZZ(BIG_XXX c,
                        const uint8_t *basename,
                        uint32_t basename_len)
 {
-    int ret = 0;
-
     // 1) Check public key for validity
     // NOTE: We assume the public key was obtained from `deserialize`,
     //  which checked its validity.
@@ -140,9 +153,9 @@ int schnorr_verify_ZZZ(BIG_XXX c,
     // Nb. No need to call ECP_ZZZ_affine here,
     // as R gets passed to ECP_ZZZ_toOctet in a minute (which implicitly converts to affine)
 
-    // 5) Compute hash
-    //      (modular-reduce c', too).
-    BIG_XXX c_prime;
+    // 5) Compute inner hash
+    //      (modular-reduce c'', too)
+    BIG_XXX c_dbl_prime;
     if (0 != basename_len) {
         // 1,2,3,4 part ii) If checking a basename signature:
         ECP_ZZZ P2;
@@ -150,7 +163,7 @@ int schnorr_verify_ZZZ(BIG_XXX c,
         // 1ii) Find P2 by hashing basename
         int32_t hash_ret = ecp_ZZZ_fromhash(&P2, basename, basename_len);
         if (hash_ret < 0)
-            return -1;
+            return -2;
 
         // 2ii) Multiply P2 by s (L = s*P2)
         ECP_ZZZ_copy(&L, &P2);
@@ -164,7 +177,7 @@ int schnorr_verify_ZZZ(BIG_XXX c,
         // 4) Compute difference of L and c*K, and save to L (L = s*P2 - c*K)
         ECP_ZZZ_sub(&L, &K_c);
 
-        // c' = Hash( R | basepoint | public_key | L | P2 | K | basename | msg_in )
+        // c'' = Hash( R | basepoint | public_key | L | P2 | K | basename | msg_in )
         uint8_t hash_input_begin[SIX_ECP_LENGTH];
         assert(6*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
         ecp_ZZZ_serialize(hash_input_begin, &R);
@@ -173,29 +186,35 @@ int schnorr_verify_ZZZ(BIG_XXX c,
         ecp_ZZZ_serialize(hash_input_begin+3*ECP_ZZZ_LENGTH, &L);
         ecp_ZZZ_serialize(hash_input_begin+4*ECP_ZZZ_LENGTH, &P2);
         ecp_ZZZ_serialize(hash_input_begin+5*ECP_ZZZ_LENGTH, K);
-        big_XXX_from_three_message_hash(&c_prime, hash_input_begin, sizeof(hash_input_begin), basename, basename_len, msg_in, msg_len);
-        BIG_XXX curve_order;
-        BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
-        BIG_XXX_mod(c_prime, curve_order);
+        big_XXX_from_three_message_hash(&c_dbl_prime, hash_input_begin, sizeof(hash_input_begin), basename, basename_len, msg_in, msg_len);
     } else {
-        // c' = Hash( R | basepoint | public_key | msg_in )
+        // c'' = Hash( R | basepoint | public_key | msg_in )
         uint8_t hash_input_begin[THREE_ECP_LENGTH];
         assert(3*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
         ecp_ZZZ_serialize(hash_input_begin, &R);
         ecp_ZZZ_serialize(hash_input_begin+ECP_ZZZ_LENGTH, basepoint);
         ecp_ZZZ_serialize(hash_input_begin+2*ECP_ZZZ_LENGTH, public_key);
-        big_XXX_from_two_message_hash(&c_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
-        BIG_XXX curve_order;
-        BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
-        BIG_XXX_mod(c_prime, curve_order);
+        big_XXX_from_two_message_hash(&c_dbl_prime, hash_input_begin, sizeof(hash_input_begin), msg_in, msg_len);
     }
+    BIG_XXX curve_order;
+    BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
+    BIG_XXX_mod(c_dbl_prime, curve_order);
+
+    // 6) Compute final hash c' = Hash(n | c'')
+    //      (modular-reduce c', too).
+    BIG_XXX c_prime;
+    uint8_t final_hash_input_begin[2*MODBYTES_XXX];
+    BIG_XXX_toBytes((char*)final_hash_input_begin, n);
+    BIG_XXX_toBytes((char*)(final_hash_input_begin+MODBYTES_XXX), c_dbl_prime);
+    big_XXX_from_hash(&c_prime, final_hash_input_begin, sizeof(final_hash_input_begin));
+    BIG_XXX_mod(c_prime, curve_order);
 
     // 6) Compare c' and c
     if (0 != BIG_XXX_comp(c_prime, c)) {
-        ret = -1;
+        return -1;
     }
 
-    return ret;
+    return 0;
 }
 
 int credential_schnorr_sign_ZZZ(BIG_XXX *c_out,
@@ -257,8 +276,6 @@ int credential_schnorr_verify_ZZZ(BIG_XXX c,
                                   ECP_ZZZ *member_public_key,
                                   ECP_ZZZ *D)
 {
-    int ret = 0;
-
     // 1) Set generator
     ECP_ZZZ generator;
     ecp_ZZZ_set_to_generator(&generator);
@@ -311,10 +328,10 @@ int credential_schnorr_verify_ZZZ(BIG_XXX c,
 
     // 6) Compare c' and c
     if (0 != BIG_XXX_comp(c_prime, c)) {
-        ret = -1;
+        return -1;
     }
 
-    return ret;
+    return 0;
 }
 
 int issuer_schnorr_sign_ZZZ(BIG_XXX *c_out,
@@ -376,8 +393,6 @@ int issuer_schnorr_verify_ZZZ(BIG_XXX c,
                               ECP2_ZZZ *X,
                               ECP2_ZZZ *Y)
 {
-    int ret = 0;
-
     // 1) Set generator_2
     ECP2_ZZZ generator_2;
     ecp2_ZZZ_set_to_generator(&generator_2);
@@ -429,10 +444,10 @@ int issuer_schnorr_verify_ZZZ(BIG_XXX c,
 
     // 6) Compare c' and c
     if (0 != BIG_XXX_comp(c_prime, c)) {
-        ret = -1;
+        return -1;
     }
 
-    return ret;
+    return 0;
 }
 
 int commit(ECP_ZZZ *P1,
