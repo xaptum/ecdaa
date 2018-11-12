@@ -127,7 +127,7 @@ jobs:
       - cmake --build . -- -j2
       - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
       - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
-      - ctest -VV -E benchmarks -T memcheck
+      - ctest -VV -E benchmarks\|fuzz -T memcheck
       - popd
     after_failure:
       - .travis/show-memcheck-results.sh ${TRAVIS_BUILD_DIR}

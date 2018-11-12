@@ -26,6 +26,8 @@ extern "C" {
 
 struct ecdaa_prng;
 
+#define MAX_TPM_SIGN_ATTEMPTS 10
+
 #include <ecdaa-tpm/tpm_context.h>
 
 #include <amcl/big_XXX.h>
@@ -54,7 +56,10 @@ struct ecdaa_prng;
  *
  *  Returns:
  *   0 on success
- *   -1 if basepoint is not valid
+ *   -1 if TPM2_Commit fails
+ *   -2 if TPM2_Sign fails
+ *   -3 if the basename can't be hashed into a G1 point
+ *   -4 if TPM2_Sign returns a nonce with fewer than MODBYTES_XXX bytes more than MAX_TPM_SIGN_ATTEMPTS times.
  */
 int schnorr_sign_TPM_ZZZ(BIG_XXX *c_out,
                          BIG_XXX *s_out,

@@ -118,7 +118,11 @@ static void schnorr_TPM_basename()
         TEST_ASSERT(0==1);
     }
 
-    TEST_ASSERT(0 == schnorr_verify_FP256BN(c, s, n, &K, msg, msg_len, &G1, &ctx.public_key, basename, basename_len));
+    ret = schnorr_verify_FP256BN(c, s, n, &K, msg, msg_len, &G1, &ctx.public_key, basename, basename_len);
+    if (0 != ret) {
+        printf("Error in schnorr_verify_TPM_ZZZ, ret=%d, tpm_rc=0x%x\n", ret, ctx.tpm_ctx.last_return_code);
+        TEST_ASSERT(0==1);
+    }
 
     tpm_cleanup(&ctx);
 
@@ -164,7 +168,11 @@ static void schnorr_TPM_wrong_basename_fails()
         TEST_ASSERT(0==1);
     }
 
-    TEST_ASSERT(0 != schnorr_verify_FP256BN(c, s, n, &K, msg, msg_len, &G1, &ctx.public_key, wrong_basename, wrong_basename_len));
+    ret = schnorr_verify_FP256BN(c, s, n, &K, msg, msg_len, &G1, &ctx.public_key, wrong_basename, wrong_basename_len);
+    if (0 == ret) {
+        printf("Error in schnorr_verify_TPM_ZZZ (expected non-zero return), ret=%d, tpm_rc=0x%x\n", ret, ctx.tpm_ctx.last_return_code);
+        TEST_ASSERT(0==1);
+    }
 
     tpm_cleanup(&ctx);
 

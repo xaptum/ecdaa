@@ -55,6 +55,8 @@ set(ECDAA_TEST_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/member_keypair_ZZZ-tests.c
         ${CMAKE_CURRENT_SOURCE_DIR}/schnorr_ZZZ-tests.c
         ${CMAKE_CURRENT_SOURCE_DIR}/signature_ZZZ-tests.c
+
+        ${CMAKE_CURRENT_SOURCE_DIR}/schnorr_ZZZ-fuzz.c
         )
 
 foreach(template_file ${ECDAA_TEST_FILES})

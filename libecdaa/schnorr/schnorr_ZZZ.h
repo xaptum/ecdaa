@@ -87,6 +87,7 @@ int schnorr_sign_ZZZ(BIG_XXX *c_out,
  * Returns:
  *  0 on success
  *  -1 if (c, s) is not a valid signature
+ *  -2 if basename_len != 0 and the basename fails to hash to a G1 point
  */
 int schnorr_verify_ZZZ(BIG_XXX c,
                        BIG_XXX s,
