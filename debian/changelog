@@ -1,3 +1,34 @@
+ecdaa (0.10.0-1) unstable; urgency=medium
+
+  [ Zane Beckwith ]
+  * Set compiler flags (e.g. -std= and -Werror) as add_compile_options.
+
+  [ David R. Bild ]
+  * Separate benchmarks from tests
+  * add 'ecdaa-' prefix to tests
+
+  [ Zane Beckwith ]
+  * Travis: Use prefixed `prepare-tpm2` utility.
+
+  [ David R. Bild ]
+  * readme: add release badge to readme
+
+  [ Zane Beckwith ]
+  * Tests: Don't terminate test macros with semicolon
+  * Add editorconfig.org file
+  * test: Support device-file TCTI for TPM
+  * test: Update tpm_ZZZ-test for new TPM_Sign behavior
+  * Update signature algorithm for TCG Errata v1.15
+  * travis: Use new simulator mirror
+  * Use length-checked version of AMCL deserialization when reading output from TPM.
+  * Improve return codes from schnorr functions.
+  * test: Add repetetive "fuzzing" schnorr tests.
+  * Mod-reduce c_out in schnorr-TPM
+  * tpm: Retry TPM_Sign if nonce isn't full-length.
+  * Bump minor version number.
+
+ -- Zane Beckwith <zane.beckwtih@xaptum.com>  Mon, 12 Nov 2018 17:27:29 +0000
+
 ecdaa (0.9.1-1) unstable; urgency=medium
 
   [ Zane Beckwith ]
