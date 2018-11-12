@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,9 +53,10 @@ void full_test()
     const uint8_t *msg = (uint8_t*)"msg";
     const uint32_t msg_len = 3;
 
-    BIG_XXX c, s;
+    BIG_XXX c, s, n;
     ret = schnorr_sign_TPM_ZZZ(&c,
                                &s,
+                               &n,
                                NULL,
                                msg,
                                msg_len,
@@ -69,7 +70,7 @@ void full_test()
         TEST_ASSERT(0==1);
     }
 
-    ret = schnorr_verify_FP256BN(c, s, NULL, msg, msg_len, &G1, &ctx.public_key, NULL, 0);
+    ret = schnorr_verify_FP256BN(c, s, n, NULL, msg, msg_len, &G1, &ctx.public_key, NULL, 0);
     if (0 != ret) {
         printf("Error in schnorr_verify_TPM_ZZZ, ret=%d, tpm_rc=0x%x\n", ret, ctx.tpm_ctx.last_return_code);
         TEST_ASSERT(0==1);
@@ -98,11 +99,12 @@ static void schnorr_TPM_basename()
     uint8_t *basename = (uint8_t*) "BASENAME";
     uint32_t basename_len = strlen((char*)basename);
 
-    BIG_XXX c, s;
+    BIG_XXX c, s, n;
     ECP_FP256BN K;
 
     ret = schnorr_sign_TPM_ZZZ(&c,
                                &s,
+                               &n,
                                &K,
                                msg,
                                msg_len,
@@ -116,7 +118,11 @@ static void schnorr_TPM_basename()
         TEST_ASSERT(0==1);
     }
 
-    TEST_ASSERT(0 == schnorr_verify_FP256BN(c, s, &K, msg, msg_len, &G1, &ctx.public_key, basename, basename_len));
+    ret = schnorr_verify_FP256BN(c, s, n, &K, msg, msg_len, &G1, &ctx.public_key, basename, basename_len);
+    if (0 != ret) {
+        printf("Error in schnorr_verify_TPM_ZZZ, ret=%d, tpm_rc=0x%x\n", ret, ctx.tpm_ctx.last_return_code);
+        TEST_ASSERT(0==1);
+    }
 
     tpm_cleanup(&ctx);
 
@@ -143,11 +149,12 @@ static void schnorr_TPM_wrong_basename_fails()
     uint8_t *wrong_basename = (uint8_t*) "WRONGBASENAME";
     uint32_t wrong_basename_len = strlen((char*)wrong_basename);
 
-    BIG_XXX c, s;
+    BIG_XXX c, s, n;
     ECP_FP256BN K;
 
     ret = schnorr_sign_TPM_ZZZ(&c,
                                &s,
+                               &n,
                                &K,
                                msg,
                                msg_len,
@@ -161,7 +168,11 @@ static void schnorr_TPM_wrong_basename_fails()
         TEST_ASSERT(0==1);
     }
 
-    TEST_ASSERT(0 != schnorr_verify_FP256BN(c, s, &K, msg, msg_len, &G1, &ctx.public_key, wrong_basename, wrong_basename_len));
+    ret = schnorr_verify_FP256BN(c, s, n, &K, msg, msg_len, &G1, &ctx.public_key, wrong_basename, wrong_basename_len);
+    if (0 == ret) {
+        printf("Error in schnorr_verify_TPM_ZZZ (expected non-zero return), ret=%d, tpm_rc=0x%x\n", ret, ctx.tpm_ctx.last_return_code);
+        TEST_ASSERT(0==1);
+    }
 
     tpm_cleanup(&ctx);
 

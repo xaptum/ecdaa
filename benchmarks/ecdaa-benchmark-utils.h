@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2017 Xaptum, Inc.
+ * Copyright 2017-2018 Xaptum, Inc.
  * 
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define TEST_ASSERT(cond) \
+#define BENCHMARK_ASSERT(cond) \
     do \
     { \
         if (!(cond)) { \
@@ -27,25 +27,16 @@
             printf("exiting"); \
             exit(1); \
         } \
-    } while(0)
+    } while(0);
 
-#define TEST_EXPECT(cond) \
-    do \
-    { \
-        if (!(cond)) { \
-            printf("Condition \'%s\' failed\n\tin file: \'%s\'\n\tin function: \'%s\'\n\tat line: %d\n", #cond,__FILE__,  __func__, __LINE__); \
-            printf("continuing"); \
-        } \
-    } while(0)
-
-void test_randomness(void *buf, size_t buflen)
+void benchmark_randomness(void *buf, size_t buflen)
 {
-    // No need to worry about threading in these tests
+    // No need to worry about threading in these benchmarks
     static FILE *file_ptr = NULL;
     if (NULL == file_ptr)
         file_ptr = fopen("/dev/urandom", "r");
-    TEST_ASSERT(file_ptr != NULL);
+    BENCHMARK_ASSERT(file_ptr != NULL);
 
     size_t read_ret = fread(buf, 1, buflen, file_ptr);
-    TEST_ASSERT(read_ret == buflen);
+    BENCHMARK_ASSERT(read_ret == buflen);
 }

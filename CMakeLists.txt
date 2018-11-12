@@ -18,7 +18,7 @@ list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
 project(ecdaa
         LANGUAGES C
-        VERSION "0.9.1")
+        VERSION "0.10.0")
 
 include(GNUInstallDirs)
 include(CTest)
@@ -26,6 +26,8 @@ include(DetermineWordSize)
 
 option(BUILD_SHARED_LIBS "Build as a shared library" ON)
 option(BUILD_STATIC_LIBS "Build as a static library" OFF)
+
+option(BUILD_BENCHMARKS "Build benchmarks" ON)
 
 # If not building as a shared library, force build as a static.  This
 # is to match the CMake default semantics of using
@@ -56,7 +58,7 @@ if(ECDAA_TPM_SUPPORT)
   find_package(xaptum-tpm 0.5.0 REQUIRED QUIET)
 endif()
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall -Wextra -std=c99 -Wno-missing-field-initializers")
+add_compile_options(-std=c99 -Werror -Wall -Wextra -Wno-missing-field-initializers)
 SET(CMAKE_C_FLAGS_DEBUGWITHCOVERAGE "${CMAKE_C_FLAGS_DEBUGWITHCOVERAGE} -O0 -fprofile-arcs -ftest-coverage")
 SET(CMAKE_C_FLAGS_RELWITHSANITIZE "${CMAKE_C_FLAGS_RELWITHSANITIZE} -O2 -g -fsanitize=address,undefined -fsanitize=unsigned-integer-overflow")
 
@@ -133,6 +135,13 @@ endif()
 ################################################################################
 if (BUILD_TESTING)
         add_subdirectory(test)
+endif()
+
+################################################################################
+# Benchmarks
+################################################################################
+if (BUILD_BENCHMARKS)
+        add_subdirectory(benchmarks)
 endif()
 
 ################################################################################

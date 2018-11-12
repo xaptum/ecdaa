@@ -14,7 +14,7 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
-add_definitions("-Wno-unused-function")
+add_compile_options("-Wno-unused-function")
 
 set(CURRENT_PROGRAMS_BINARY_DIR ${TOPLEVEL_BINARY_DIR}/bin/)
 

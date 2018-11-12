@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +26,8 @@ extern "C" {
 
 struct ecdaa_prng;
 
+#define MAX_TPM_SIGN_ATTEMPTS 10
+
 #include <ecdaa-tpm/tpm_context.h>
 
 #include <amcl/big_XXX.h>
@@ -37,11 +39,13 @@ struct ecdaa_prng;
 /*
  * Perform TPM2_Commit/TPM2_Sign signature of msg_in, allowing for a non-standard basepoint.
  *
+ * n_out = RAND(Z_p)
  * if basename:
- *  c_out = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | RAND(Z_p)*P2 | P2 | [private_key]P2 | basename | msg_in )
+ *  c = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | RAND(Z_p)*P2 | P2 | [private_key]P2 | basename | msg_in )
  *      where P2 = the curve point hashed from basename (cf. `ecp_ZZZ_fromhash`)
  * else:
- *  c_out = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | msg_in )
+ *  c = Hash ( RAND(Z_p)*basepoint | basepoint | public_key | msg_in )
+ * c_out = Hash ( n_out | c )
  * s_out = RAND(Z_p) + c_out * private_key,
  *
  * Note: All random numbers are chosen by the TPM.
@@ -52,10 +56,14 @@ struct ecdaa_prng;
  *
  *  Returns:
  *   0 on success
- *   -1 if basepoint is not valid
+ *   -1 if TPM2_Commit fails
+ *   -2 if TPM2_Sign fails
+ *   -3 if the basename can't be hashed into a G1 point
+ *   -4 if TPM2_Sign returns a nonce with fewer than MODBYTES_XXX bytes more than MAX_TPM_SIGN_ATTEMPTS times.
  */
 int schnorr_sign_TPM_ZZZ(BIG_XXX *c_out,
                          BIG_XXX *s_out,
+                         BIG_XXX *n_out,
                          ECP_ZZZ *K_out,
                          const uint8_t *msg_in,
                          uint32_t msg_len,
