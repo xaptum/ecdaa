@@ -61,6 +61,11 @@ matrix:
           - pip install --user cpp-coveralls
         after_success:
           - coveralls --exclude examples --exclude amcl
+      - name: "Static lib build, gcc"
+        env:
+          - TYPE=RELEASE
+          - BUILD_TYPE=Release
+          - SHARED_LIBS=OFF
       - name: "Release build, clang"
         compiler: clang
         env:
@@ -79,11 +84,11 @@ matrix:
           - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
           - mkdir -p ${ECDAA_BUILD_DIR}
           - pushd ${ECDAA_BUILD_DIR}
-          - cmake .. -DCMAKE_BUILD_TYPE=Release -DXAPTUMTPM_LOCAL_DIR=${XAPTUM_TPM_DIR} -DECDAA_CURVES=FP256BN
+          - cmake .. -DCMAKE_BUILD_TYPE=Release -DXAPTUMTPM_LOCAL_DIR=${XAPTUM_TPM_DIR} -DCMAKE_INSTALL_PREFIX=${ECDAA_INSTALL_DIR} -DECDAA_CURVES=FP256BN
           - popd
         script:
           - pushd ${ECDAA_BUILD_DIR}
-          - cmake --build . -- -j2
+          - cmake --build . --target install -- -j2
           - popd
           - .travis/run-cppcheck.sh build
       - name: "MemCheck"
