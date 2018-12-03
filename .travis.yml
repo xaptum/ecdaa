@@ -1,11 +1,11 @@
 # Copyright 2017 Xaptum, Inc.
-# 
+#
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
 #    You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #    Unless required by applicable law or agreed to in writing, software
 #    distributed under the License is distributed on an "AS IS" BASIS,
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,157 +25,118 @@ env:
     - IBM_TPM_DIR=${TRAVIS_BUILD_DIR}/ibm-tpm-simulator
     - ECDAA_CURVES=FP256BN,BN254,BN254CX,BLS383
     - ECDAA_BUILD_DIR=${TRAVIS_BUILD_DIR}/build
+    - ECDAA_INSTALL_DIR=${TRAVIS_BUILD_DIR}/install
     - TPM_KEY_DIR=${ECDAA_BUILD_DIR}/test/tpm
+    - SHARED_LIBS=ON
+    - OUT_EXT_REPLACE=OFF
 
-jobs:
+before_script:
+  - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+  - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
+  - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
+  - mkdir -p ${ECDAA_BUILD_DIR}
+  - pushd ${ECDAA_BUILD_DIR}
+  - cmake .. -DCMAKE_BUILD_TYPE=${BUILD_TYPE} -DCMAKE_INSTALL_PREFIX=${ECDAA_INSTALL_DIR} -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_SHARED_LIBS=${SHARED_LIBS} -DBUILD_EXAMPLES=ON -DTEST_USE_TCP_TPM=ON -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=${OUT_EXT_REPLACE}
+  - popd
+script:
+  - pushd ${ECDAA_BUILD_DIR}
+  - cmake --build . --target install -- -j2
+  - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
+  - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
+  - ctest -VV
+  - popd
+
+matrix:
   include:
+      - name: "Release build, gcc"
+        env:
+          - TYPE=RELEASE
+          - BUILD_TYPE=Release
+      - name: "Debug build, to get code coverage with gcov"
+        env:
+          - TYPE=DEBUG_WITH_COVERAGE
+          - BUILD_TYPE=DebugWithCoverage
+          - OUT_EXT_REPLACE=ON
+        before_install:
+          - pip install --user cpp-coveralls
+        after_success:
+          - coveralls --exclude examples --exclude amcl
+      - name: "Release build, clang"
+        compiler: clang
+        env:
+          - TYPE=RELEASE-WITH-CLANG
+          - BUILD_TYPE=Release
+      - name: "CPPCheck"
+        env:
+          - TYPE=CPPCHECK
+          - BUILD_TYPE=Release
+        addons:
+          apt:
+            packages:
+              - cppcheck
+        before_script:
+          - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+          - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
+          - mkdir -p ${ECDAA_BUILD_DIR}
+          - pushd ${ECDAA_BUILD_DIR}
+          - cmake .. -DCMAKE_BUILD_TYPE=Release -DXAPTUMTPM_LOCAL_DIR=${XAPTUM_TPM_DIR} -DECDAA_CURVES=FP256BN
+          - popd
+        script:
+          - pushd ${ECDAA_BUILD_DIR}
+          - cmake --build . -- -j2
+          - popd
+          - .travis/run-cppcheck.sh build
+      - name: "MemCheck"
+        env:
+          - TYPE=MEMCHECK
+          - BUILD_TYPE=RelWithDebInfo
+        addons:
+          apt:
+            packages:
+              - valgrind
+        script:
+          - pushd ${ECDAA_BUILD_DIR}
+          - cmake --build . --target install -- -j2
+          - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
+          - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
+          - ctest -VV -E benchmarks\|fuzz -T memcheck
+          - popd
+        after_failure:
+          - .travis/show-memcheck-results.sh ${TRAVIS_BUILD_DIR}
+      - name: "Scan build"
+        env:
+          - TYPE=SCAN_BUILD
+        before_script:
+          - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
+          - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
+        script:
+          - .travis/run-scanbuild.sh ${TRAVIS_BUILD_DIR} ${TRAVIS_BUILD_DIR}
+      - name: "Sanitizers, clang"
+        sudo: true
+        compiler: clang
+        env:
+          - TYPE=SANITIZE
+          - BUILD_TYPE=RelWithSanitize
+        after_success:
+          - pushd ${ECDAA_BUILD_DIR}
+          - ctest -VV -E benchmarks
+          - popd
+      - if: branch = coverity_scan
+        name: "Coverage"
+        env: TYPE=COVERITY_SCAN
+        env:
+          - secure: "jZ3ilXiiqM2qdkPXkOow0RqHz9eA4zZwZbhDKjBfL2wFEiV8u9u5GSzXjLZ6++oh5UzIyp/UdfLyN7vp1+mm7XSYx9X3TeLCmhmP/PZkys/YzrBgTeIxgLubekI4kOa9YdgPQ+d35Nm0AXngw2WrSaefeeKeaRTn/LFAfI5SYlhBXnnZmsRORuCCWDoSWDwvjIUGzcEqpq0uJ+C5Dps8gSExBUFyEkQ5tyaZvCxfujfwB6yP/wDgJzeQL+gSe47/RFinYqJeSvWBViwrGk78sCAZtbHaPy9HbqLUKSslb6WlPMecVbV+kqcN7i4b/bbr68WGDN2fEMzdlBIYJRkhtYFB3nR3T7mh50HQ8l9ZZmWkKekoU9YDcCuRb4HeA20bNF5U/bVFZSnfQPDOXAKnT+jlzAgH3XNEo2YeaCPNLnHZexrGKu9VedzvmCKFjTAW3oj096TLMgon3yg2Wax3XXV7UE0SiRkS9h0P6K1vW+CVKDll6KN5uaRGe4mOOo8Mlb+6l+iagrYpksk4fi4KhhuRkGLOeixNxVWjupaML7C/ShrOzj5XxMkVVgI8Jh7ucY7HguTQW2s6VurZ58jzaqmFBZwZgQ+m1uT7cKnnBBWsL84NVJ1jedPcf034kkxoGABtHWzRGP5gKf3RJTsS7nAwkNXBctKkoNJQ7bQVitM="
+        addons:
+          coverity_scan:
+            project:
+              name: "xaptum/ecdaa"
+              description: "A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures"
+            notification_email: ecdaa-coverity-reports@xaptum.com
+            build_command_prepend: ".travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} && .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES} && mkdir -p ${ECDAA_BUILD_DIR} && pushd ${ECDAA_BUILD_DIR} && cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON && popd"
+            build_command:   "pushd ${ECDAA_BUILD_DIR} && cmake --build . && popd"
+            branch_pattern: coverity_scan
 
-  # Release build, gcc
-  - env: TYPE=RELEASE
-    before_script:
-      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
-      - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - mkdir -p ${ECDAA_BUILD_DIR}
-      - pushd ${ECDAA_BUILD_DIR}
-      - cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON -DTEST_USE_TCP_TPM=ON
-      - popd
-    script:
-      - pushd ${ECDAA_BUILD_DIR}
-      - cmake --build . -- -j2
-      - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
-      - ctest -VV
-      - popd
-
-  # Debug build, to get code coverage with gcov
-  - env: TYPE=DEBUG_WITH_COVERAGE
-    before_install:
-      - pip install --user cpp-coveralls
-    before_script:
-      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
-      - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - mkdir -p ${ECDAA_BUILD_DIR}
-      - pushd ${ECDAA_BUILD_DIR}
-      - cmake .. -DCMAKE_BUILD_TYPE=DebugWithCoverage -DCMAKE_C_OUTPUT_EXTENSION_REPLACE=ON -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON -DTEST_USE_TCP_TPM=ON
-      - popd
-    script:
-      - pushd ${ECDAA_BUILD_DIR}
-      - cmake --build . -- -j2
-      - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
-      - ctest -VV
-      - popd
-    after_success:
-      - coveralls --exclude examples --exclude amcl
-
-  # Release build, clang
-  - env: TYPE=RELEASE-WITH-CLANG
-    compiler: clang
-    before_script:
-      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
-      - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - mkdir -p ${ECDAA_BUILD_DIR}
-      - pushd ${ECDAA_BUILD_DIR}
-      - cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON -DTEST_USE_TCP_TPM=ON
-      - popd
-    script:
-      - pushd ${ECDAA_BUILD_DIR}
-      - cmake --build . -- -j2
-      - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
-      - ctest -VV
-      - popd
-
-  # cppcheck
-  - env: TYPE=CPPCHECK
-    addons:
-      apt:
-        packages:
-          - cppcheck
-    before_script:
-      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
-      - mkdir -p ${ECDAA_BUILD_DIR}
-      - pushd ${ECDAA_BUILD_DIR}
-      - cmake .. -DCMAKE_BUILD_TYPE=Release -DXAPTUMTPM_LOCAL_DIR=${XAPTUM_TPM_DIR} -DECDAA_CURVES=FP256BN
-      - popd
-    script:
-      - pushd ${ECDAA_BUILD_DIR}
-      - cmake --build . -- -j2
-      - popd
-      - .travis/run-cppcheck.sh build
-
-  # Memcheck
-  - env: TYPE=MEMCHECK
-    addons:
-      apt:
-        packages:
-          - valgrind
-    before_script:
-      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
-      - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - mkdir -p ${ECDAA_BUILD_DIR}
-      - pushd ${ECDAA_BUILD_DIR}
-      - cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON -DTEST_USE_TCP_TPM=ON
-      - popd
-    script:
-      - pushd ${ECDAA_BUILD_DIR}
-      - cmake --build . -- -j2
-      - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
-      - ctest -VV -E benchmarks\|fuzz -T memcheck
-      - popd
-    after_failure:
-      - .travis/show-memcheck-results.sh ${TRAVIS_BUILD_DIR}
-  
-  # Scan-build
-  - env: TYPE=SCAN_BUILD
-    before_script:
-      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
-    script:
-      - .travis/run-scanbuild.sh ${TRAVIS_BUILD_DIR} ${TRAVIS_BUILD_DIR}
-
-  # Sanitizers
-  - env: TYPE=SANITIZE
-    sudo: true
-    compiler: clang
-    before_script:
-      - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-      - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
-      - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - mkdir -p ${ECDAA_BUILD_DIR}
-      - pushd ${ECDAA_BUILD_DIR}
-      - cmake .. -DCMAKE_BUILD_TYPE=RelWithSanitize -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON -DTEST_USE_TCP_TPM=ON
-      - popd
-    script:
-      - pushd ${ECDAA_BUILD_DIR}
-      - cmake --build . -- -j2
-      - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
-      - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
-      - ctest -VV -E benchmarks
-      - popd
-
-  # Coverity scan
-  - if: branch = coverity_scan
-    env: TYPE=COVERITY_SCAN
-    env:
-      - secure: "jZ3ilXiiqM2qdkPXkOow0RqHz9eA4zZwZbhDKjBfL2wFEiV8u9u5GSzXjLZ6++oh5UzIyp/UdfLyN7vp1+mm7XSYx9X3TeLCmhmP/PZkys/YzrBgTeIxgLubekI4kOa9YdgPQ+d35Nm0AXngw2WrSaefeeKeaRTn/LFAfI5SYlhBXnnZmsRORuCCWDoSWDwvjIUGzcEqpq0uJ+C5Dps8gSExBUFyEkQ5tyaZvCxfujfwB6yP/wDgJzeQL+gSe47/RFinYqJeSvWBViwrGk78sCAZtbHaPy9HbqLUKSslb6WlPMecVbV+kqcN7i4b/bbr68WGDN2fEMzdlBIYJRkhtYFB3nR3T7mh50HQ8l9ZZmWkKekoU9YDcCuRb4HeA20bNF5U/bVFZSnfQPDOXAKnT+jlzAgH3XNEo2YeaCPNLnHZexrGKu9VedzvmCKFjTAW3oj096TLMgon3yg2Wax3XXV7UE0SiRkS9h0P6K1vW+CVKDll6KN5uaRGe4mOOo8Mlb+6l+iagrYpksk4fi4KhhuRkGLOeixNxVWjupaML7C/ShrOzj5XxMkVVgI8Jh7ucY7HguTQW2s6VurZ58jzaqmFBZwZgQ+m1uT7cKnnBBWsL84NVJ1jedPcf034kkxoGABtHWzRGP5gKf3RJTsS7nAwkNXBctKkoNJQ7bQVitM="
-    addons:
-      coverity_scan:
-        project:
-          name: "xaptum/ecdaa"
-          description: "A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures"
-        notification_email: ecdaa-coverity-reports@xaptum.com
-        build_command_prepend: ".travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} && .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES} && mkdir -p ${ECDAA_BUILD_DIR} && pushd ${ECDAA_BUILD_DIR} && cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON && popd"
-        build_command:   "pushd ${ECDAA_BUILD_DIR} && cmake --build . && popd"
-        branch_pattern: coverity_scan
-
-    before_install:
-      - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
-    script:
-      - echo "Done"
+        before_install:
+          - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
+        script:
+          - echo "Done"
