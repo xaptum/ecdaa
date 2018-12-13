@@ -19,13 +19,8 @@ set(ECDAA_INPUT_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/group_public_key_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/issuer_keypair_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/member_keypair_ZZZ.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/rand.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/revocations_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/signature_ZZZ.h
-
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/util/file_utils.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/util/rand_util.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/util/util_errors.h
 
         ${CMAKE_CURRENT_SOURCE_DIR}/credential_ZZZ.c
         ${CMAKE_CURRENT_SOURCE_DIR}/group_public_key_ZZZ.c
@@ -33,8 +28,6 @@ set(ECDAA_INPUT_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/member_keypair_ZZZ.c
         ${CMAKE_CURRENT_SOURCE_DIR}/signature_ZZZ.c
 
-        ${CMAKE_CURRENT_SOURCE_DIR}/util/file_utils.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/util/rand_util.c
         ${CMAKE_CURRENT_SOURCE_DIR}/schnorr/schnorr_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/schnorr/schnorr_ZZZ.c
         )
@@ -42,6 +35,11 @@ set(ECDAA_INPUT_FILES
 foreach(template_file ${ECDAA_INPUT_FILES})
         expand_template(${template_file} ECDAA_SRCS FALSE)
 endforeach()
+
+list(APPEND ECDAA_SRCS
+        ${CMAKE_CURRENT_SOURCE_DIR}/util/file_utils.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/util/rand_util.c
+        )
 
 set(ECDAA_GENERATED_TOPLEVEL_INCLUDE_DIR "${TOPLEVEL_BINARY_DIR}/libecdaa/include")
 
@@ -68,6 +66,7 @@ if (BUILD_SHARED_LIBS)
         target_include_directories(ecdaa PUBLIC
                 $<BUILD_INTERFACE:${ECDAA_GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
@@ -108,6 +107,7 @@ if (BUILD_STATIC_LIBS)
         target_include_directories(${STATIC_TARGET} PUBLIC
                 $<BUILD_INTERFACE:${ECDAA_GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 

@@ -32,6 +32,7 @@ macro(add_test_case case_file)
           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
                   $<BUILD_INTERFACE:${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}>
                   ${TOPLEVEL_BINARY_DIR}/libecdaa
+                  ${PROJECT_SOURCE_DIR}/libecdaa
   )
 
   set_target_properties(${case_name} PROPERTIES
