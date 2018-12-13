@@ -16,6 +16,7 @@
  *
  *****************************************************************************/
 #include "ecdaa_issuer_respond_to_join_request.h"
+#include "tool_rand.h"
 #include <ecdaa.h>
 #include <string.h>
 #include <stdint.h>
@@ -50,7 +51,7 @@ int ecdaa_issuer_respond_to_join_request(const char* member_public_key_file,
     // Generate new credential for this member, along with a credential signature.
     struct ecdaa_credential_FP256BN cred;
     struct ecdaa_credential_FP256BN_signature cred_sig;
-    ret = ecdaa_credential_FP256BN_generate(&cred, &cred_sig, &isk, &pk, examples_rand);
+    ret = ecdaa_credential_FP256BN_generate(&cred, &cred_sig, &isk, &pk, tool_rand);
     if (0 != ret) {
         return CRED_CREATION_ERROR;
     }

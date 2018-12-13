@@ -15,6 +15,8 @@
  *    limitations under the License
  *
  *****************************************************************************/
+#include "tool_rand.h"
+
 #include <ecdaa.h>
 
 #include <string.h>
@@ -65,7 +67,7 @@ int ecdaa_member_sign(const char* secret_key_file, const char* credential_file, 
 
     // Create signature
     struct ecdaa_signature_FP256BN sig;
-    if (0 != ecdaa_signature_FP256BN_sign(&sig, message, msg_len, basename, basename_len, &sk, &cred, examples_rand)) {
+    if (0 != ecdaa_signature_FP256BN_sign(&sig, message, msg_len, basename, basename_len, &sk, &cred, tool_rand)) {
         message[msg_len] = 0;
         return SIGNING_ERROR;
     }

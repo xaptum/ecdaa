@@ -16,12 +16,12 @@
  *
  *****************************************************************************/
 
-#ifndef ECDAA_UTIL_RAND_H
-#define ECDAA_UTIL_RAND_H
+#ifndef ECDAA_TOOL_RAND_H
+#define ECDAA_TOOL_RAND_H
 #pragma once
 
 #include <stddef.h>
 
-void examples_rand(void *buf, size_t buflen);
+void tool_rand(void *buf, size_t buflen);
 
 #endif

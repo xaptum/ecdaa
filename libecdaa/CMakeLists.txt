@@ -38,7 +38,6 @@ endforeach()
 
 list(APPEND ECDAA_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/util/file_utils.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/util/rand_util.c
         )
 
 set(ECDAA_GENERATED_TOPLEVEL_INCLUDE_DIR "${TOPLEVEL_BINARY_DIR}/libecdaa/include")

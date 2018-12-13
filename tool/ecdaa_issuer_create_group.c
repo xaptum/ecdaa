@@ -16,7 +16,10 @@
  *
  *****************************************************************************/
 #include "ecdaa_issuer_create_group.h"
+#include "tool_rand.h"
+
 #include <ecdaa.h>
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +27,7 @@
 
 int ecdaa_create_group(const char* public_key_file, const char* secret_key_file)
 {
-    int ret = ecdaa_issuer_key_pair_FP256BN_generate_file(public_key_file, secret_key_file, examples_rand);
+    int ret = ecdaa_issuer_key_pair_FP256BN_generate_file(public_key_file, secret_key_file, tool_rand);
     if (0 != ret) {
         return ret;
     }

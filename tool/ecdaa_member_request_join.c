@@ -15,8 +15,12 @@
  *    limitations under the License
  *
  *****************************************************************************/
-#include <ecdaa.h>
+
 #include "ecdaa_member_request_join.h"
+#include "tool_rand.h"
+
+#include <ecdaa.h>
+
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -28,7 +32,7 @@ int ecdaa_member_request_join(const char* nonce, const char* public_key_file, co
     if (nonce_len > 1048576) {    // 1MiB
         return NONCE_OVERFLOW;
     }
-    int ret = ecdaa_member_key_pair_FP256BN_generate_file(public_key_file, secret_key_file, (uint8_t*)nonce, (uint32_t)nonce_len, examples_rand);
+    int ret = ecdaa_member_key_pair_FP256BN_generate_file(public_key_file, secret_key_file, (uint8_t*)nonce, (uint32_t)nonce_len, tool_rand);
     if (0 != ret) {
         return ret;
     }

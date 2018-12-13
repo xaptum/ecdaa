@@ -28,7 +28,6 @@
 #include <ecdaa/revocations_ZZZ.h>
 #include <ecdaa/signature_ZZZ.h>
 #include <ecdaa/util/file_utils.h>
-#include <ecdaa/util/rand_util.h>
 #include <ecdaa/util/util_errors.h>
 
 #endif

@@ -17,7 +17,8 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 ################################################################################
 # ecdaa
 ################################################################################
-SET(ECDAA_SRCS
+SET(ECDAA_TOOL_SRCS
+        tool_rand.c
         ecdaa.c
         parse_cli.c
         ecdaa_extract_group_public_key.c
@@ -28,7 +29,7 @@ SET(ECDAA_SRCS
         ecdaa_member_sign.c
         ecdaa_verify.c)
 
-add_executable(ecdaa-tool ${ECDAA_SRCS})
+add_executable(ecdaa-tool ${ECDAA_TOOL_SRCS})
 set_target_properties(ecdaa-tool PROPERTIES OUTPUT_NAME ecdaa)
 
 target_link_libraries(ecdaa-tool PUBLIC AMCL::AMCL)

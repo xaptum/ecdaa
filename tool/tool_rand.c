@@ -26,14 +26,14 @@
 #include <AvailabilityMacros.h>
 #endif
 
-#include <ecdaa/util/rand_util.h>
+#include "tool_rand.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 
 #if (defined(__linux__) && defined(SYS_getrandom))
 
-void examples_rand(void *buf, size_t buflen)
+void tool_rand(void *buf, size_t buflen)
 {
     int read_ret = syscall(SYS_getrandom, buf, buflen, 0);
     if (read_ret != (int)buflen) {
@@ -44,18 +44,18 @@ void examples_rand(void *buf, size_t buflen)
 
 #elif (defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_2)  // previously, used RC4 (biased)
 
-void examples_rand(void *buf, size_t buflen)
+void tool_rand(void *buf, size_t buflen)
 {
     // Not worried about chroot or fd-exhaustion issues,
-    //  since running this as a short-lived example executable
+    //  since running this in a short-lived 'tool' executable
     arc4random_buf(buf, buflen);
 }
 
 #else
 
-void examples_rand(void *buf, size_t buflen)
+void tool_rand(void *buf, size_t buflen)
 {
-    // No need to worry about threading, since examples are single-threaded
+    // No need to worry about threading, since tool is single-threaded
     static FILE *file_ptr = NULL;
     if (NULL == file_ptr) {
         file_ptr = fopen("/dev/urandom", "r");
