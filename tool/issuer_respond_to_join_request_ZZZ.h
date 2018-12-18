@@ -15,8 +15,8 @@
  *    limitations under the License
  *
  *****************************************************************************/
- #ifndef ECDAA_UTIL_PROCESS_RESPONSE_H
- #define ECDAA_UTIL_PROCESS_RESPONSE_H
+ #ifndef ECDAA_TOOL_RESPOND_TO_REQUEST_ZZZ_H
+ #define ECDAA_TOOL_RESPOND_TO_REQUEST_ZZZ_H
  #pragma once
 
  #ifdef __cplusplus
@@ -28,12 +28,17 @@
   *
   * Returns:
   * SUCCESS                     on success
-  * READ_FROM_FILE_ERROR        an error occurred reading from file
-  * DESERIALIZE_KEY_ERROR       an error occurred deserializing keys
+  * CRED_CREATION_ERROR         an error occurred creating the credentials
+  * DESERIALIZE_KEY_ERROR       an error occurred while deserializing a key
+  * READ_FROM_FILE_ERROR        an error occurred reading keys from file
+  * WRITE_TO_FILE_ERROR         an error occurred writing keys to files
+  * NONCE_OVERFLOW              nonce given was too long
  */
- int ecdaa_member_process_join_response(const char* member_public_key_file, const char* group_public_key_file,
-                                        const char* credential_file, const char* credential_signature_file);
-
+ int issuer_respond_to_join_request_ZZZ(const char* member_public_key_file,
+                                         const char* issuer_secret_key_file,
+                                         const char* credential_out_file,
+                                         const char* credential_signature_out_file,
+                                         const char* nonce);
  #ifdef __cplusplus
  }
  #endif

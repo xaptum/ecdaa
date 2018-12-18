@@ -15,30 +15,28 @@
  *    limitations under the License
  *
  *****************************************************************************/
-#include "tool_rand.h"
+
+#include "member_sign_ZZZ.h"
 
 #include <ecdaa.h>
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include "tool_rand.h"
 
 #define MAX_MESSAGE_SIZE 1024
 
-int ecdaa_member_sign(const char* secret_key_file, const char* credential_file, const char* sig_out_file,
+int member_sign_ZZZ(const char* secret_key_file, const char* credential_file, const char* sig_out_file,
                         const char* message_file, const char* basename_file)
 {
     // Read member secret key from disk
-    struct ecdaa_member_secret_key_FP256BN sk;
-    int ret = ecdaa_member_secret_key_FP256BN_deserialize_file(&sk, secret_key_file);
+    struct ecdaa_member_secret_key_ZZZ sk;
+    int ret = ecdaa_member_secret_key_ZZZ_deserialize_file(&sk, secret_key_file);
     if (0 != ret) {
         return ret;
     }
 
     // Read member credential from disk
-    struct ecdaa_credential_FP256BN cred;
-    ret = ecdaa_credential_FP256BN_deserialize_file(&cred, credential_file);
+    struct ecdaa_credential_ZZZ cred;
+    ret = ecdaa_credential_ZZZ_deserialize_file(&cred, credential_file);
     if (0 != ret) {
         return ret;
     }
@@ -66,15 +64,15 @@ int ecdaa_member_sign(const char* secret_key_file, const char* credential_file, 
     }
 
     // Create signature
-    struct ecdaa_signature_FP256BN sig;
-    if (0 != ecdaa_signature_FP256BN_sign(&sig, message, msg_len, basename, basename_len, &sk, &cred, tool_rand)) {
+    struct ecdaa_signature_ZZZ sig;
+    if (0 != ecdaa_signature_ZZZ_sign(&sig, message, msg_len, basename, basename_len, &sk, &cred, tool_rand)) {
         message[msg_len] = 0;
         return SIGNING_ERROR;
     }
 
     // Write signature to file
     int has_nym = basename_len != 0;
-    ecdaa_signature_FP256BN_serialize_file(sig_out_file, &sig, has_nym);
+    ecdaa_signature_ZZZ_serialize_file(sig_out_file, &sig, has_nym);
 
     return SUCCESS;
 }

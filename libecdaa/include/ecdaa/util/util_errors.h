@@ -11,7 +11,6 @@
 #define CRED_CREATION_ERROR -7
 #define SIGNING_ERROR -8
 #define PARSE_REVOC_LIST_ERROR -9
-
-
+#define UNKNOWN_CURVE_ERROR -10
 
 #endif

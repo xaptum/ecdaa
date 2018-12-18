@@ -15,31 +15,31 @@
  *    limitations under the License
  *
  *****************************************************************************/
-#include <ecdaa.h>
-#include "ecdaa_member_process_join_response.h"
-#include <string.h>
-#include <stdint.h>
 
-int ecdaa_member_process_join_response(const char* member_public_key_file, const char* group_public_key_file,
+#include "member_process_join_response_ZZZ.h"
+
+#include <ecdaa.h>
+
+int member_process_join_response_ZZZ(const char* member_public_key_file, const char* group_public_key_file,
                                        const char* credential_file, const char* credential_signature_file)
 {
     // Read member public key from disk
-    struct ecdaa_member_public_key_FP256BN pk;
-    int ret = ecdaa_member_public_key_FP256BN_deserialize_no_check_file(&pk, member_public_key_file);
+    struct ecdaa_member_public_key_ZZZ pk;
+    int ret = ecdaa_member_public_key_ZZZ_deserialize_no_check_file(&pk, member_public_key_file);
     if (0 != ret) {
         return ret;
     }
 
     // Read group public key from disk
-    struct ecdaa_group_public_key_FP256BN gpk;
-    ret = ecdaa_group_public_key_FP256BN_deserialize_file(&gpk, group_public_key_file);
+    struct ecdaa_group_public_key_ZZZ gpk;
+    ret = ecdaa_group_public_key_ZZZ_deserialize_file(&gpk, group_public_key_file);
     if (0 != ret) {
         return ret;
     }
 
     // Read credential and credential signature from disk.
-    struct ecdaa_credential_FP256BN cred;
-    int deserialize_ret = ecdaa_credential_FP256BN_deserialize_with_signature_file(&cred, &pk, &gpk, credential_file, credential_signature_file);
+    struct ecdaa_credential_ZZZ cred;
+    int deserialize_ret = ecdaa_credential_ZZZ_deserialize_with_signature_file(&cred, &pk, &gpk, credential_file, credential_signature_file);
     if (0 != deserialize_ret) {
         return deserialize_ret;
     }

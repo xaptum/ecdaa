@@ -15,20 +15,20 @@
  *    limitations under the License
  *
  *****************************************************************************/
-#include <ecdaa.h>
 
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include "verify_ZZZ.h"
+
+#include <ecdaa.h>
 
 #define MAX_MESSAGE_SIZE 1024
 
-int parse_sk_rev_list_file(struct ecdaa_revocations_FP256BN *rev_list_out, const char *filename, unsigned num_revs);
+static
+int parse_sk_rev_list_file(struct ecdaa_revocations_ZZZ *rev_list_out, const char *filename, unsigned num_revs);
 
-int parse_bsn_rev_list_file(struct ecdaa_revocations_FP256BN *revocations_out, const char *filename, unsigned num_revs);
+static
+int parse_bsn_rev_list_file(struct ecdaa_revocations_ZZZ *revocations_out, const char *filename, unsigned num_revs);
 
-int ecdaa_verify(const char *message_file, const char *sig_file, const char *gpk_file, const char *sk_rev_list_file,
+int verify_ZZZ(const char *message_file, const char *sig_file, const char *gpk_file, const char *sk_rev_list_file,
                 const char *sk_revs, const char *bsn_rev_list_file, const char *bsn_revs, const char *basename_file)
 {
     int ret = SUCCESS;
@@ -38,7 +38,7 @@ int ecdaa_verify(const char *message_file, const char *sig_file, const char *gpk
     int number_of_sk_revs = atoi(sk_revs);
     int number_of_bsn_revs = atoi(bsn_revs);
 
-    struct ecdaa_revocations_FP256BN revocations;
+    struct ecdaa_revocations_ZZZ revocations;
     revocations.sk_list = NULL;
     revocations.bsn_list = NULL;
 
@@ -61,27 +61,27 @@ int ecdaa_verify(const char *message_file, const char *sig_file, const char *gpk
     int has_nym = basename_len != 0;
     uint32_t sig_length;
     if (has_nym) {
-        sig_length = ECDAA_SIGNATURE_FP256BN_WITH_NYM_LENGTH;
+        sig_length = ECDAA_SIGNATURE_ZZZ_WITH_NYM_LENGTH;
     } else {
-        sig_length = ECDAA_SIGNATURE_FP256BN_LENGTH;
+        sig_length = ECDAA_SIGNATURE_ZZZ_LENGTH;
     }
-    struct ecdaa_signature_FP256BN sig;
+    struct ecdaa_signature_ZZZ sig;
     if ((int)sig_length != ecdaa_read_from_file(buffer, sig_length, sig_file)) {
         ret = READ_FROM_FILE_ERROR;
         goto cleanup;
     }
-    if (0 != ecdaa_signature_FP256BN_deserialize(&sig, buffer, has_nym)) {
+    if (0 != ecdaa_signature_ZZZ_deserialize(&sig, buffer, has_nym)) {
         ret = DESERIALIZE_KEY_ERROR;
         goto cleanup;
     }
 
     // Read group public key from disk
-    struct ecdaa_group_public_key_FP256BN gpk;
-    if (ECDAA_GROUP_PUBLIC_KEY_FP256BN_LENGTH != ecdaa_read_from_file(buffer, ECDAA_GROUP_PUBLIC_KEY_FP256BN_LENGTH, gpk_file)) {
+    struct ecdaa_group_public_key_ZZZ gpk;
+    if (ECDAA_GROUP_PUBLIC_KEY_ZZZ_LENGTH != ecdaa_read_from_file(buffer, ECDAA_GROUP_PUBLIC_KEY_ZZZ_LENGTH, gpk_file)) {
         ret = READ_FROM_FILE_ERROR;
         goto cleanup;
     }
-    if (0 != ecdaa_group_public_key_FP256BN_deserialize(&gpk, buffer)) {
+    if (0 != ecdaa_group_public_key_ZZZ_deserialize(&gpk, buffer)) {
         ret = DESERIALIZE_KEY_ERROR;
         goto cleanup;
     }
@@ -108,7 +108,7 @@ int ecdaa_verify(const char *message_file, const char *sig_file, const char *gpk
     uint32_t msg_len = (uint32_t)read_ret;
 
     // Verify signature
-    if (0 != ecdaa_signature_FP256BN_verify(&sig, &gpk, &revocations, message, msg_len, basename, basename_len)) {
+    if (0 != ecdaa_signature_ZZZ_verify(&sig, &gpk, &revocations, message, msg_len, basename, basename_len)) {
         ret = SIGNING_ERROR;
         goto cleanup;
     }
@@ -125,7 +125,7 @@ cleanup:
 }
 
 
-int parse_sk_rev_list_file(struct ecdaa_revocations_FP256BN *revocations_out, const char *filename, unsigned num_revs)
+int parse_sk_rev_list_file(struct ecdaa_revocations_ZZZ *revocations_out, const char *filename, unsigned num_revs)
 {
     int ret = 0;
 
@@ -134,7 +134,7 @@ int parse_sk_rev_list_file(struct ecdaa_revocations_FP256BN *revocations_out, co
 
     if (NULL != filename && num_revs != 0) {
         // Allocate a buffer to hold the full file.
-        size_t file_length = num_revs * ECDAA_MEMBER_SECRET_KEY_FP256BN_LENGTH;
+        size_t file_length = num_revs * ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH;
         uint8_t *buffer = malloc(file_length);
         if (NULL == buffer) {
             ret = 1;
@@ -142,7 +142,7 @@ int parse_sk_rev_list_file(struct ecdaa_revocations_FP256BN *revocations_out, co
         }
 
         // Allocate the revocation list array.
-        revocations_out->sk_list = malloc(num_revs * sizeof(struct ecdaa_member_secret_key_FP256BN));
+        revocations_out->sk_list = malloc(num_revs * sizeof(struct ecdaa_member_secret_key_ZZZ));
         if (NULL == revocations_out->sk_list) {
             ret = 1;
             goto cleanup;
@@ -157,8 +157,8 @@ int parse_sk_rev_list_file(struct ecdaa_revocations_FP256BN *revocations_out, co
 
         // Deserialize each secret key and add it to the list.
         for (unsigned i = 0; i < num_revs; i++) {
-            int deserial_ret = ecdaa_member_secret_key_FP256BN_deserialize(&revocations_out->sk_list[i],
-                                                                         buffer + i*ECDAA_MEMBER_SECRET_KEY_FP256BN_LENGTH);
+            int deserial_ret = ecdaa_member_secret_key_ZZZ_deserialize(&revocations_out->sk_list[i],
+                                                                         buffer + i*ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH);
             revocations_out->sk_length++;
             if (0 != deserial_ret) {
                 ret = 1;
@@ -182,7 +182,7 @@ cleanup:
     return ret;
 }
 
-int parse_bsn_rev_list_file(struct ecdaa_revocations_FP256BN *revocations_out, const char *filename, unsigned num_revs)
+int parse_bsn_rev_list_file(struct ecdaa_revocations_ZZZ *revocations_out, const char *filename, unsigned num_revs)
 {
     int ret = 0;
 
@@ -201,7 +201,7 @@ int parse_bsn_rev_list_file(struct ecdaa_revocations_FP256BN *revocations_out, c
         }
 
         // Allocate the revocation list array.
-        revocations_out->bsn_list = malloc(num_revs * sizeof(ECP_FP256BN));
+        revocations_out->bsn_list = malloc(num_revs * sizeof(ECP_ZZZ));
         if (NULL == revocations_out->bsn_list) {
             ret = 1;
             goto cleanup;
@@ -220,7 +220,7 @@ int parse_bsn_rev_list_file(struct ecdaa_revocations_FP256BN *revocations_out, c
             BIG_256_56_fromBytes(wx, (char*)&(buffer[1 + i*point_size]));
             BIG_256_56_fromBytes(wy, (char*)&(buffer[1 + MODBYTES_256_56 + i*point_size]));
             // Nb. This does NOT check that the point is in the proper group.
-            if (!ECP_FP256BN_set(&revocations_out->bsn_list[i], wx, wy)) {
+            if (!ECP_ZZZ_set(&revocations_out->bsn_list[i], wx, wy)) {
                 ret = -1;
                 goto cleanup;
             }

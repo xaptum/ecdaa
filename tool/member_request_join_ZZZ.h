@@ -15,8 +15,8 @@
  *    limitations under the License
  *
  *****************************************************************************/
- #ifndef ECDAA_UTIL_VERIFY_H
- #define ECDAA_UTIL_VERIFY_H
+ #ifndef ECDAA_TOOL_REQUEST_JOIN_ZZZ_H
+ #define ECDAA_TOOL_REQUEST_JOIN_ZZZ_H
  #pragma once
 
  #ifdef __cplusplus
@@ -28,14 +28,11 @@
   *
   * Returns:
   * SUCCESS                     on success
-  * SIGNING_ERROR               an error occurred while signing message
-  * PARSE_REVOC_LIST_ERROR      an error occurred while parsing a revocation list
-  * DESERIALIZE_KEY_ERROR       an error occurred while deserializing key
-  * READ_FROM_FILE_ERROR        an error occurred while reading from a file
-  * WRITE_TO_FILE_ERROR         an error occurred while writing to a file
+  * KEY_CREATION_ERROR          an error occurred creating the keypair
+  * NONCE_OVERFLOW              the nonce provided was too long
+  * WRITE_TO_FILE_ERROR         an error occurred writing keys to files
  */
- int ecdaa_verify(const char *message_file, const char *sig_file, const char *gpk_file, const char *sk_rev_list_file,
-                 const char *number_of_sk_revs, const char *bsn_rev_list_file, const char *number_of_bsn_revs, const char *basename_file);
+ int member_request_join_ZZZ(const char* nonce, const char* public_key_file, const char* secret_key_file);
 
  #ifdef __cplusplus
  }

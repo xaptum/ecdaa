@@ -15,8 +15,8 @@
  *    limitations under the License
  *
  *****************************************************************************/
- #ifndef ECDAA_UTIL_SIGN_H
- #define ECDAA_UTIL_SIGN_H
+ #ifndef ECDAA_TOOL_MEMBER_SIGN_ZZZ_H
+ #define ECDAA_TOOL_MEMBER_SIGN_ZZZ_H
  #pragma once
 
  #ifdef __cplusplus
@@ -33,7 +33,7 @@
   * READ_FROM_FILE_ERROR        an error occurred reading key to file
   * WRITE_TO_FILE_ERROR         an error occurred writing keys to files
  */
- int ecdaa_member_sign(const char* secret_key_file, const char* credential_file, const char* sig_out_file,
+ int member_sign_ZZZ(const char* secret_key_file, const char* credential_file, const char* sig_out_file,
                          const char* message_file, const char* basename_file);
 
  #ifdef __cplusplus

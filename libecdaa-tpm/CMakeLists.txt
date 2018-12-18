@@ -28,7 +28,7 @@ set(ECDAA_TPM_INPUT_FILES
         )
 
 foreach(template_file ${ECDAA_TPM_INPUT_FILES})
-        expand_template(${template_file} ECDAA_TPM_SRCS TRUE)
+        expand_template(${template_file} ECDAA_TPM_SRCS TRUE FALSE)
 endforeach()
 
 list(APPEND ECDAA_TPM_SRCS

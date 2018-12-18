@@ -15,27 +15,26 @@
  *    limitations under the License
  *
  *****************************************************************************/
- #ifndef ECDAA_UTIL_EXTRACT_GPK_H
- #define ECDAA_UTIL_EXTRACT_GPK_H
- #pragma once
 
- #ifdef __cplusplus
- extern "C" {
- #endif
+#include "member_request_join_ZZZ.h"
 
- /*
-  * Creates a issuer key pair and then serializes the public and secret keys
-  *
-  * Returns:
-  * SUCCESS                     on success
-  * DESERIALIZE_KEY_ERROR       an error occurred deserializing the issuer public key
-  * READ_FROM_FILE_ERROR        an error occurred reading in a file
-  * WRITE_TO_FILE_ERROR         an error occurred writing to a file
- */
-int ecdaa_extract_gpk(const char* public_key_file, const char* gpk_file);
+#include <string.h>
 
- #ifdef __cplusplus
- }
- #endif
+#include <ecdaa.h>
 
- #endif
+#include "tool_rand.h"
+
+int member_request_join_ZZZ(const char* nonce, const char* public_key_file, const char* secret_key_file)
+{
+    // Generate member key-pair
+    size_t nonce_len = strlen(nonce);
+    if (nonce_len > 1048576) {    // 1MiB
+        return NONCE_OVERFLOW;
+    }
+    int ret = ecdaa_member_key_pair_ZZZ_generate_file(public_key_file, secret_key_file, (uint8_t*)nonce, (uint32_t)nonce_len, tool_rand);
+    if (0 != ret) {
+        return ret;
+    }
+
+    return SUCCESS;
+}

@@ -15,15 +15,22 @@
  *    limitations under the License
  *
  *****************************************************************************/
-#include "ecdaa_issuer_create_group.h"
-#include "ecdaa_extract_group_public_key.h"
-#include "ecdaa_member_request_join.h"
-#include "ecdaa_issuer_respond_to_join_request.h"
-#include "ecdaa_member_process_join_response.h"
-#include "ecdaa_member_sign.h"
-#include "ecdaa_verify.h"
-#include <ecdaa/util/util_errors.h>
+
+#include <ecdaa.h>
+
+#include "issuer_create_group_ZZZ.h"
+#include "extract_gpk_ZZZ.h"
+#include "member_request_join_ZZZ.h"
+#include "issuer_respond_to_join_request_ZZZ.h"
+#include "member_process_join_response_ZZZ.h"
+#include "member_sign_ZZZ.h"
+#include "verify_ZZZ.h"
 #include "parse_cli.h"
+
+#define EXPAND_CURVE_CASE(command, curve, ...) \
+    case curve: \
+        out = command ## _ ## curve(__VA_ARGS__); \
+        break;
 
 int main(int argc, char **argv) {
     struct cli_params params;
@@ -32,26 +39,60 @@ int main(int argc, char **argv) {
     int out = 0;
     switch(params.command){
         case action_create_group:
-            out = ecdaa_create_group(params.ipk, params.isk);
+            switch (params.curve) {
+                EXPAND_CURVE_CASE(create_group, ZZZ, params.ipk, params.isk)
+                default:
+                    out = UNKNOWN_CURVE_ERROR;
+                    break;
+            }
             break;
         case action_extract_gpk:
-            out = ecdaa_extract_gpk(params.ipk, params.gpk);
+            switch (params.curve) {
+                EXPAND_CURVE_CASE(extract_gpk, ZZZ, params.ipk, params.gpk)
+                default:
+                    out = UNKNOWN_CURVE_ERROR;
+                    break;
+            }
             break;
         case action_request_join:
-            out = ecdaa_member_request_join(params.nonce, params.pk, params.sk);
+            switch (params.curve) {
+                EXPAND_CURVE_CASE(member_request_join, ZZZ, params.nonce, params.pk, params.sk)
+                default:
+                    out = UNKNOWN_CURVE_ERROR;
+                    break;
+            }
             break;
         case action_respond_to_request:
-            out = ecdaa_issuer_respond_to_join_request(params.pk, params.isk, params.cred, params.cred_sig, params.nonce);
+            switch (params.curve) {
+                EXPAND_CURVE_CASE(issuer_respond_to_join_request, ZZZ, params.pk, params.isk, params.cred, params.cred_sig, params.nonce)
+                default:
+                    out = UNKNOWN_CURVE_ERROR;
+                    break;
+            }
             break;
         case action_process_response:
-            out = ecdaa_member_process_join_response(params.pk, params.gpk, params.cred, params.cred_sig);
+            switch (params.curve) {
+                EXPAND_CURVE_CASE(member_process_join_response, ZZZ, params.pk, params.gpk, params.cred, params.cred_sig)
+                default:
+                    out = UNKNOWN_CURVE_ERROR;
+                    break;
+            }
             break;
         case action_sign:
-            out = ecdaa_member_sign(params.sk, params.cred, params.sig, params.message, params.basename);
+            switch (params.curve) {
+                EXPAND_CURVE_CASE(member_sign, ZZZ, params.sk, params.cred, params.sig, params.message, params.basename)
+                default:
+                    out = UNKNOWN_CURVE_ERROR;
+                    break;
+            }
             break;
         case action_verify:
-            out = ecdaa_verify(params.message, params.sig, params.gpk, params.sk_rev_list, params.num_sk_revs,
-                                params.bsn_rev_list, params.num_bsn_revs, params.basename);
+            switch (params.curve) {
+                EXPAND_CURVE_CASE(verify, ZZZ, params.message, params.sig, params.gpk, params.sk_rev_list, params.num_sk_revs, params.bsn_rev_list, params.num_bsn_revs, params.basename)
+                default:
+                    out = UNKNOWN_CURVE_ERROR;
+                    break;
+            }
             break;
         case action_help:
             break;
@@ -81,6 +122,9 @@ int main(int argc, char **argv) {
             break;
         case SIGNING_ERROR:
             fprintf(stderr, "Error while signing\n");
+            break;
+        case UNKNOWN_CURVE_ERROR:
+            fprintf(stderr, " Unrecognized curve name: '%d'\n", params.curve);
             break;
         case SUCCESS:
             fprintf(stderr, "ok\n");

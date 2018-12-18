@@ -53,7 +53,7 @@ set(ECDAA_EXAMPLE_FILES
         )
 
 foreach(template_file ${ECDAA_EXAMPLE_FILES})
-  expand_template(${template_file} ECDAA_EXAMPLE_SRCS FALSE)
+  expand_template(${template_file} ECDAA_EXAMPLE_SRCS FALSE FALSE)
 endforeach()
 
 foreach(example_file ${ECDAA_EXAMPLE_SRCS})

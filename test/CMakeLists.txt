@@ -61,7 +61,7 @@ set(ECDAA_TEST_FILES
         )
 
 foreach(template_file ${ECDAA_TEST_FILES})
-        expand_template(${template_file} ECDAA_TEST_SRCS FALSE)
+        expand_template(${template_file} ECDAA_TEST_SRCS FALSE FALSE)
 endforeach()
 
 foreach(case_file ${ECDAA_TEST_SRCS})

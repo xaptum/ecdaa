@@ -17,20 +17,51 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 ################################################################################
 # ecdaa
 ################################################################################
-SET(ECDAA_TOOL_SRCS
-        tool_rand.c
-        ecdaa.c
-        parse_cli.c
-        ecdaa_extract_group_public_key.c
-        ecdaa_issuer_create_group.c
-        ecdaa_issuer_respond_to_join_request.c
-        ecdaa_member_process_join_response.c
-        ecdaa_member_request_join.c
-        ecdaa_member_sign.c
-        ecdaa_verify.c)
+
+set(ECDAA_TOOL_SRC_INPUT_FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/issuer_create_group_ZZZ.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/issuer_create_group_ZZZ.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/extract_gpk_ZZZ.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/extract_gpk_ZZZ.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/issuer_respond_to_join_request_ZZZ.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/issuer_respond_to_join_request_ZZZ.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/member_process_join_response_ZZZ.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/member_process_join_response_ZZZ.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/member_request_join_ZZZ.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/member_request_join_ZZZ.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/member_sign_ZZZ.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/member_sign_ZZZ.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/verify_ZZZ.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/verify_ZZZ.c
+  )
+
+foreach(template_file ${ECDAA_TOOL_SRC_INPUT_FILES})
+  expand_template(${template_file} ECDAA_TOOL_SRCS FALSE FALSE)
+endforeach()
+
+set(ECDAA_TOOL_INPUT_FILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/ecdaa.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/parse_cli.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/parse_cli.h
+  )
+
+foreach(template_file ${ECDAA_TOOL_INPUT_FILES})
+  expand_template(${template_file} ECDAA_TOOL_SRCS FALSE TRUE)
+endforeach()
+
+list(APPEND ECDAA_TOOL_SRCS
+  ${CMAKE_CURRENT_SOURCE_DIR}/tool_rand.c
+  )
+
+set(ECDAA_TOOL_GENERATED_TOPLEVEL_INCLUDE_DIR "${TOPLEVEL_BINARY_DIR}/tool/")
 
 add_executable(ecdaa-tool ${ECDAA_TOOL_SRCS})
 set_target_properties(ecdaa-tool PROPERTIES OUTPUT_NAME ecdaa)
+
+target_include_directories(ecdaa-tool PUBLIC
+  $<BUILD_INTERFACE:${ECDAA_TOOL_GENERATED_TOPLEVEL_INCLUDE_DIR}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  )
 
 target_link_libraries(ecdaa-tool PUBLIC AMCL::AMCL)
 if(BUILD_SHARED_LIBS)

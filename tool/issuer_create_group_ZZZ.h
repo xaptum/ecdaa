@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2017 Xaptum, Inc.
+ * Copyright 2018 Xaptum, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,23 +15,26 @@
  *    limitations under the License
  *
  *****************************************************************************/
-#include "ecdaa_extract_group_public_key.h"
-#include <ecdaa.h>
+ #ifndef ECDAA_TOOL_ISSUER_CREATE_GROUP_ZZZ_H
+ #define ECDAA_TOOL_ISSUER_CREATE_GROUP_ZZZ_H
+ #pragma once
 
-#include <string.h>
-#include <stdio.h>
-#include <stdint.h>
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
 
-int ecdaa_extract_gpk(const char* issuer_public_key_file, const char* group_public_key_file)
-{
-    // Read issuer public key from disk.
-    struct ecdaa_issuer_public_key_FP256BN ipk;
-    int ret = ecdaa_issuer_public_key_FP256BN_deserialize_file(&ipk, issuer_public_key_file);
-    if(0 != ret)
-        return ret;
+ /*
+  * Creates a issuer key pair and then serializes the public and secret keys
+  *
+  * Returns:
+  * 0                           on success
+  * KEY_CREATION_ERROR          an error occurred creating the keypair
+  * WRITE_TO_FILE_ERROR         an error occurred writing keys to files
+ */
+int create_group_ZZZ(const char* public_key_file, const char* secret_key_file);
 
-    // Write group-public-key to file
-    ret = ecdaa_group_public_key_FP256BN_serialize_file(group_public_key_file, &ipk.gpk);
+ #ifdef __cplusplus
+ }
+ #endif
 
-    return ret;
-}
+ #endif

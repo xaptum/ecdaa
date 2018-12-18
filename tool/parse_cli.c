@@ -16,37 +16,53 @@
  *
  *****************************************************************************/
 
+#include "parse_cli.h"
+
+#include <ecdaa.h>
+
 #include <stdint.h>
 #include <getopt.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ecdaa.h>
-#include "parse_cli.h"
+
+const char *curve_name_strings[] = {
+    "ZZZ",
+};
+
+static
+void parse_curve(curve_name *out, const char *in);
 
 static
 void parse_create_group_cli(int argc, char **argv, struct cli_params *params)
 {
+    params->curve = 0;
     params->ipk = "ipk.bin";
     params->isk = "isk.bin";
     const char *usage_str = "Create issuer public and secret key.\n\n"
-        "Usage: %s %s [-h] [-p <file>] [-s <file>]\n"
+        "Usage: %s %s [-h] [-u <curve>] [-p <file>] [-s <file>]\n"
         "\tOptions:\n"
         "\t\t-h --help              Display this message.\n"
+        "\t\t-u --curve             Curve to use [default = %s].\n"
+        "\t\t\tZZZ\n"
         "\t\t-p --ipk               Issuer public key output location [default = ipk.bin]\n"
         "\t\t-s --isk               Issuer secret key output location [default = isk.bin]\n"
         ;
 
     static struct option cli_options[] =
     {
+        {"curve", required_argument, NULL, 'u'},
         {"ipk", required_argument, NULL, 'p'},
         {"isk", required_argument, NULL, 's'},
         {"help", no_argument, NULL, 'h'},
         {NULL, 0, NULL, 0}
     };
     int c;
-    while ((c = getopt_long(argc, argv, "p:s:h", cli_options, NULL)) != -1) {
+    while ((c = getopt_long(argc, argv, "u:p:s:h", cli_options, NULL)) != -1) {
         switch (c) {
+            case 'u':
+                parse_curve(&params->curve, optarg);
+                break;
             case 'p':
                 params->ipk=optarg;
                 break;
@@ -54,7 +70,7 @@ void parse_create_group_cli(int argc, char **argv, struct cli_params *params)
                 params->isk=optarg;
                 break;
             case 'h':
-                printf(usage_str, argv[0], argv[1]);
+                printf(usage_str, argv[0], argv[1], curve_name_strings[0]);
                 exit(1);
         }
     }
@@ -63,26 +79,33 @@ void parse_create_group_cli(int argc, char **argv, struct cli_params *params)
 static
 void parse_extract_gpk_cli(int argc, char **argv, struct cli_params *params)
 {
+    params->curve = 0;
     params->ipk = "ipk.bin";
     params->gpk = "gpk.bin";
     const char *usage_str = "Extract Group Public Key.\n\n"
-        "Usage: %s %s [-h] [-p <file>] [-g <file>]\n"
+        "Usage: %s %s [-h] [-u] [-p <file>] [-g <file>]\n"
         "\tOptions:\n"
         "\t\t-h --help              Display this message.\n"
+        "\t\t-u --curve             Curve to use [default = %s].\n"
+        "\t\t\tZZZ\n"
         "\t\t-p --ipk               Issuer public key output location [default = ipk.bin]\n"
         "\t\t-g --gpk               Group pulbic key output location [default = gpk.bin]\n"
         ;
 
     static struct option cli_options[] =
     {
+        {"curve", required_argument, NULL, 'u'},
         {"ipk", required_argument, NULL, 'p'},
         {"gpk", required_argument, NULL, 'g'},
         {"help", no_argument, NULL, 'h'},
         {NULL, 0, NULL, 0}
     };
     int c;
-    while ((c = getopt_long(argc, argv, "p:g:h", cli_options, NULL)) != -1) {
+    while ((c = getopt_long(argc, argv, "u:p:g:h", cli_options, NULL)) != -1) {
         switch (c) {
+            case 'u':
+                parse_curve(&params->curve, optarg);
+                break;
             case 'p':
                 params->ipk=optarg;
                 break;
@@ -90,7 +113,7 @@ void parse_extract_gpk_cli(int argc, char **argv, struct cli_params *params)
                 params->gpk=optarg;
                 break;
             case 'h':
-                printf(usage_str, argv[0], argv[1]);
+                printf(usage_str, argv[0], argv[1], curve_name_strings[0]);
                 exit(1);
         }
     }
@@ -99,13 +122,16 @@ void parse_extract_gpk_cli(int argc, char **argv, struct cli_params *params)
 static
 void parse_request_join_cli(int argc, char **argv, struct cli_params *params)
 {
+    params->curve = 0;
     params->nonce = "nonce-text";
     params->pk = "pk.bin";
     params->sk = "sk.bin";
     const char *usage_str = "Generate public/secret key pair using nonce.\n\n"
-        "Usage: %s %s [-h] [-p <file>] [-s <file>] [-n 'nonce']\n"
+        "Usage: %s %s [-h] [-u] [-p <file>] [-s <file>] [-n 'nonce']\n"
         "\tOptions:\n"
         "\t\t-h --help              Display this message.\n"
+        "\t\t-u --curve             Curve to use [default = %s].\n"
+        "\t\t\tZZZ\n"
         "\t\t-n --nonce             Nonce [default = 'nonce-text']\n"
         "\t\t-p --pk                Public key output location [default = pk.bin]\n"
         "\t\t-s --sk                Secret key output location [default = sk.bin]\n"
@@ -113,6 +139,7 @@ void parse_request_join_cli(int argc, char **argv, struct cli_params *params)
 
     static struct option cli_options[] =
     {
+        {"curve", required_argument, NULL, 'u'},
         {"nonce", required_argument, NULL, 'n'},
         {"pk", required_argument, NULL, 'p'},
         {"sk", required_argument, NULL, 's'},
@@ -120,8 +147,11 @@ void parse_request_join_cli(int argc, char **argv, struct cli_params *params)
         {NULL, 0, NULL, 0}
     };
     int c;
-    while ((c = getopt_long(argc, argv, "n:p:s:h", cli_options, NULL)) != -1) {
+    while ((c = getopt_long(argc, argv, "u:n:p:s:h", cli_options, NULL)) != -1) {
         switch (c) {
+            case 'u':
+                parse_curve(&params->curve, optarg);
+                break;
             case 'n':
                 params->nonce=optarg;
                 break;
@@ -132,7 +162,7 @@ void parse_request_join_cli(int argc, char **argv, struct cli_params *params)
                 params->sk=optarg;
                 break;
             case 'h':
-                printf(usage_str, argv[0], argv[1]);
+                printf(usage_str, argv[0], argv[1], curve_name_strings[0]);
                 exit(1);
         }
     }
@@ -141,15 +171,18 @@ void parse_request_join_cli(int argc, char **argv, struct cli_params *params)
 static
 void parse_respond_to_request_cli(int argc, char **argv, struct cli_params *params)
 {
+    params->curve = 0;
     params->pk = "pk.bin";
     params->isk = "isk.bin";
     params->cred = "cred.bin";
     params->cred_sig = "cred_sig.bin";
     params->nonce = "nonce-text";
     const char *usage_str = "Respond to join request by generating DAA credential and credential signature.\n\n"
-        "Usage: %s %s [-h] [-p <file>] [-s <file>] [-c <file>] [-r <file>] [-n 'nonce']\n"
+        "Usage: %s %s [-h] [-u] [-p <file>] [-s <file>] [-c <file>] [-r <file>] [-n 'nonce']\n"
         "\tOptions:\n"
         "\t\t-h --help              Display this message.\n"
+        "\t\t-u --curve             Curve to use [default = %s].\n"
+        "\t\t\tZZZ\n"
         "\t\t-p --pk                Public key location [default = pk.bin]\n"
         "\t\t-s --isk               Issuer secret key location [default = isk.bin]\n"
         "\t\t-c --cred              DAA Credentials output location [default = cred.bin]\n"
@@ -159,6 +192,7 @@ void parse_respond_to_request_cli(int argc, char **argv, struct cli_params *para
 
     static struct option cli_options[] =
     {
+        {"curve", required_argument, NULL, 'u'},
         {"pk", required_argument, NULL, 'p'},
         {"isk", required_argument, NULL, 's'},
         {"cred", required_argument, NULL, 'c'},
@@ -168,8 +202,11 @@ void parse_respond_to_request_cli(int argc, char **argv, struct cli_params *para
         {NULL, 0, NULL, 0}
     };
     int c;
-    while ((c = getopt_long(argc, argv, "p:s:c:r:n:h", cli_options, NULL)) != -1) {
+    while ((c = getopt_long(argc, argv, "u:p:s:c:r:n:h", cli_options, NULL)) != -1) {
         switch (c) {
+            case 'u':
+                parse_curve(&params->curve, optarg);
+                break;
             case 'p':
                 params->pk=optarg;
                 break;
@@ -186,7 +223,7 @@ void parse_respond_to_request_cli(int argc, char **argv, struct cli_params *para
                 params->nonce=optarg;
                 break;
             case 'h':
-                printf(usage_str, argv[0], argv[1]);
+                printf(usage_str, argv[0], argv[1], curve_name_strings[0]);
                 exit(1);
         }
     }
@@ -196,15 +233,18 @@ void parse_respond_to_request_cli(int argc, char **argv, struct cli_params *para
 static
 void parse_process_response_cli(int argc, char **argv, struct cli_params *params)
 {
+    params->curve = 0;
     params->pk = "pk.bin";
     params->gpk = "gpk.bin";
     params->cred = "cred.bin";
     params->cred_sig = "cred_sig.bin";
 
     const char *usage_str = "Process the response to our join request.\n\n"
-        "Usage: %s %s [-h] [-p <file>] [-g <file>] [-c <file>] [-r <file>]\n"
+        "Usage: %s %s [-h] [-u] [-p <file>] [-g <file>] [-c <file>] [-r <file>]\n"
         "\tOptions:\n"
         "\t\t-h --help              Display this message.\n"
+        "\t\t-u --curve             Curve to use [default = %s].\n"
+        "\t\t\tZZZ\n"
         "\t\t-p --pk                Public key location [default = pk.bin]\n"
         "\t\t-g --gpk               Group public key location [default = gpk.bin]\n"
         "\t\t-c --cred              DAA Credential location [default = cred.bin]\n"
@@ -213,6 +253,7 @@ void parse_process_response_cli(int argc, char **argv, struct cli_params *params
 
     static struct option cli_options[] =
     {
+        {"curve", required_argument, NULL, 'u'},
         {"pk", required_argument, NULL, 'p'},
         {"gpk", required_argument, NULL, 'g'},
         {"cred", required_argument, NULL, 'c'},
@@ -221,8 +262,11 @@ void parse_process_response_cli(int argc, char **argv, struct cli_params *params
         {NULL, 0, NULL, 0}
     };
     int c;
-    while ((c = getopt_long(argc, argv, "p:g:c:r:h", cli_options, NULL)) != -1) {
+    while ((c = getopt_long(argc, argv, "u:p:g:c:r:h", cli_options, NULL)) != -1) {
         switch (c) {
+            case 'u':
+                parse_curve(&params->curve, optarg);
+                break;
             case 'p':
                 params->pk=optarg;
                 break;
@@ -236,7 +280,7 @@ void parse_process_response_cli(int argc, char **argv, struct cli_params *params
                 params->cred_sig=optarg;
                 break;
             case 'h':
-                printf(usage_str, argv[0], argv[1]);
+                printf(usage_str, argv[0], argv[1], curve_name_strings[0]);
                 exit(1);
         }
     }
@@ -245,15 +289,18 @@ void parse_process_response_cli(int argc, char **argv, struct cli_params *params
 static
 void parse_sign_cli(int argc, char **argv, struct cli_params *params)
 {
+    params->curve = 0;
     params->sk = "sk.bin";
     params->cred = "cred.bin";
     params->sig = "sig.bin";
     params->message = "message.bin";
     params->basename = NULL;
     const char *usage_str = "Create a DAA signature over the message.\n\n"
-        "Usage: %s %s [-h] [-s <file>] [-c <file>] [-g <file>] [-m <file>] [-b <file>]\n"
+        "Usage: %s %s [-h] [-u] [-s <file>] [-c <file>] [-g <file>] [-m <file>] [-b <file>]\n"
         "\tOptions:\n"
         "\t\t-h --help              Display this message.\n"
+        "\t\t-u --curve             Curve to use [default = %s].\n"
+        "\t\t\tZZZ\n"
         "\t\t-s --sk                Secret key location [default = sk.bin]\n"
         "\t\t-c --cred              DAA Credential location [default = cred.bin]\n"
         "\t\t-g --sig               Signature output location [default = sig.bin]\n"
@@ -263,6 +310,7 @@ void parse_sign_cli(int argc, char **argv, struct cli_params *params)
 
     static struct option cli_options[] =
     {
+        {"curve", required_argument, NULL, 'u'},
         {"sk", required_argument, NULL, 's'},
         {"cred", required_argument, NULL, 'c'},
         {"sig", required_argument, NULL, 'g'},
@@ -272,8 +320,11 @@ void parse_sign_cli(int argc, char **argv, struct cli_params *params)
         {NULL, 0, NULL, 0}
     };
     int c;
-    while ((c = getopt_long(argc, argv, "s:c:g:m:b:h", cli_options, NULL)) != -1) {
+    while ((c = getopt_long(argc, argv, "u:s:c:g:m:b:h", cli_options, NULL)) != -1) {
         switch (c) {
+            case 'u':
+                parse_curve(&params->curve, optarg);
+                break;
             case 's':
                 params->sk=optarg;
                 break;
@@ -290,7 +341,7 @@ void parse_sign_cli(int argc, char **argv, struct cli_params *params)
                 params->basename=optarg;
                 break;
             case 'h':
-                printf(usage_str, argv[0], argv[1]);
+                printf(usage_str, argv[0], argv[1], curve_name_strings[0]);
                 exit(1);
         }
     }
@@ -299,6 +350,7 @@ void parse_sign_cli(int argc, char **argv, struct cli_params *params)
 static
 void parse_verify_cli(int argc, char **argv, struct cli_params *params)
 {
+    params->curve = 0;
     params->message = "message.bin";
     params->sig = "sig.bin";
     params->gpk = "gpk.bin";
@@ -310,9 +362,11 @@ void parse_verify_cli(int argc, char **argv, struct cli_params *params)
 
 
     const char *usage_str = "Verifies that the signature is valid.\n\n"
-        "Usage: %s %s [-h] [-m <file>] [-s <file>] [-g <file>] [-k <file>] [-n <file>] [-e <file>] [-v <file>] [-b <file>]\n"
+        "Usage: %s %s [-h] [-u] [-m <file>] [-s <file>] [-g <file>] [-k <file>] [-n <file>] [-e <file>] [-v <file>] [-b <file>]\n"
         "\tOptions:\n"
         "\t\t-h --help              Display this message.\n"
+        "\t\t-u --curve             Curve to use [default = %s].\n"
+        "\t\t\tZZZ\n"
         "\t\t-m --message           Message location [default = message.bin]\n"
         "\t\t-s --sig               Signature location [default = sig.bin]\n"
         "\t\t-g --gpk               Group public key location [default = gpk.bin]\n"
@@ -325,6 +379,7 @@ void parse_verify_cli(int argc, char **argv, struct cli_params *params)
 
     static struct option cli_options[] =
     {
+        {"curve", required_argument, NULL, 'u'},
         {"message", required_argument, NULL, 'm'},
         {"sig", required_argument, NULL, 's'},
         {"gpk", required_argument, NULL, 'g'},
@@ -337,8 +392,11 @@ void parse_verify_cli(int argc, char **argv, struct cli_params *params)
         {NULL, 0, NULL, 0}
     };
     int c;
-    while ((c = getopt_long(argc, argv, "m:s:g:k:n:e:v:b:h", cli_options, NULL)) != -1) {
+    while ((c = getopt_long(argc, argv, "u:m:s:g:k:n:e:v:b:h", cli_options, NULL)) != -1) {
         switch (c) {
+            case 'u':
+                parse_curve(&params->curve, optarg);
+                break;
             case 'm':
                 params->message=optarg;
                 break;
@@ -364,7 +422,7 @@ void parse_verify_cli(int argc, char **argv, struct cli_params *params)
                 params->basename=optarg;
                 break;
             case 'h':
-                printf(usage_str, argv[0], argv[1]);
+                printf(usage_str, argv[0], argv[1], curve_name_strings[0]);
                 exit(1);
         }
     }
@@ -464,6 +522,17 @@ void parse_cli(int argc, char** argv, struct cli_params *params)
     } else
     {
         fprintf(stderr, "'%s' is not an option for the ECDAA tool.\n%s", argv[1], usage_str);
+        exit(1);
+    }
+}
+
+void parse_curve(curve_name *out, const char *in)
+{
+    if (0) {    // required to make the template expansion work
+        return;
+    } else if (0 == strcmp(in, "ZZZ")) { *out = ZZZ;
+    } else {
+        fprintf(stderr, "Unknown curve '%s'\n", in);
         exit(1);
     }
 }

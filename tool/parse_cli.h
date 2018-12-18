@@ -24,11 +24,6 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
-#include <getopt.h>
-#include <stdlib.h>
-#include <stdio.h>
-
 typedef enum {
     action_create_group,
     action_extract_gpk,
@@ -40,9 +35,15 @@ typedef enum {
     action_help
 } action;
 
+typedef enum {
+    ZZZ,
+} curve_name;
+
+extern const char *curve_name_strings[];
+
 struct cli_params{
     action command;
-    const char* curve;
+    curve_name curve;
     const char* ipk;
     const char* isk;
     const char* gpk;

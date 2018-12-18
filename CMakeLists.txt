@@ -76,9 +76,13 @@ set(MEMORYCHECK_COMMAND_OPTIONS
 
 set(TOPLEVEL_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
-macro(expand_template template_file srcs_list use_tpm)
+macro(expand_template template_file srcs_list use_tpm is_tool)
         if (${use_tpm})
                 set(use_tpm_flag "--use-tpm")
+        endif()
+
+        if (${is_tool})
+                set(is_tool_flag "--tool")
         endif()
 
         execute_process(COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
@@ -105,6 +109,7 @@ macro(expand_template template_file srcs_list use_tpm)
                                 --out-dir ${TOPLEVEL_BINARY_DIR}
                                 --top-level-dir ${PROJECT_SOURCE_DIR}
                                 ${use_tpm_flag}
+                                ${is_tool_flag}
                 DEPENDS ${template_file})
 
         list(APPEND ${srcs_list} ${processed_file_names})

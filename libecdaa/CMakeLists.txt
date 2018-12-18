@@ -33,11 +33,15 @@ set(ECDAA_INPUT_FILES
         )
 
 foreach(template_file ${ECDAA_INPUT_FILES})
-        expand_template(${template_file} ECDAA_SRCS FALSE)
+        expand_template(${template_file} ECDAA_SRCS FALSE FALSE)
 endforeach()
 
 list(APPEND ECDAA_SRCS
         ${CMAKE_CURRENT_SOURCE_DIR}/util/file_utils.c
+<<<<<<< HEAD
+=======
+        ${CMAKE_CURRENT_SOURCE_DIR}/util/rand_util.c
+>>>>>>> cmake: Handle non-template source files correctly.
         )
 
 set(ECDAA_GENERATED_TOPLEVEL_INCLUDE_DIR "${TOPLEVEL_BINARY_DIR}/libecdaa/include")
@@ -106,7 +110,11 @@ if (BUILD_STATIC_LIBS)
         target_include_directories(${STATIC_TARGET} PUBLIC
                 $<BUILD_INTERFACE:${ECDAA_GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}>
+<<<<<<< HEAD
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+=======
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include}>
+>>>>>>> cmake: Handle non-template source files correctly.
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
