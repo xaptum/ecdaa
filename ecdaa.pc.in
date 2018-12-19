@@ -6,5 +6,5 @@ includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 Name: ecdaa
 Description: Library for Elliptic Curve Direct Anonymous Attestation
 Version: @ECDAA_VERSION@
-Libs: -L{libdir} -lecdaa
+Libs: -L${libdir} -lecdaa
 Cflags: -I${includedir}
