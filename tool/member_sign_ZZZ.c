@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2017 Xaptum, Inc.
+ * Copyright 2018 Xaptum, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -66,7 +66,6 @@ int member_sign_ZZZ(const char* secret_key_file, const char* credential_file, co
     // Create signature
     struct ecdaa_signature_ZZZ sig;
     if (0 != ecdaa_signature_ZZZ_sign(&sig, message, msg_len, basename, basename_len, &sk, &cred, tool_rand)) {
-        message[msg_len] = 0;
         return SIGNING_ERROR;
     }
 

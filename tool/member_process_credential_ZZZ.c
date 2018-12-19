@@ -16,11 +16,11 @@
  *
  *****************************************************************************/
 
-#include "member_process_join_response_ZZZ.h"
+#include "member_process_credential_ZZZ.h"
 
 #include <ecdaa.h>
 
-int member_process_join_response_ZZZ(const char* member_public_key_file, const char* group_public_key_file,
+int member_process_credential_ZZZ(const char* member_public_key_file, const char* group_public_key_file,
                                        const char* credential_file, const char* credential_signature_file)
 {
     // Read member public key from disk

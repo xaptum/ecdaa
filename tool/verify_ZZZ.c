@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2017 Xaptum, Inc.
+ * Copyright 2018 Xaptum, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ int verify_ZZZ(const char *message_file, const char *sig_file, const char *gpk_f
 
     // Verify signature
     if (0 != ecdaa_signature_ZZZ_verify(&sig, &gpk, &revocations, message, msg_len, basename, basename_len)) {
-        ret = SIGNING_ERROR;
+        ret = VERIFY_ERROR;
         goto cleanup;
     }
 

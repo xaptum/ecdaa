@@ -16,7 +16,7 @@
  *
  *****************************************************************************/
 
-#include "issuer_respond_to_join_request_ZZZ.h"
+#include "issuer_issue_credential_ZZZ.h"
 
 #include <ecdaa.h>
 
@@ -24,7 +24,7 @@
 
 #include "tool_rand.h"
 
-int issuer_respond_to_join_request_ZZZ(const char* member_public_key_file,
+int issuer_issue_credential_ZZZ(const char* member_public_key_file,
                                         const char* issuer_secret_key_file,
                                         const char* credential_out_file,
                                         const char* credential_signature_out_file,
@@ -37,9 +37,7 @@ int issuer_respond_to_join_request_ZZZ(const char* member_public_key_file,
     //  and so the authenticity of this member is ensured
     //  via physical means.
     size_t nonce_len = strlen(nonce);
-    if (nonce_len > 1048576) {    // 1MiB
-        return NONCE_OVERFLOW;
-    }
+    
     struct ecdaa_member_public_key_ZZZ pk;
     int ret = ecdaa_member_public_key_ZZZ_deserialize_file(&pk, member_public_key_file, (uint8_t*)nonce, (uint32_t)nonce_len);
     if (0 != ret)

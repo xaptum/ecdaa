@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2017 Xaptum, Inc.
+ * Copyright 2018 Xaptum, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ extern "C" {
 #endif
 
 #include <stdio.h>
-
-
 
 /*
  * Read at-most `bytes_to_read` bytes from the given file pointer.
@@ -66,8 +64,6 @@ int ecdaa_read_from_file(unsigned char *buffer, size_t bytes_to_read, const char
  * WRITE_TO_FILE_ERROR on failure
 */
 int ecdaa_write_buffer_to_file(const char *filename, uint8_t *buffer, size_t bytes_to_write);
-
-
 
 #ifdef __cplusplus
 }

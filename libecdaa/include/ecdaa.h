@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2017 Xaptum, Inc.
+ * Copyright 2018 Xaptum, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 #include <ecdaa/rand.h>
 #include <ecdaa/revocations_ZZZ.h>
 #include <ecdaa/signature_ZZZ.h>
-#include <ecdaa/util/file_utils.h>
-#include <ecdaa/util/util_errors.h>
+#include <ecdaa/util/file_io.h>
+#include <ecdaa/util/errors.h>
 
 #endif

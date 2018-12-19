@@ -64,13 +64,6 @@ int ecdaa_issuer_key_pair_ZZZ_generate(struct ecdaa_issuer_public_key_ZZZ *pk_ou
                                        struct ecdaa_issuer_secret_key_ZZZ *sk_out,
                                        ecdaa_rand_func get_random);
 
-int ecdaa_issuer_key_pair_ZZZ_generate_file(const char *pk_file,
-                                       const char *sk_file,
-                                       ecdaa_rand_func get_random);
-
-int ecdaa_issuer_key_pair_ZZZ_generate_fp(FILE *pk_file,
-                                       FILE *sk_file,
-                                       ecdaa_rand_func get_random);
 /*
  * Check the signature on an `ecdaa_issuer_public_key_ZZZ`.
  *

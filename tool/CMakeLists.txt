@@ -19,16 +19,16 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 ################################################################################
 
 set(ECDAA_TOOL_SRC_INPUT_FILES
-  ${CMAKE_CURRENT_SOURCE_DIR}/issuer_create_group_ZZZ.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/issuer_create_group_ZZZ.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/issuer_gen_keys_ZZZ.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/issuer_gen_keys_ZZZ.c
   ${CMAKE_CURRENT_SOURCE_DIR}/extract_gpk_ZZZ.h
   ${CMAKE_CURRENT_SOURCE_DIR}/extract_gpk_ZZZ.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/issuer_respond_to_join_request_ZZZ.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/issuer_respond_to_join_request_ZZZ.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/member_process_join_response_ZZZ.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/member_process_join_response_ZZZ.c
-  ${CMAKE_CURRENT_SOURCE_DIR}/member_request_join_ZZZ.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/member_request_join_ZZZ.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/issuer_issue_credential_ZZZ.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/issuer_issue_credential_ZZZ.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/member_process_credential_ZZZ.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/member_process_credential_ZZZ.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/member_gen_keys_ZZZ.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/member_gen_keys_ZZZ.c
   ${CMAKE_CURRENT_SOURCE_DIR}/member_sign_ZZZ.h
   ${CMAKE_CURRENT_SOURCE_DIR}/member_sign_ZZZ.c
   ${CMAKE_CURRENT_SOURCE_DIR}/verify_ZZZ.h
@@ -63,7 +63,6 @@ target_include_directories(ecdaa-tool PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   )
 
-target_link_libraries(ecdaa-tool PUBLIC AMCL::AMCL)
 if(BUILD_SHARED_LIBS)
       target_link_libraries(ecdaa-tool PRIVATE ecdaa)
 else()
@@ -73,10 +72,8 @@ install(TARGETS ecdaa-tool DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/tool/)
 
-add_test(create_group ./ecdaa issuer creategroup)
+add_test(gen_keys ./ecdaa issuer genkeys)
 add_test(extract_gpk ./ecdaa extractgpk)
-add_test(request_join ./ecdaa member requestjoin)
-add_test(respond_to_request ./ecdaa issuer respondtorequest)
-add_test(process_issuer_response ./ecdaa member processresponse)
-add_test(sign ./ecdaa member sign)
-add_test(verify ./ecdaa verify)
+add_test(gen_keys ./ecdaa member genkeys)
+add_test(respond_to_request ./ecdaa issuer issuecredential)
+add_test(process_issuer_response ./ecdaa member processcredential)

@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2013 Xaptum, Inc.
+ * Copyright 2018 Xaptum, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
  *****************************************************************************/
  #include <stdint.h>
  #include <stdio.h>
- #include <ecdaa/util/file_utils.h>
- #include <ecdaa/util/util_errors.h>
+ #include <ecdaa/util/file_io.h>
+ #include <ecdaa/util/errors.h>
 
 int ecdaa_read_from_file(unsigned char *buffer, size_t bytes_to_read, const char *filename)
 {
@@ -36,7 +36,7 @@ int ecdaa_read_from_file(unsigned char *buffer, size_t bytes_to_read, const char
      }
 
      fgetc(file_ptr);
-     if(!feof(file_ptr)){
+     if (!feof(file_ptr)){
          ret = READ_FROM_FILE_ERROR;
          goto cleanup;
      }
@@ -95,7 +95,7 @@ int ecdaa_read_from_fp(unsigned char *buffer, size_t bytes_to_read, FILE *file_p
      }
 
      fgetc(file_ptr);
-     if(!feof(file_ptr)){
+     if (!feof(file_ptr)){
          ret = READ_FROM_FILE_ERROR;
          goto cleanup;
      }

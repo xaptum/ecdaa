@@ -15,8 +15,8 @@
 *    limitations under the License
 *
 *****************************************************************************/
-#ifndef ECDAA_TOOL_VERIFY_ZZZ_H
-#define ECDAA_TOOL_VERIFY_ZZZ_H
+#ifndef ECDAA_TOOL_PROCESS_RESPONSE_ZZZ_H
+#define ECDAA_TOOL_PROCESS_RESPONSE_ZZZ_H
 #pragma once
 
 #ifdef __cplusplus
@@ -28,14 +28,11 @@ extern "C" {
 *
 * Returns:
 * SUCCESS                     on success
-* SIGNING_ERROR               an error occurred while signing message
-* PARSE_REVOC_LIST_ERROR      an error occurred while parsing a revocation list
-* DESERIALIZE_KEY_ERROR       an error occurred while deserializing key
-* READ_FROM_FILE_ERROR        an error occurred while reading from a file
-* WRITE_TO_FILE_ERROR         an error occurred while writing to a file
+* READ_FROM_FILE_ERROR        an error occurred reading from file
+* DESERIALIZE_KEY_ERROR       an error occurred deserializing keys
 */
-int verify_ZZZ(const char *message_file, const char *sig_file, const char *gpk_file, const char *sk_rev_list_file,
-             const char *number_of_sk_revs, const char *bsn_rev_list_file, const char *number_of_bsn_revs, const char *basename_file);
+int member_process_credential_ZZZ(const char* member_public_key_file, const char* group_public_key_file,
+                                    const char* credential_file, const char* credential_signature_file);
 
 #ifdef __cplusplus
 }

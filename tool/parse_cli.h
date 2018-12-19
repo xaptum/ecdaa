@@ -25,11 +25,11 @@ extern "C" {
 #endif
 
 typedef enum {
-    action_create_group,
+    action_issuer_gen_keys,
     action_extract_gpk,
-    action_request_join,
-    action_respond_to_request,
-    action_process_response,
+    action_member_gen_keys,
+    action_issue_credential,
+    action_process_credential,
     action_sign,
     action_verify,
     action_help

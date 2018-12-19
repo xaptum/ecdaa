@@ -102,6 +102,9 @@ void ecdaa_credential_ZZZ_serialize(uint8_t *buffer_out,
 int ecdaa_credential_ZZZ_serialize_file(const char* file,
                                     struct ecdaa_credential_ZZZ *credential);
 
+int ecdaa_credential_ZZZ_serialize_fp(FILE* fp,
+                                    struct ecdaa_credential_ZZZ *credential);
+
 /*
  * Serialize an `ecdaa_credential_ZZZ_signature`
  *
@@ -115,6 +118,9 @@ void ecdaa_credential_ZZZ_signature_serialize(uint8_t *buffer_out,
                                               struct ecdaa_credential_ZZZ_signature *cred_sig);
 
 int ecdaa_credential_ZZZ_signature_serialize_file(const char* file,
+                                              struct ecdaa_credential_ZZZ_signature *cred_sig);
+
+int ecdaa_credential_ZZZ_signature_serialize_fp(FILE* fp,
                                               struct ecdaa_credential_ZZZ_signature *cred_sig);
 /*
  * De-serialize an `ecdaa_credential_ZZZ` and `ecdaa_credential_ZZZ_signature`,

@@ -67,11 +67,6 @@ int ecdaa_member_key_pair_ZZZ_generate(struct ecdaa_member_public_key_ZZZ *pk_ou
                                        uint32_t nonce_length,
                                        ecdaa_rand_func get_random);
 
-int ecdaa_member_key_pair_ZZZ_generate_file(const char *public_key_file,
-                                       const char *secret_key_file,
-                                       uint8_t *nonce,
-                                       uint32_t nonce_length,
-                                       ecdaa_rand_func get_random);
 /*
  * Check the signature on an `ecdaa_member_public_key_ZZZ`.
  *

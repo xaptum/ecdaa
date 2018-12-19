@@ -18,11 +18,11 @@
 
 #include <ecdaa.h>
 
-#include "issuer_create_group_ZZZ.h"
+#include "issuer_gen_keys_ZZZ.h"
 #include "extract_gpk_ZZZ.h"
-#include "member_request_join_ZZZ.h"
-#include "issuer_respond_to_join_request_ZZZ.h"
-#include "member_process_join_response_ZZZ.h"
+#include "member_gen_keys_ZZZ.h"
+#include "issuer_issue_credential_ZZZ.h"
+#include "member_process_credential_ZZZ.h"
 #include "member_sign_ZZZ.h"
 #include "verify_ZZZ.h"
 #include "parse_cli.h"
@@ -38,9 +38,9 @@ int main(int argc, char **argv) {
     parse_cli(argc, argv, &params);
     int out = 0;
     switch(params.command){
-        case action_create_group:
+        case action_issuer_gen_keys:
             switch (params.curve) {
-                EXPAND_CURVE_CASE(create_group, ZZZ, params.ipk, params.isk)
+                EXPAND_CURVE_CASE(issuer_gen_keys, ZZZ, params.ipk, params.isk)
                 default:
                     out = UNKNOWN_CURVE_ERROR;
                     break;
@@ -54,25 +54,25 @@ int main(int argc, char **argv) {
                     break;
             }
             break;
-        case action_request_join:
+        case action_member_gen_keys:
             switch (params.curve) {
-                EXPAND_CURVE_CASE(member_request_join, ZZZ, params.nonce, params.pk, params.sk)
+                EXPAND_CURVE_CASE(member_gen_keys, ZZZ, params.nonce, params.pk, params.sk)
                 default:
                     out = UNKNOWN_CURVE_ERROR;
                     break;
             }
             break;
-        case action_respond_to_request:
+        case action_issue_credential:
             switch (params.curve) {
-                EXPAND_CURVE_CASE(issuer_respond_to_join_request, ZZZ, params.pk, params.isk, params.cred, params.cred_sig, params.nonce)
+                EXPAND_CURVE_CASE(issuer_issue_credential, ZZZ, params.pk, params.isk, params.cred, params.cred_sig, params.nonce)
                 default:
                     out = UNKNOWN_CURVE_ERROR;
                     break;
             }
             break;
-        case action_process_response:
+        case action_process_credential:
             switch (params.curve) {
-                EXPAND_CURVE_CASE(member_process_join_response, ZZZ, params.pk, params.gpk, params.cred, params.cred_sig)
+                EXPAND_CURVE_CASE(member_process_credential, ZZZ, params.pk, params.gpk, params.cred, params.cred_sig)
                 default:
                     out = UNKNOWN_CURVE_ERROR;
                     break;
@@ -111,8 +111,8 @@ int main(int argc, char **argv) {
         case DESERIALIZE_KEY_ERROR:
             fprintf(stderr, "Error deserializing a key\n");
             break;
-        case NONCE_OVERFLOW:
-            fprintf(stderr, "Nonce input was too large\n");
+        case VERIFY_ERROR:
+            fprintf(stderr, "Signature doesn't verify\n");
             break;
         case CRED_CREATION_ERROR:
             fprintf(stderr, "Error creating DAA credentials\n" );
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
             fprintf(stderr, "Error while signing\n");
             break;
         case UNKNOWN_CURVE_ERROR:
-            fprintf(stderr, " Unrecognized curve name: '%d'\n", params.curve);
+            fprintf(stderr, "Unrecognized curve name: '%d'\n", params.curve);
             break;
         case SUCCESS:
             fprintf(stderr, "ok\n");

@@ -134,6 +134,13 @@ int ecdaa_signature_ZZZ_deserialize(struct ecdaa_signature_ZZZ *signature_out,
                                     uint8_t *buffer_in,
                                     int has_nym);
 
+int ecdaa_signature_ZZZ_deserialize_file(struct ecdaa_signature_ZZZ *signature_out,
+                                        const char *file,
+                                        int has_nym);
+
+int ecdaa_signature_ZZZ_deserialize_fp(struct ecdaa_signature_ZZZ *signature_out,
+                                        FILE *fp,
+                                        int has_nym);
 /*
  * De-serialize an `ecdaa_signature_ZZZ`, and the message it's over, and verify the signature.
  *

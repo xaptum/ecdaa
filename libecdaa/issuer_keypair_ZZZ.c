@@ -17,8 +17,8 @@
  *****************************************************************************/
 
 #include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/util/file_utils.h>
-#include <ecdaa/util/util_errors.h>
+#include <ecdaa/util/file_io.h>
+#include <ecdaa/util/errors.h>
 
 #include "amcl-extensions/ecp_ZZZ.h"
 #include "amcl-extensions/ecp2_ZZZ.h"
@@ -33,9 +33,6 @@ size_t ecdaa_issuer_public_key_ZZZ_length(void) {
 size_t ecdaa_issuer_secret_key_ZZZ_length(void) {
     return ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH;
 }
-
-int ecdaa_read_from_fp(unsigned char *buffer, size_t bytes_to_read, FILE *file_ptr);
-int ecdaa_write_buffer_to_fp(FILE *file_ptr, uint8_t *buffer, size_t bytes_to_write);
 
 int ecdaa_issuer_key_pair_ZZZ_generate(struct ecdaa_issuer_public_key_ZZZ *pk,
                                        struct ecdaa_issuer_secret_key_ZZZ *sk,
@@ -57,54 +54,6 @@ int ecdaa_issuer_key_pair_ZZZ_generate(struct ecdaa_issuer_public_key_ZZZ *pk,
     int sign_ret = issuer_schnorr_sign_ZZZ(&pk->c, &pk->sx, &pk->sy, &pk->gpk.X, &pk->gpk.Y, sk->x, sk->y, get_random);
     if (0 != sign_ret)
         return -1;
-
-    return 0;
-}
-
-int ecdaa_issuer_key_pair_ZZZ_generate_file(const char *pk_file,
-                                       const char *sk_file,
-                                       ecdaa_rand_func get_random)
-{
-    struct ecdaa_issuer_public_key_ZZZ ipk;
-    struct ecdaa_issuer_secret_key_ZZZ isk;
-    int ret = ecdaa_issuer_key_pair_ZZZ_generate(&ipk, &isk, get_random);
-    if (0 != ret) {
-        return KEY_CREATION_ERROR;
-    }
-
-    // Write public-key to file
-    ret = ecdaa_issuer_public_key_ZZZ_serialize_file(pk_file, &ipk);
-    if (0 != ret)
-        return ret;
-
-    // Write secret-key to file
-    ret = ecdaa_issuer_secret_key_ZZZ_serialize_file(sk_file, &isk);
-    if (0 != ret)
-        return ret;
-
-    return 0;
-}
-
-int ecdaa_issuer_key_pair_ZZZ_generate_fp(FILE *pk_file,
-                                       FILE *sk_file,
-                                       ecdaa_rand_func get_random)
-{
-    struct ecdaa_issuer_public_key_ZZZ ipk;
-    struct ecdaa_issuer_secret_key_ZZZ isk;
-    int ret = ecdaa_issuer_key_pair_ZZZ_generate(&ipk, &isk, get_random);
-    if (0 != ret) {
-        return KEY_CREATION_ERROR;
-    }
-
-    // Write public-key to file
-    ret = ecdaa_issuer_public_key_ZZZ_serialize_fp(pk_file, &ipk);
-    if (0 != ret)
-        return ret;
-
-    // Write secret-key to file
-    ret = ecdaa_issuer_secret_key_ZZZ_serialize_fp(sk_file, &isk);
-    if (0 != ret)
-        return ret;
 
     return 0;
 }

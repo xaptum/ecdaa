@@ -16,7 +16,7 @@
  *
  *****************************************************************************/
 
-#include "member_request_join_ZZZ.h"
+#include "member_gen_keys_ZZZ.h"
 
 #include <string.h>
 
@@ -24,17 +24,29 @@
 
 #include "tool_rand.h"
 
-int member_request_join_ZZZ(const char* nonce, const char* public_key_file, const char* secret_key_file)
+int member_gen_keys_ZZZ(const char* nonce, const char* public_key_file, const char* secret_key_file)
 {
     // Generate member key-pair
-    size_t nonce_len = strlen(nonce);
-    if (nonce_len > 1048576) {    // 1MiB
-        return NONCE_OVERFLOW;
-    }
-    int ret = ecdaa_member_key_pair_ZZZ_generate_file(public_key_file, secret_key_file, (uint8_t*)nonce, (uint32_t)nonce_len, tool_rand);
+    size_t nonce_length = strlen(nonce);
+
+    struct ecdaa_member_public_key_ZZZ pk;
+    struct ecdaa_member_secret_key_ZZZ sk;
+    int ret = ecdaa_member_key_pair_ZZZ_generate(&pk, &sk, (uint8_t*)nonce, (uint32_t)nonce_length, tool_rand);
     if (0 != ret) {
-        return ret;
+        return KEY_CREATION_ERROR;
     }
+
+    // Write public key to file
+    ret = ecdaa_member_public_key_ZZZ_serialize_file(public_key_file, &pk);
+    if (0 != ret)
+        return ret;
+
+    // Write secret key to file
+    ret = ecdaa_member_secret_key_ZZZ_serialize_file(secret_key_file, &sk);
+    if (0 != ret)
+        return ret;
+
+    return SUCCESS;
 
     return SUCCESS;
 }

@@ -22,8 +22,8 @@
 #include <ecdaa/group_public_key_ZZZ.h>
 #include <ecdaa/revocations_ZZZ.h>
 #include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/util/util_errors.h>
-#include <ecdaa/util/file_utils.h>
+#include <ecdaa/util/errors.h>
+#include <ecdaa/util/file_io.h>
 
 #include "schnorr/schnorr_ZZZ.h"
 #include "amcl-extensions/big_XXX.h"
@@ -48,9 +48,6 @@ size_t ecdaa_signature_ZZZ_with_nym_length(void)
 {
     return ECDAA_SIGNATURE_ZZZ_WITH_NYM_LENGTH;
 }
-
-int ecdaa_read_from_fp(unsigned char *buffer, size_t bytes_to_read, FILE *file_ptr);
-int ecdaa_write_buffer_to_fp(FILE *file_ptr, uint8_t *buffer, size_t bytes_to_write);
 
 int ecdaa_signature_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
                              const uint8_t* message,
@@ -112,6 +109,7 @@ int ecdaa_signature_ZZZ_verify(struct ecdaa_signature_ZZZ *signature,
 
     ECP2_ZZZ basepoint2;
     ecp2_ZZZ_set_to_generator(&basepoint2);
+
     // 3) Check e(R, Y) == e(S, P_2)
     FP12_YYY pairing_one;
     FP12_YYY pairing_one_prime;
@@ -134,6 +132,7 @@ int ecdaa_signature_ZZZ_verify(struct ecdaa_signature_ZZZ *signature,
     compute_pairing_ZZZ(&pairing_two_prime, &RW, &gpk->X);
     if (!FP12_YYY_equals(&pairing_two, &pairing_two_prime))
         ret = -1;
+
     // 6) Check W against sk_revocation_list
     ECP_ZZZ Wcheck;
     for (size_t i = 0; i < revocations->sk_length; ++i) {
@@ -142,13 +141,16 @@ int ecdaa_signature_ZZZ_verify(struct ecdaa_signature_ZZZ *signature,
         if (ECP_ZZZ_equals(&Wcheck, &signature->W))
             ret = -1;
     }
+
     // 7) Check K against bsn_revocation_list
     for (size_t i = 0; i < revocations->bsn_length; ++i) {
         if (ECP_ZZZ_equals(&revocations->bsn_list[i], &signature->K))
             ret = -1;
     }
+
     return ret;
 }
+
 void ecdaa_signature_ZZZ_serialize(uint8_t *buffer_out,
                                    struct ecdaa_signature_ZZZ *signature,
                                    int has_nym)
@@ -172,7 +174,7 @@ int ecdaa_signature_ZZZ_serialize_file(const char* file,
                                    struct ecdaa_signature_ZZZ *signature,
                                    int has_nym)
 {
-    uint32_t sig_length;
+    uint32_t sig_length = 0;
     if (has_nym) {
         sig_length = ECDAA_SIGNATURE_ZZZ_WITH_NYM_LENGTH;
     } else {
@@ -192,7 +194,7 @@ int ecdaa_signature_ZZZ_serialize_fp(FILE* fp,
                                    struct ecdaa_signature_ZZZ *signature,
                                    int has_nym)
 {
-    uint32_t sig_length;
+    uint32_t sig_length = 0;
     if (has_nym) {
         sig_length = ECDAA_SIGNATURE_ZZZ_WITH_NYM_LENGTH;
     } else {
@@ -239,6 +241,52 @@ int ecdaa_signature_ZZZ_deserialize(struct ecdaa_signature_ZZZ *signature_out,
     }
 
     return ret;
+}
+
+int ecdaa_signature_ZZZ_deserialize_file(struct ecdaa_signature_ZZZ *signature_out,
+                                        const char *file,
+                                        int has_nym)
+{
+    uint32_t sig_length = 0;
+    if (has_nym) {
+        sig_length = ECDAA_SIGNATURE_ZZZ_WITH_NYM_LENGTH;
+    } else {
+        sig_length = ECDAA_SIGNATURE_ZZZ_LENGTH;
+    }
+    uint8_t buffer[sig_length];
+    int read_ret = ecdaa_read_from_file(buffer, sig_length, file);
+    if ((int)sig_length != read_ret) {
+        return READ_FROM_FILE_ERROR;
+    }
+    int ret = ecdaa_signature_ZZZ_deserialize(signature_out, buffer, has_nym);
+    if (0 != ret) {
+        return DESERIALIZE_KEY_ERROR;
+    }
+
+    return SUCCESS;
+}
+
+int ecdaa_signature_ZZZ_deserialize_fp(struct ecdaa_signature_ZZZ *signature_out,
+                                        FILE *fp,
+                                        int has_nym)
+{
+    uint32_t sig_length = 0;
+    if (has_nym) {
+        sig_length = ECDAA_SIGNATURE_ZZZ_WITH_NYM_LENGTH;
+    } else {
+        sig_length = ECDAA_SIGNATURE_ZZZ_LENGTH;
+    }
+    uint8_t buffer[sig_length];
+    int read_ret = ecdaa_read_from_fp(buffer, sig_length, fp);
+    if ((int)sig_length != read_ret) {
+        return READ_FROM_FILE_ERROR;
+    }
+    int ret = ecdaa_signature_ZZZ_deserialize(signature_out, buffer, has_nym);
+    if (0 != ret) {
+        return DESERIALIZE_KEY_ERROR;
+    }
+
+    return SUCCESS;
 }
 
 int ecdaa_signature_ZZZ_deserialize_and_verify(struct ecdaa_signature_ZZZ *signature_out,

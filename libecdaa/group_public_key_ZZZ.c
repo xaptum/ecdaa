@@ -17,8 +17,8 @@
  *****************************************************************************/
 
 #include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/util/file_utils.h>
-#include <ecdaa/util/util_errors.h>
+#include <ecdaa/util/file_io.h>
+#include <ecdaa/util/errors.h>
 
 #include "amcl-extensions/ecp2_ZZZ.h"
 
@@ -33,9 +33,6 @@ void ecdaa_group_public_key_ZZZ_serialize(uint8_t *buffer_out,
     ecp2_ZZZ_serialize(buffer_out, &gpk->X);
     ecp2_ZZZ_serialize(buffer_out + ECP2_ZZZ_LENGTH, &gpk->Y);
 }
-
-int ecdaa_read_from_fp(unsigned char *buffer, size_t bytes_to_read, FILE *file_ptr);
-int ecdaa_write_buffer_to_fp(FILE *file_ptr, uint8_t *buffer, size_t bytes_to_write);
 
 int ecdaa_group_public_key_ZZZ_serialize_file(const char* file,
                                           struct ecdaa_group_public_key_ZZZ *gpk)

@@ -15,26 +15,29 @@
  *    limitations under the License
  *
  *****************************************************************************/
- #ifndef ECDAA_TOOL_ISSUER_CREATE_GROUP_ZZZ_H
- #define ECDAA_TOOL_ISSUER_CREATE_GROUP_ZZZ_H
- #pragma once
+#include "issuer_gen_keys_ZZZ.h"
+#include "tool_rand.h"
 
- #ifdef __cplusplus
- extern "C" {
- #endif
+#include <ecdaa.h>
 
- /*
-  * Creates a issuer key pair and then serializes the public and secret keys
-  *
-  * Returns:
-  * 0                           on success
-  * KEY_CREATION_ERROR          an error occurred creating the keypair
-  * WRITE_TO_FILE_ERROR         an error occurred writing keys to files
- */
-int create_group_ZZZ(const char* public_key_file, const char* secret_key_file);
+int issuer_gen_keys_ZZZ(const char* public_key_file, const char* secret_key_file)
+{
+    struct ecdaa_issuer_public_key_ZZZ ipk;
+    struct ecdaa_issuer_secret_key_ZZZ isk;
+    int ret = ecdaa_issuer_key_pair_ZZZ_generate(&ipk, &isk, tool_rand);
+    if (0 != ret) {
+        return KEY_CREATION_ERROR;
+    }
 
- #ifdef __cplusplus
- }
- #endif
+    // Write public-key to file
+    ret = ecdaa_issuer_public_key_ZZZ_serialize_file(public_key_file, &ipk);
+    if (0 != ret)
+        return ret;
 
- #endif
+    // Write secret-key to file
+    ret = ecdaa_issuer_secret_key_ZZZ_serialize_file(secret_key_file, &isk);
+    if (0 != ret)
+        return ret;
+
+    return 0;
+}

@@ -17,8 +17,8 @@
  *****************************************************************************/
 
 #include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/util/file_utils.h>
-#include <ecdaa/util/util_errors.h>
+#include <ecdaa/util/file_io.h>
+#include <ecdaa/util/errors.h>
 
 #include "schnorr/schnorr_ZZZ.h"
 #include "internal-utilities/explicit_bzero.h"
@@ -39,9 +39,6 @@ size_t ecdaa_credential_ZZZ_signature_length(void)
 {
     return ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH;
 }
-
-int ecdaa_read_from_fp(unsigned char *buffer, size_t bytes_to_read, FILE *file_ptr);
-int ecdaa_write_buffer_to_fp(FILE *file_ptr, uint8_t *buffer, size_t bytes_to_write);
 
 int ecdaa_credential_ZZZ_generate(struct ecdaa_credential_ZZZ *cred,
                                   struct ecdaa_credential_ZZZ_signature *cred_sig_out,
@@ -206,6 +203,18 @@ int ecdaa_credential_ZZZ_signature_serialize_file(const char* file,
     uint8_t buffer[ECDAA_CREDENTIAL_ZZZ_LENGTH] = {0};
     ecdaa_credential_ZZZ_signature_serialize(buffer, cred_sig);
     int write_ret = ecdaa_write_buffer_to_file(file, buffer, ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH);
+    if (ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH != write_ret) {
+        return WRITE_TO_FILE_ERROR;
+    }
+    return SUCCESS;
+}
+
+int ecdaa_credential_ZZZ_signature_serialize_fp(FILE* fp,
+                                              struct ecdaa_credential_ZZZ_signature *cred_sig)
+{
+    uint8_t buffer[ECDAA_CREDENTIAL_ZZZ_LENGTH] = {0};
+    ecdaa_credential_ZZZ_signature_serialize(buffer, cred_sig);
+    int write_ret = ecdaa_write_buffer_to_fp(fp, buffer, ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH);
     if (ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH != write_ret) {
         return WRITE_TO_FILE_ERROR;
     }

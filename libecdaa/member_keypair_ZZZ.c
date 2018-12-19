@@ -17,8 +17,8 @@
  *****************************************************************************/
 
 #include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/util/util_errors.h>
-#include <ecdaa/util/file_utils.h>
+#include <ecdaa/util/errors.h>
+#include <ecdaa/util/file_io.h>
 #include "amcl-extensions/ecp_ZZZ.h"
 #include "schnorr/schnorr_ZZZ.h"
 
@@ -33,9 +33,6 @@ size_t ecdaa_member_secret_key_ZZZ_length(void)
 {
     return ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH;
 }
-
-int ecdaa_read_from_fp(unsigned char *buffer, size_t bytes_to_read, FILE *file_ptr);
-int ecdaa_write_buffer_to_fp(FILE *file_ptr, uint8_t *buffer, size_t bytes_to_write);
 
 int ecdaa_member_key_pair_ZZZ_generate(struct ecdaa_member_public_key_ZZZ *pk,
                                        struct ecdaa_member_secret_key_ZZZ *sk,
@@ -63,58 +60,6 @@ int ecdaa_member_key_pair_ZZZ_generate(struct ecdaa_member_public_key_ZZZ *pk,
                                     get_random);
 
     return sign_ret;
-}
-
-int ecdaa_member_key_pair_ZZZ_generate_file(const char *public_key_file,
-                                       const char *secret_key_file,
-                                       uint8_t *nonce,
-                                       uint32_t nonce_length,
-                                       ecdaa_rand_func get_random)
-{
-    struct ecdaa_member_public_key_ZZZ pk;
-    struct ecdaa_member_secret_key_ZZZ sk;
-    int ret = ecdaa_member_key_pair_ZZZ_generate(&pk, &sk, (uint8_t*)nonce, (uint32_t)nonce_length, get_random);
-    if (0 != ret) {
-        return KEY_CREATION_ERROR;
-    }
-
-    // Write public key to file
-    ret = ecdaa_member_public_key_ZZZ_serialize_file(public_key_file, &pk);
-    if (0 != ret)
-        return ret;
-
-    // Write secret key to file
-    ret = ecdaa_member_secret_key_ZZZ_serialize_file(secret_key_file, &sk);
-    if (0 != ret)
-        return ret;
-
-    return SUCCESS;
-}
-
-int ecdaa_member_key_pair_ZZZ_generate_fp(FILE *public_key_file,
-                                       FILE *secret_key_file,
-                                       uint8_t *nonce,
-                                       uint32_t nonce_length,
-                                       ecdaa_rand_func get_random)
-{
-    struct ecdaa_member_public_key_ZZZ pk;
-    struct ecdaa_member_secret_key_ZZZ sk;
-    int ret = ecdaa_member_key_pair_ZZZ_generate(&pk, &sk, (uint8_t*)nonce, (uint32_t)nonce_length, get_random);
-    if (0 != ret) {
-        return KEY_CREATION_ERROR;
-    }
-
-    // Write public key to file pointer
-    ret = ecdaa_member_public_key_ZZZ_serialize_fp(public_key_file, &pk);
-    if (0 != ret)
-        return ret;
-
-    // Write secret key to file pointer
-    ret = ecdaa_member_secret_key_ZZZ_serialize_fp(secret_key_file, &sk);
-    if (0 != ret)
-        return ret;
-
-    return SUCCESS;
 }
 
 int ecdaa_member_public_key_ZZZ_validate(struct ecdaa_member_public_key_ZZZ *pk,

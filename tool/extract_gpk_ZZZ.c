@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2017 Xaptum, Inc.
+ * Copyright 2018 Xaptum, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ int extract_gpk_ZZZ(const char* issuer_public_key_file, const char* group_public
     // Read issuer public key from disk.
     struct ecdaa_issuer_public_key_ZZZ ipk;
     int ret = ecdaa_issuer_public_key_ZZZ_deserialize_file(&ipk, issuer_public_key_file);
-    if(0 != ret)
+    if (0 != ret)
         return ret;
 
     // Write group-public-key to file
