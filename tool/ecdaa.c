@@ -130,4 +130,9 @@ int main(int argc, char **argv) {
             fprintf(stderr, "ok\n");
             break;
     }
+
+    if (out != SUCCESS)
+        return 1;
+
+    return 0;
 }

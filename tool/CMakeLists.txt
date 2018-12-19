@@ -71,9 +71,3 @@ endif()
 install(TARGETS ecdaa-tool DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/tool/)
-
-add_test(gen_keys ./ecdaa issuer genkeys)
-add_test(extract_gpk ./ecdaa extractgpk)
-add_test(gen_keys ./ecdaa member genkeys)
-add_test(respond_to_request ./ecdaa issuer issuecredential)
-add_test(process_issuer_response ./ecdaa member processcredential)
