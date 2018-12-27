@@ -120,6 +120,11 @@ int ecdaa_member_public_key_ZZZ_deserialize_file(struct ecdaa_member_public_key_
                                             uint8_t *nonce_in,
                                             uint32_t nonce_length);
 
+int ecdaa_member_public_key_ZZZ_deserialize_fp(struct ecdaa_member_public_key_ZZZ *pk_out,
+                                            FILE* file,
+                                            uint8_t *nonce_in,
+                                            uint32_t nonce_length);
+
 /*
  * De-serialize an `ecdaa_member_public_key_ZZZ`, check its validity, but NOT its signature.
  *
@@ -139,6 +144,10 @@ int ecdaa_member_public_key_ZZZ_deserialize_no_check(struct ecdaa_member_public_
 
 int ecdaa_member_public_key_ZZZ_deserialize_no_check_file(struct ecdaa_member_public_key_ZZZ *pk_out,
                                                      const char *file);
+
+int ecdaa_member_public_key_ZZZ_deserialize_no_check_fp(struct ecdaa_member_public_key_ZZZ *pk_out,
+                                                     FILE *file);
+
 /*
  * Serialize an `ecdaa_member_secret_key_ZZZ`
  *

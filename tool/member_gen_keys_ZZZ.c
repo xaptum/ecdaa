@@ -47,6 +47,4 @@ int member_gen_keys_ZZZ(const char* nonce, const char* public_key_file, const ch
         return ret;
 
     return SUCCESS;
-
-    return SUCCESS;
 }

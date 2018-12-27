@@ -22,59 +22,37 @@
 
 int ecdaa_read_from_file(unsigned char *buffer, size_t bytes_to_read, const char *filename)
 {
-     FILE *file_ptr = fopen(filename, "rb");
-     int ret = 0;
-     int close_ret = 0;
+    FILE *file_ptr = fopen(filename, "rb");
 
-     if (NULL == file_ptr){
-         return READ_FROM_FILE_ERROR;
-     }
-     size_t bytes_read = fread(buffer, 1, bytes_to_read, file_ptr);
-     if (bytes_to_read != bytes_read && !feof(file_ptr)) {
-        ret = READ_FROM_FILE_ERROR;
-        goto cleanup;
-     }
-
-     fgetc(file_ptr);
-     if (!feof(file_ptr)){
-         ret = READ_FROM_FILE_ERROR;
-         goto cleanup;
-     }
-
-     ret = (int)bytes_read;
-
-cleanup:
-    close_ret = fclose(file_ptr);
-    if (0 != close_ret) {
-        ret = READ_FROM_FILE_ERROR;
+    if (NULL == file_ptr){
+        return READ_FROM_FILE_ERROR;
     }
-    return ret;
 
+    int ret = ecdaa_read_from_fp(buffer, bytes_to_read, file_ptr);
+
+    if (ret >= 0 && bytes_to_read == (size_t)ret) {
+        if (0 != fclose(file_ptr)) {
+            return READ_FROM_FILE_ERROR;
+        }
+    }
+
+    return ret;
  }
 
 int ecdaa_write_buffer_to_file(const char *filename, uint8_t *buffer, size_t bytes_to_write)
 {
     FILE *file_ptr = fopen(filename, "wb");
-    int ret = 0;
-    int close_ret = 0;
 
     if (NULL == file_ptr){
         return WRITE_TO_FILE_ERROR;
     }
 
-    size_t bytes_written = fwrite(buffer, 1, bytes_to_write, file_ptr);
+    int ret = ecdaa_write_buffer_to_fp(file_ptr, buffer, bytes_to_write);
 
-    if (bytes_to_write != bytes_written) {
-        ret = WRITE_TO_FILE_ERROR;
-        goto cleanup;
-    }
-
-    ret = (int) bytes_written;
-
-cleanup:
-    close_ret = fclose(file_ptr);
-    if (0 != close_ret) {
-       ret = WRITE_TO_FILE_ERROR;
+    if (ret >= 0 && bytes_to_write == (size_t)ret) {
+        if (0 != fclose(file_ptr)) {
+            return WRITE_TO_FILE_ERROR;
+        }
     }
 
     return ret;
@@ -82,58 +60,35 @@ cleanup:
 
 int ecdaa_read_from_fp(unsigned char *buffer, size_t bytes_to_read, FILE *file_ptr)
 {
-     int ret = 0;
-     int close_ret = 0;
-
-     if (NULL == file_ptr){
-         return READ_FROM_FILE_ERROR;
-     }
-     size_t bytes_read = fread(buffer, 1, bytes_to_read, file_ptr);
-     if (bytes_to_read != bytes_read && !feof(file_ptr)) {
-        ret = READ_FROM_FILE_ERROR;
-        goto cleanup;
-     }
-
-     fgetc(file_ptr);
-     if (!feof(file_ptr)){
-         ret = READ_FROM_FILE_ERROR;
-         goto cleanup;
-     }
-
-     ret = (int)bytes_read;
-
-cleanup:
-    close_ret = fclose(file_ptr);
-    if (0 != close_ret) {
-        ret = READ_FROM_FILE_ERROR;
+    if (NULL == file_ptr){
+        return READ_FROM_FILE_ERROR;
     }
-    return ret;
 
+    size_t bytes_read = fread(buffer, 1, bytes_to_read, file_ptr);
+
+    if (bytes_to_read != bytes_read && !feof(file_ptr)) {
+       return READ_FROM_FILE_ERROR;
+    }
+
+    fgetc(file_ptr);
+    if (!feof(file_ptr)){
+        return READ_FROM_FILE_ERROR;
+    }
+
+    return (int)bytes_read;
  }
 
  int ecdaa_write_buffer_to_fp(FILE *file_ptr, uint8_t *buffer, size_t bytes_to_write)
  {
-     int ret = 0;
-     int close_ret = 0;
+    if (NULL == file_ptr){
+        return WRITE_TO_FILE_ERROR;
+    }
 
-     if (NULL == file_ptr){
-         return WRITE_TO_FILE_ERROR;
-     }
+    size_t bytes_written = fwrite(buffer, 1, bytes_to_write, file_ptr);
 
-     size_t bytes_written = fwrite(buffer, 1, bytes_to_write, file_ptr);
+    if (bytes_to_write != bytes_written) {
+        return WRITE_TO_FILE_ERROR;
+    }
 
-     if (bytes_to_write != bytes_written) {
-         ret = WRITE_TO_FILE_ERROR;
-         goto cleanup;
-     }
-
-     ret = (int) bytes_written;
-
- cleanup:
-     close_ret = fclose(file_ptr);
-     if (0 != close_ret) {
-        ret = WRITE_TO_FILE_ERROR;
-     }
-
-     return ret;
+    return (int)bytes_written;
  }

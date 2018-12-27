@@ -82,21 +82,27 @@ void ecdaa_issuer_public_key_ZZZ_serialize(uint8_t *buffer_out,
 int ecdaa_issuer_public_key_ZZZ_serialize_file(const char* file,
                                            struct ecdaa_issuer_public_key_ZZZ *ipk)
 {
-    uint8_t buffer[1024] = {0};
-    ecdaa_issuer_public_key_ZZZ_serialize(buffer, ipk);
+    FILE *file_ptr = fopen(file, "wb");
 
-    int write_ret = ecdaa_write_buffer_to_file(file, buffer, ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH);
-    if (ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH != write_ret) {
-        return WRITE_TO_FILE_ERROR;
+    if (NULL == file_ptr){
+        return READ_FROM_FILE_ERROR;
     }
 
-    return SUCCESS;
+    int ret = ecdaa_issuer_public_key_ZZZ_serialize_fp(file_ptr, ipk);
+
+    if (ret >= 0) {
+        if (0 != fclose(file_ptr)) {
+            return READ_FROM_FILE_ERROR;
+        }
+    }
+
+    return ret;
 }
 
 int ecdaa_issuer_public_key_ZZZ_serialize_fp(FILE* fp,
                                            struct ecdaa_issuer_public_key_ZZZ *ipk)
 {
-    uint8_t buffer[1024] = {0};
+    uint8_t buffer[ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH] = {0};
     ecdaa_issuer_public_key_ZZZ_serialize(buffer, ipk);
 
     int write_ret = ecdaa_write_buffer_to_fp(fp, buffer, ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH);
@@ -134,17 +140,21 @@ int ecdaa_issuer_public_key_ZZZ_deserialize(struct ecdaa_issuer_public_key_ZZZ *
 int ecdaa_issuer_public_key_ZZZ_deserialize_file(struct ecdaa_issuer_public_key_ZZZ *ipk_out,
                                             const char* file)
 {
-    uint8_t buffer[ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH] = {0};
+    FILE *file_ptr = fopen(file, "rb");
 
-    int read_ret = ecdaa_read_from_file(buffer, ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH, file);
-    if (ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH != read_ret) {
+    if (NULL == file_ptr){
         return READ_FROM_FILE_ERROR;
     }
-    int deserialize_ret = ecdaa_issuer_public_key_ZZZ_deserialize(ipk_out, buffer);
-    if (0 != deserialize_ret)
-        return DESERIALIZE_KEY_ERROR;
 
-    return SUCCESS;
+    int ret = ecdaa_issuer_public_key_ZZZ_deserialize_fp(ipk_out, file_ptr);
+
+    if (ret >= 0) {
+        if (0 != fclose(file_ptr)) {
+            return READ_FROM_FILE_ERROR;
+        }
+    }
+
+    return ret;
 }
 
 int ecdaa_issuer_public_key_ZZZ_deserialize_fp(struct ecdaa_issuer_public_key_ZZZ *ipk_out,
@@ -172,14 +182,21 @@ void ecdaa_issuer_secret_key_ZZZ_serialize(uint8_t *buffer_out,
 
 int ecdaa_issuer_secret_key_ZZZ_serialize_file(const char* file, struct ecdaa_issuer_secret_key_ZZZ *isk)
 {
-    uint8_t buffer[ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH] = {0};
-    ecdaa_issuer_secret_key_ZZZ_serialize(buffer, isk);
-    int write_ret = ecdaa_write_buffer_to_file(file, buffer, ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH);
-    if (ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH != write_ret) {
-        return WRITE_TO_FILE_ERROR;
+    FILE *file_ptr = fopen(file, "wb");
+
+    if (NULL == file_ptr){
+        return READ_FROM_FILE_ERROR;
     }
 
-    return SUCCESS;
+    int ret = ecdaa_issuer_secret_key_ZZZ_serialize_fp(file_ptr, isk);
+
+    if (ret >= 0) {
+        if (0 != fclose(file_ptr)) {
+            return READ_FROM_FILE_ERROR;
+        }
+    }
+
+    return ret;
 }
 
 int ecdaa_issuer_secret_key_ZZZ_serialize_fp(FILE* fp, struct ecdaa_issuer_secret_key_ZZZ *isk)
@@ -206,19 +223,21 @@ int ecdaa_issuer_secret_key_ZZZ_deserialize(struct ecdaa_issuer_secret_key_ZZZ *
 int ecdaa_issuer_secret_key_ZZZ_deserialize_file(struct ecdaa_issuer_secret_key_ZZZ *isk_out,
                                             const char* file)
 {
-    uint8_t buffer[ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH] = {0};
+    FILE *file_ptr = fopen(file, "rb");
 
-    int read_ret = ecdaa_read_from_file(buffer, ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH, file);
-    if (ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH != read_ret) {
+    if (NULL == file_ptr){
         return READ_FROM_FILE_ERROR;
     }
 
-    int deserialize_ret = ecdaa_issuer_secret_key_ZZZ_deserialize(isk_out, buffer);
-    if (0 != deserialize_ret) {
-        return DESERIALIZE_KEY_ERROR;
+    int ret = ecdaa_issuer_secret_key_ZZZ_deserialize_fp(isk_out, file_ptr);
+
+    if (ret >= 0) {
+        if (0 != fclose(file_ptr)) {
+            return READ_FROM_FILE_ERROR;
+        }
     }
 
-    return SUCCESS;
+    return ret;
 }
 
 int ecdaa_issuer_secret_key_ZZZ_deserialize_fp(struct ecdaa_issuer_secret_key_ZZZ *isk_out,
