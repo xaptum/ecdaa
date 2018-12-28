@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,6 +40,8 @@ static void sign_then_verify_no_basename();
 static void sign_then_verify_on_bsn_rev_list();
 static void lengths_same();
 static void serialize_deserialize();
+static void serialize_deserialize_file();
+static void serialize_deserialize_fp();
 static void pseudonym();
 static void deserialize_garbage_fails();
 static void trivial_credential_fails();
@@ -69,6 +71,8 @@ int main()
     sign_then_verify_on_bsn_rev_list();
     lengths_same();
     serialize_deserialize();
+    serialize_deserialize_file();
+    serialize_deserialize_fp();
     pseudonym();
     deserialize_garbage_fails();
     trivial_credential_fails();
@@ -232,6 +236,59 @@ static void serialize_deserialize()
     struct ecdaa_signature_ZZZ sig_deserialized;
     TEST_ASSERT(0 == ecdaa_signature_ZZZ_deserialize(&sig_deserialized, buffer, 1));
     TEST_ASSERT(0 == ecdaa_signature_ZZZ_deserialize_and_verify(&sig_deserialized, &fixture.ipk.gpk, &fixture.revocations, buffer, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, 1));
+
+    teardown(&fixture);
+
+    printf("\tsuccess\n");
+}
+
+static void serialize_deserialize_file()
+{
+    printf("Starting signature::serialize_deserialize_file...\n");
+
+    const char *sig_file = "sig.bin";
+
+    sign_and_verify_fixture fixture;
+    setup(&fixture);
+
+    struct ecdaa_signature_ZZZ sig;
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.sk, &fixture.cred, test_randomness));
+
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len));
+
+    ecdaa_signature_ZZZ_serialize_file(sig_file, &sig, 1);
+    struct ecdaa_signature_ZZZ sig_deserialized;
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_deserialize_file(&sig_deserialized, sig_file, 1));
+
+    teardown(&fixture);
+
+    printf("\tsuccess\n");
+}
+
+static void serialize_deserialize_fp()
+{
+    printf("Starting signature::serialize_deserialize_fp...\n");
+
+    const char *sig_file = "sig.bin";
+
+    sign_and_verify_fixture fixture;
+    setup(&fixture);
+
+    struct ecdaa_signature_ZZZ sig;
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.sk, &fixture.cred, test_randomness));
+
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len));
+
+    FILE *sig_fp = fopen(sig_file, "wb");
+    TEST_ASSERT(NULL != sig_fp);
+    ecdaa_signature_ZZZ_serialize_fp(sig_fp, &sig, 1);
+    fclose(sig_fp);
+
+    sig_fp = fopen(sig_file, "rb");
+    TEST_ASSERT(NULL != sig_fp);
+    struct ecdaa_signature_ZZZ sig_deserialized;
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_deserialize_fp(&sig_deserialized, sig_fp, 1));
+    fclose(sig_fp);
 
     teardown(&fixture);
 

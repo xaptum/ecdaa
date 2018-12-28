@@ -1,11 +1,11 @@
 # Copyright 2017-2018 Xaptum, Inc.
-# 
+#
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
 #    You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #    Unless required by applicable law or agreed to in writing, software
 #    distributed under the License is distributed on an "AS IS" BASIS,
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +26,7 @@ include(DetermineWordSize)
 
 option(BUILD_SHARED_LIBS "Build as a shared library" ON)
 option(BUILD_STATIC_LIBS "Build as a static library" OFF)
+option(BUILD_TOOL "Build with ECDAA tools" ON)
 
 option(BUILD_BENCHMARKS "Build benchmarks" ON)
 
@@ -75,9 +76,13 @@ set(MEMORYCHECK_COMMAND_OPTIONS
 
 set(TOPLEVEL_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
-macro(expand_template template_file srcs_list use_tpm)
+macro(expand_template template_file srcs_list use_tpm is_tool)
         if (${use_tpm})
                 set(use_tpm_flag "--use-tpm")
+        endif()
+
+        if (${is_tool})
+                set(is_tool_flag "--tool")
         endif()
 
         execute_process(COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
@@ -104,6 +109,7 @@ macro(expand_template template_file srcs_list use_tpm)
                                 --out-dir ${TOPLEVEL_BINARY_DIR}
                                 --top-level-dir ${PROJECT_SOURCE_DIR}
                                 ${use_tpm_flag}
+                                ${is_tool_flag}
                 DEPENDS ${template_file})
 
         list(APPEND ${srcs_list} ${processed_file_names})
@@ -135,6 +141,13 @@ endif()
 ################################################################################
 if (BUILD_TESTING)
         add_subdirectory(test)
+endif()
+
+################################################################################
+# Tool
+################################################################################
+if (BUILD_TOOL)
+        add_subdirectory(tool)
 endif()
 
 ################################################################################
