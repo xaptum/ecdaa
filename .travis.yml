@@ -52,6 +52,10 @@ matrix:
         env:
           - TYPE=RELEASE
           - BUILD_TYPE=Release
+      - name: "Dev build, gcc"
+        env:
+          - TYPE=DEV
+          - BUILD_TYPE=Dev
       - name: "Debug build, to get code coverage with gcov"
         env:
           - TYPE=DEBUG_WITH_COVERAGE
@@ -61,6 +65,10 @@ matrix:
           - pip install --user cpp-coveralls
         after_success:
           - coveralls --exclude examples --exclude amcl
+      - name: "DevDebug build"
+        env:
+          - TYPE=DEVDEBUG
+          - BUILD_TYPE=DevDebug
       - name: "Static lib build, gcc"
         env:
           - TYPE=RELEASE

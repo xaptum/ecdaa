@@ -59,9 +59,11 @@ if(ECDAA_TPM_SUPPORT)
   find_package(xaptum-tpm 0.5.0 REQUIRED QUIET)
 endif()
 
-add_compile_options(-std=c99 -Werror -Wall -Wextra -Wno-missing-field-initializers)
+add_compile_options(-std=c99 -Wall -Wextra -Wno-missing-field-initializers)
 SET(CMAKE_C_FLAGS_DEBUGWITHCOVERAGE "${CMAKE_C_FLAGS_DEBUGWITHCOVERAGE} -O0 -fprofile-arcs -ftest-coverage")
 SET(CMAKE_C_FLAGS_RELWITHSANITIZE "${CMAKE_C_FLAGS_RELWITHSANITIZE} -O2 -g -fsanitize=address,undefined -fsanitize=unsigned-integer-overflow")
+SET(CMAKE_C_FLAGS_DEV "${CMAKE_C_FLAGS_RELEASE} -Werror")
+SET(CMAKE_C_FLAGS_DEVDEBUG "${CMAKE_C_FLAGS_DEBUG} -Werror")
 
 # The following options are automatically passed to the `memcheck` executable:
 # `--error-exitcode=5` A memory error causes a return code of 5, so memory errors will fail the tests.
