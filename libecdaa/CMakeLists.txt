@@ -133,6 +133,11 @@ endif()
 ################################################################################
 # Headers
 ################################################################################
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+        PATTERN "*_ZZZ.h" EXCLUDE
+)
+
 install(DIRECTORY ${ECDAA_GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
