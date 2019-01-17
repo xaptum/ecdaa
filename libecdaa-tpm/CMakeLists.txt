@@ -134,6 +134,11 @@ endif()
 ################################################################################
 # Headers
 ################################################################################
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa-tpm
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+        PATTERN "*_ZZZ.h" EXCLUDE
+)
+
 install(DIRECTORY ${ECDAA_TPM_GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa-tpm
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )
