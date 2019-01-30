@@ -26,9 +26,10 @@ include(DetermineWordSize)
 
 option(BUILD_SHARED_LIBS "Build as a shared library" ON)
 option(BUILD_STATIC_LIBS "Build as a static library" OFF)
-option(BUILD_TOOL "Build with ECDAA tools" ON)
 
 option(BUILD_BENCHMARKS "Build benchmarks" ON)
+option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_TOOL "Build with ECDAA tools" ON)
 
 # If not building as a shared library, force build as a static.  This
 # is to match the CMake default semantics of using
