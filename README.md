@@ -82,7 +82,9 @@ The following CMake configuration options are supported.
 |                                     | Dev             |            | With full optimizations and warnings treated as errors   |
 |                                     | DevDebug        |            | With debug symbols and warnings treated as errors        |
 | CMAKE_INSTALL_PREFIX                | <string>        | /usr/local | The directory to install the library in.                 |
+| BUILD_BENCHMARKS                    | ON, OFF         | ON         | Build benchmark programs                                 |
 | BUILD_EXAMPLES                      | ON, OFF         | OFF        | Build example programs                                   |
+| BUILD_TOOL                          | ON, OFF         | ON         | Build benchmark programs                                 |
 | BUILD_SHARED_LIBS                   | ON, OFF         | ON         | Build shared libraries.                                  |
 | BUILD_STATIC_LIBS                   | ON, OFF         | OFF        | Build static libraries.                                  |
 | BUILD_TESTING                       | ON, OFF         | ON         | Build the test suite.                                    |
