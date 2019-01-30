@@ -189,7 +189,7 @@ int parse_bsn_rev_list_file(struct ecdaa_revocations_ZZZ *revocations_out, const
     revocations_out->bsn_list = NULL;
     revocations_out->bsn_length = 0;
 
-    size_t point_size = (2*MODBYTES_256_56 + 1);
+    size_t point_size = (2*MODBYTES_XXX + 1);
 
     if (NULL != filename && num_revs != 0) {
         // Allocate a buffer to hold the full file.
@@ -216,9 +216,9 @@ int parse_bsn_rev_list_file(struct ecdaa_revocations_ZZZ *revocations_out, const
 
         // Deserialize each basename signature and add it to the list.
         for (unsigned i = 0; i < num_revs; i++) {
-            BIG_256_56 wx, wy;
-            BIG_256_56_fromBytes(wx, (char*)&(buffer[1 + i*point_size]));
-            BIG_256_56_fromBytes(wy, (char*)&(buffer[1 + MODBYTES_256_56 + i*point_size]));
+            BIG_XXX wx, wy;
+            BIG_XXX_fromBytes(wx, (char*)&(buffer[1 + i*point_size]));
+            BIG_XXX_fromBytes(wy, (char*)&(buffer[1 + MODBYTES_XXX + i*point_size]));
             // Nb. This does NOT check that the point is in the proper group.
             if (!ECP_ZZZ_set(&revocations_out->bsn_list[i], wx, wy)) {
                 ret = -1;
