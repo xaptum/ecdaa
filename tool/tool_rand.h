@@ -16,18 +16,12 @@
  *
  *****************************************************************************/
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
+#ifndef ECDAA_TOOL_RAND_H
+#define ECDAA_TOOL_RAND_H
 #pragma once
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/rand.h>
-#include <ecdaa/revocations_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
-#include <ecdaa/util/file_io.h>
-#include <ecdaa/util/errors.h>
+#include <stddef.h>
+
+void tool_rand(void *buf, size_t buflen);
 
 #endif

@@ -72,19 +72,23 @@ cmake --build .
 
 The following CMake configuration options are supported.
 
-| Option                              | Values          | Default    | Description                                     |
-|-------------------------------------|-----------------|------------|-------------------------------------------------|
-| ECDAA_TPM_SUPPORT                   | ON, OFF         | ON         | Build with support for using a TPM2.0           |
-| CMAKE_BUILD_TYPE                    | Release         |            | With full optimizations.                        |
-|                                     | Debug           |            | With debug symbols.                             |
-|                                     | RelWithDebInfo  |            | With full optimizations and debug symbols.      |
-|                                     | RelWithSanitize |            | With address and undefined-behavior sanitizers. |
-| CMAKE_INSTALL_PREFIX                | <string>        | /usr/local | The directory to install the library in.        |
-| BUILD_EXAMPLES                      | ON, OFF         | OFF        | Build example programs                          |
-| BUILD_SHARED_LIBS                   | ON, OFF         | ON         | Build shared libraries.                         |
-| BUILD_STATIC_LIBS                   | ON, OFF         | OFF        | Build static libraries.                         |
-| BUILD_TESTING                       | ON, OFF         | ON         | Build the test suite.                           |
-| STATIC_SUFFIX                       | <string>        | <none>     | Appends a suffix to the static lib name.        |
+| Option                              | Values          | Default    | Description                                              |
+|-------------------------------------|-----------------|------------|----------------------------------------------------------|
+| ECDAA_TPM_SUPPORT                   | ON, OFF         | ON         | Build with support for using a TPM2.0                    |
+| CMAKE_BUILD_TYPE                    | Release         |            | With full optimizations.                                 |
+|                                     | Debug           |            | With debug symbols.                                      |
+|                                     | RelWithDebInfo  |            | With full optimizations and debug symbols.               |
+|                                     | RelWithSanitize |            | With address and undefined-behavior sanitizers.          |
+|                                     | Dev             |            | With full optimizations and warnings treated as errors   |
+|                                     | DevDebug        |            | With debug symbols and warnings treated as errors        |
+| CMAKE_INSTALL_PREFIX                | <string>        | /usr/local | The directory to install the library in.                 |
+| BUILD_BENCHMARKS                    | ON, OFF         | ON         | Build benchmark programs                                 |
+| BUILD_EXAMPLES                      | ON, OFF         | OFF        | Build example programs                                   |
+| BUILD_TOOL                          | ON, OFF         | ON         | Build benchmark programs                                 |
+| BUILD_SHARED_LIBS                   | ON, OFF         | ON         | Build shared libraries.                                  |
+| BUILD_STATIC_LIBS                   | ON, OFF         | OFF        | Build static libraries.                                  |
+| BUILD_TESTING                       | ON, OFF         | ON         | Build the test suite.                                    |
+| STATIC_SUFFIX                       | <string>        | <none>     | Appends a suffix to the static lib name.                 |
 
 ### Testing
 

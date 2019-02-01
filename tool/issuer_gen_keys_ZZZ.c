@@ -15,19 +15,29 @@
  *    limitations under the License
  *
  *****************************************************************************/
+#include "issuer_gen_keys_ZZZ.h"
+#include "tool_rand.h"
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
-#pragma once
+#include <ecdaa.h>
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/rand.h>
-#include <ecdaa/revocations_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
-#include <ecdaa/util/file_io.h>
-#include <ecdaa/util/errors.h>
+int issuer_gen_keys_ZZZ(const char* public_key_file, const char* secret_key_file)
+{
+    struct ecdaa_issuer_public_key_ZZZ ipk;
+    struct ecdaa_issuer_secret_key_ZZZ isk;
+    int ret = ecdaa_issuer_key_pair_ZZZ_generate(&ipk, &isk, tool_rand);
+    if (0 != ret) {
+        return KEY_CREATION_ERROR;
+    }
 
-#endif
+    // Write public-key to file
+    ret = ecdaa_issuer_public_key_ZZZ_serialize_file(public_key_file, &ipk);
+    if (0 != ret)
+        return ret;
+
+    // Write secret-key to file
+    ret = ecdaa_issuer_secret_key_ZZZ_serialize_file(secret_key_file, &isk);
+    if (0 != ret)
+        return ret;
+
+    return 0;
+}

@@ -1,11 +1,11 @@
 # Copyright 2017-2018 Xaptum, Inc.
-# 
+#
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
 #    You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #    Unless required by applicable law or agreed to in writing, software
 #    distributed under the License is distributed on an "AS IS" BASIS,
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,6 @@ set(ECDAA_INPUT_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/group_public_key_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/issuer_keypair_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/member_keypair_ZZZ.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/rand.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/revocations_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa/signature_ZZZ.h
 
@@ -34,8 +33,12 @@ set(ECDAA_INPUT_FILES
         )
 
 foreach(template_file ${ECDAA_INPUT_FILES})
-        expand_template(${template_file} ECDAA_SRCS FALSE)
+        expand_template(${template_file} ECDAA_SRCS FALSE FALSE)
 endforeach()
+
+list(APPEND ECDAA_SRCS
+        ${CMAKE_CURRENT_SOURCE_DIR}/util/file_io.c
+        )
 
 set(ECDAA_GENERATED_TOPLEVEL_INCLUDE_DIR "${TOPLEVEL_BINARY_DIR}/libecdaa/include")
 
@@ -62,6 +65,7 @@ if (BUILD_SHARED_LIBS)
         target_include_directories(ecdaa PUBLIC
                 $<BUILD_INTERFACE:${ECDAA_GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
@@ -102,6 +106,7 @@ if (BUILD_STATIC_LIBS)
         target_include_directories(${STATIC_TARGET} PUBLIC
                 $<BUILD_INTERFACE:${ECDAA_GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
@@ -128,6 +133,11 @@ endif()
 ################################################################################
 # Headers
 ################################################################################
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+        PATTERN "*_ZZZ.h" EXCLUDE
+)
+
 install(DIRECTORY ${ECDAA_GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )

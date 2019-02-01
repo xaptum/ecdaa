@@ -104,6 +104,13 @@ void ecdaa_signature_ZZZ_serialize(uint8_t *buffer_out,
                                    struct ecdaa_signature_ZZZ *signature,
                                    int has_nym);
 
+int ecdaa_signature_ZZZ_serialize_file(const char* file,
+                                   struct ecdaa_signature_ZZZ *signature,
+                                   int has_nym);
+
+int ecdaa_signature_ZZZ_serialize_fp(FILE* fp,
+                                   struct ecdaa_signature_ZZZ *signature,
+                                   int has_nym);
 /*
  * De-serialize an `ecdaa_signature_ZZZ`, but _don't_ verify it.
  *
@@ -127,6 +134,13 @@ int ecdaa_signature_ZZZ_deserialize(struct ecdaa_signature_ZZZ *signature_out,
                                     uint8_t *buffer_in,
                                     int has_nym);
 
+int ecdaa_signature_ZZZ_deserialize_file(struct ecdaa_signature_ZZZ *signature_out,
+                                        const char *file,
+                                        int has_nym);
+
+int ecdaa_signature_ZZZ_deserialize_fp(struct ecdaa_signature_ZZZ *signature_out,
+                                        FILE *fp,
+                                        int has_nym);
 /*
  * De-serialize an `ecdaa_signature_ZZZ`, and the message it's over, and verify the signature.
  *

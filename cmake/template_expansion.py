@@ -95,6 +95,21 @@ def generate_top_level_header(input_file, wordsize, curve_list, output_directory
             else:
                 output_file.write(line)
 
+def generate_tool_file(input_file, curve_list, output_directory):
+    with open(input_file, 'r') as template_file:
+        input_lines = template_file.readlines()
+
+    output_file_name = input_file.replace(toplevel_dir, output_directory)
+    os.makedirs(os.path.dirname(output_file_name), exist_ok=True)
+
+    with open(output_file_name, 'w') as output_file:
+        for line in input_lines:
+            if (big_pattern in line or fp_pattern in line or curve_pattern in line):
+                for curve in curve_list:
+                    output_file.write(line.replace(curve_pattern, curve))
+            else:
+                output_file.write(line)
+
 def print_file_names(file_name_list):
     for file_name in file_name_list:
         print(file_name, end=';')
@@ -108,6 +123,7 @@ if __name__ == '__main__':
     parser.add_argument('--out-dir', help='directory to move expanded files')
     parser.add_argument('--top-level-dir', help='top-level directory of project')
     parser.add_argument('--top-level-header', action='store_true', help='the given template is the top-level header file')
+    parser.add_argument('--tool', action='store_true', help='the given template is the tool main file')
     parser.add_argument('--use-tpm', action='store_true', help='the given template is for the tpm library')
     args = parser.parse_args()
 
@@ -123,10 +139,12 @@ if __name__ == '__main__':
     toplevel_dir = args.top_level_dir
 
     if not args.names_only:
-        if not args.top_level_header:
-            expand_template(input_file, wordsize, curve_list, output_directory)
-        else:
+        if args.top_level_header:
             generate_top_level_header(input_file, wordsize, curve_list, output_directory)
+        elif args.tool:
+            generate_tool_file(input_file, curve_list, output_directory)
+        else:
+            expand_template(input_file, wordsize, curve_list, output_directory)
 
     file_name_list = get_processed_file_names(input_file, wordsize, curve_list, output_directory, toplevel_dir)
     print_file_names(file_name_list)

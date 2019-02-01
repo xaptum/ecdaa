@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,12 +26,16 @@
 #include <string.h>
 
 static void serialize_then_deserialize_basepoints();
+static void serialize_then_deserialize_basepoints_file();
+static void serialize_then_deserialize_basepoints_fp();
 static void lengths_same();
 static void deserialize_garbage_fails();
 
 int main()
 {
     serialize_then_deserialize_basepoints();
+    serialize_then_deserialize_basepoints_file();
+    serialize_then_deserialize_basepoints_fp();
     lengths_same();
     deserialize_garbage_fails();
 
@@ -54,6 +58,56 @@ static void serialize_then_deserialize_basepoints()
 
     struct ecdaa_group_public_key_ZZZ gpk_deserialized;
     TEST_ASSERT(0 == ecdaa_group_public_key_ZZZ_deserialize(&gpk_deserialized, buffer));
+
+    TEST_ASSERT(ECP2_ZZZ_equals(&gpk.X, &gpk_deserialized.X));
+    TEST_ASSERT(ECP2_ZZZ_equals(&gpk.Y, &gpk_deserialized.Y));
+
+    printf("\tsuccess\n");
+}
+
+static void serialize_then_deserialize_basepoints_file()
+{
+    printf("Starting group_public_key::serialize_then_deserialize_basepoints_file...\n");
+
+    const char *gpk_file = "gpk.bin";
+
+    struct ecdaa_group_public_key_ZZZ gpk;
+
+    ecp2_ZZZ_set_to_generator(&gpk.X);
+    ecp2_ZZZ_set_to_generator(&gpk.Y);
+
+    TEST_ASSERT(0 == ecdaa_group_public_key_ZZZ_serialize_file(gpk_file, &gpk));
+
+    struct ecdaa_group_public_key_ZZZ gpk_deserialized;
+    TEST_ASSERT(0 == ecdaa_group_public_key_ZZZ_deserialize_file(&gpk_deserialized, gpk_file));
+
+    TEST_ASSERT(ECP2_ZZZ_equals(&gpk.X, &gpk_deserialized.X));
+    TEST_ASSERT(ECP2_ZZZ_equals(&gpk.Y, &gpk_deserialized.Y));
+
+    printf("\tsuccess\n");
+}
+
+static void serialize_then_deserialize_basepoints_fp()
+{
+    printf("Starting group_public_key::serialize_then_deserialize_basepoints_fp...\n");
+
+    const char *gpk_file = "gpk.bin";
+
+    struct ecdaa_group_public_key_ZZZ gpk;
+
+    ecp2_ZZZ_set_to_generator(&gpk.X);
+    ecp2_ZZZ_set_to_generator(&gpk.Y);
+
+    FILE *gpk_fp = fopen(gpk_file, "wb");
+    TEST_ASSERT(NULL != gpk_fp);
+    TEST_ASSERT(0 == ecdaa_group_public_key_ZZZ_serialize_fp(gpk_fp, &gpk));
+    fclose(gpk_fp);
+
+    gpk_fp = fopen(gpk_file, "rb");
+    TEST_ASSERT(NULL != gpk_fp);
+    struct ecdaa_group_public_key_ZZZ gpk_deserialized;
+    TEST_ASSERT(0 == ecdaa_group_public_key_ZZZ_deserialize_fp(&gpk_deserialized, gpk_fp));
+    fclose(gpk_fp);
 
     TEST_ASSERT(ECP2_ZZZ_equals(&gpk.X, &gpk_deserialized.X));
     TEST_ASSERT(ECP2_ZZZ_equals(&gpk.Y, &gpk_deserialized.Y));

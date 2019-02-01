@@ -15,19 +15,20 @@
  *    limitations under the License
  *
  *****************************************************************************/
+#include "extract_gpk_ZZZ.h"
 
-#ifndef ECDAA_ECDAA_H
-#define ECDAA_ECDAA_H
-#pragma once
+#include <ecdaa.h>
 
-#include <ecdaa/credential_ZZZ.h>
-#include <ecdaa/group_public_key_ZZZ.h>
-#include <ecdaa/issuer_keypair_ZZZ.h>
-#include <ecdaa/member_keypair_ZZZ.h>
-#include <ecdaa/rand.h>
-#include <ecdaa/revocations_ZZZ.h>
-#include <ecdaa/signature_ZZZ.h>
-#include <ecdaa/util/file_io.h>
-#include <ecdaa/util/errors.h>
+int extract_gpk_ZZZ(const char* issuer_public_key_file, const char* group_public_key_file)
+{
+    // Read issuer public key from disk.
+    struct ecdaa_issuer_public_key_ZZZ ipk;
+    int ret = ecdaa_issuer_public_key_ZZZ_deserialize_file(&ipk, issuer_public_key_file);
+    if (0 != ret)
+        return ret;
 
-#endif
+    // Write group-public-key to file
+    ret = ecdaa_group_public_key_ZZZ_serialize_file(group_public_key_file, &ipk.gpk);
+
+    return ret;
+}
