@@ -1,3 +1,42 @@
+ecdaa (0.10.2-1) unstable; urgency=medium
+
+  [ Kathryn Fejer ]
+  * travis: add build matrix
+  * travis: add static build test
+
+  [ Zane Beckwith ]
+  * pkg-config: Add a missing $ in the Libs for the pkg-config file
+
+  [ Unknown ]
+  * Add CLI wrapper for utils in /examples
+
+  [ Zane Beckwith ]
+  * cmake: Handle non-template source files correctly.
+  * Move rand_util from util into tool.
+  * Templatize the tool functions.
+
+  [ Kathryn Fejer ]
+  * Change file naming and tool option naming
+  * Add running tool to ctest
+
+  [ Zane Beckwith ]
+  * Add test of _file and _fp functions
+  * cmake: Remove -Werror, but add Dev builds that re-enable it.
+  * cmake: Install non-templatized header files.
+  * travis: Add a step to test the installation, by building against it.
+
+  [ David R. Bild ]
+  * Release v0.10.1
+
+  [ Zane Beckwith ]
+  * Properly templatize tool files.
+
+  [ David R. Bild ]
+  * make explicit option to build examples
+  * readme: document build_benchmarks and build_tool options
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Fri, 01 Feb 2019 22:01:40 +0000
+
 ecdaa (0.10.0-1) unstable; urgency=medium
 
   [ Zane Beckwith ]
