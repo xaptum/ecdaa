@@ -6,6 +6,16 @@ Build-Depends: debhelper (>= 10), cmake (>= 3.0.2)
 Standards-Version: 3.9.8
 Homepage: https://github.com/xaptum/ecdaa
 
+Package: ecdaa
+Architecture: any
+Multi-Arch: foreign
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Toolkit for elliptic curve Direct Anonymous Attestation signatures
+ This package contains general-purpose command line utilities
+ for the ECDAA handshake for tasks such as:
+  * Running the Join procedure between a member and an issuer
+  * Creating and verifying a DAA signature
+
 Package: libecdaa0
 Section: libs
 Architecture: any
