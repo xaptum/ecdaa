@@ -1,3 +1,11 @@
+ecdaa (0.10.3-1) unstable; urgency=medium
+
+  [ Zane Beckwith ]
+  * Release v0.10.3
+  * debian: Add ecdaa tool to package
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Mon, 04 Feb 2019 15:25:55 +0000
+
 ecdaa (0.10.2-1) unstable; urgency=medium
 
   [ Kathryn Fejer ]
