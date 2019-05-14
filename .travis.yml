@@ -20,7 +20,7 @@ env:
   global:
     - INSTALL_PREFIX=${TRAVIS_BUILD_DIR}/usr
     - CMAKE_PREFIX_PATH=${INSTALL_PREFIX}
-    - AMCL_DIR=${TRAVIS_BUILD_DIR}/milagro-crypto-c/install
+    - AMCL_DIR=${TRAVIS_BUILD_DIR}/amcl/install
     - XAPTUM_TPM_DIR=${TRAVIS_BUILD_DIR}/xaptum-tpm/
     - IBM_TPM_DIR=${TRAVIS_BUILD_DIR}/ibm-tpm-simulator
     - ECDAA_CURVES=FP256BN,BN254,BN254CX,BLS383
