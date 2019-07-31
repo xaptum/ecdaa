@@ -15,17 +15,22 @@
 
 set -e
 
-if [[ $# -ne 1 ]]; then
-        echo "usage: $0 <absolute-path-to-xaptum-tpm-source-directory>"
+source "${BASH_SOURCE%/*}/path_expansion.sh"
+
+if [[ $# -ne 2 ]]; then
+        echo "usage: $0 <source-download-target> <install-target>"
         exit 1
 fi
 
-source_dir="$1"
+source_dir="$(my_expand_path $1)"
+install_dir="$(my_expand_path $2)"
+
+rm -rf "${source_dir}"
 git clone https://github.com/xaptum/xaptum-tpm "${source_dir}"
 pushd "${source_dir}"
 mkdir -p build
 pushd build
-cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DBUILD_SHARED_LIBS=On -DBUILD_TESTING=On
+cmake .. -DCMAKE_INSTALL_PREFIX=${install_dir} -DBUILD_SHARED_LIBS=On -DBUILD_TESTING=On
 cmake --build .
 cmake --build . --target install
 popd

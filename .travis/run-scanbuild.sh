@@ -15,14 +15,16 @@
 
 set -e
 
+source "${BASH_SOURCE%/*}/path_expansion.sh"
+
 if [[ $# -ne 2 ]]; then
-        echo "usage: $0 <absolute-path-to-cmakelists-directory> <absolute-path-to-cmake-build-directory>"
+        echo "usage: $0 <path-to-cmakelists-directory> <path-to-cmake-build-directory>"
         exit 1
 fi
 
-cmake_dir="$1"
+cmake_dir="$(my_expand_path $1)"
 
-build_dir="$2"
+build_dir="$(my_expand_path $2)"
 mkdir -p "$build_dir"
 cd "$build_dir"
 scan-build cmake "$cmake_dir" -DCMAKE_BUILD_TYPE=Debug

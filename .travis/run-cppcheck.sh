@@ -15,10 +15,12 @@
 
 set -e
 
+source "${BASH_SOURCE%/*}/path_expansion.sh"
+
 if [[ $# -eq 0 ]]; then
         generated_sources_dir="`pwd`"
 elif [[ $# -eq 1 ]]; then
-        generated_sources_dir="$1"
+        generated_sources_dir="$(my_expand_path $1)"
 else
         echo "usage: $0 <path-to-toplevel-directory>"
         exit 1

@@ -31,8 +31,8 @@ env:
     - OUT_EXT_REPLACE=OFF
 
 before_script:
-  - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-  - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
+  - .travis/install-amcl.sh ${AMCL_DIR} ${INSTALL_PREFIX} ${ECDAA_CURVES}
+  - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} ${INSTALL_PREFIX}
   - .travis/install-ibm-tpm2.sh ${IBM_TPM_DIR}
   - mkdir -p ${ECDAA_BUILD_DIR}
   - pushd ${ECDAA_BUILD_DIR}
@@ -89,8 +89,8 @@ matrix:
             packages:
               - cppcheck
         before_script:
-          - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-          - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
+          - .travis/install-amcl.sh ${AMCL_DIR} ${INSTALL_PREFIX} ${ECDAA_CURVES}
+          - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} ${INSTALL_PREFIX}
           - mkdir -p ${ECDAA_BUILD_DIR}
           - pushd ${ECDAA_BUILD_DIR}
           - cmake .. -DCMAKE_BUILD_TYPE=Release -DXAPTUMTPM_LOCAL_DIR=${XAPTUM_TPM_DIR} -DCMAKE_INSTALL_PREFIX=${ECDAA_INSTALL_DIR} -DECDAA_CURVES=FP256BN
@@ -121,8 +121,8 @@ matrix:
         env:
           - TYPE=SCAN_BUILD
         before_script:
-          - .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES}
-          - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR}
+          - .travis/install-amcl.sh ${AMCL_DIR} ${INSTALL_PREFIX} ${ECDAA_CURVES}
+          - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} ${INSTALL_PREFIX}
         script:
           - .travis/run-scanbuild.sh ${TRAVIS_BUILD_DIR} ${TRAVIS_BUILD_DIR}
       - name: "Sanitizers, clang"
@@ -146,7 +146,7 @@ matrix:
               name: "xaptum/ecdaa"
               description: "A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures"
             notification_email: ecdaa-coverity-reports@xaptum.com
-            build_command_prepend: ".travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} && .travis/install-amcl.sh ${AMCL_DIR} ${ECDAA_CURVES} && mkdir -p ${ECDAA_BUILD_DIR} && pushd ${ECDAA_BUILD_DIR} && cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON && popd"
+            build_command_prepend: ".travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} ${INSTALL_PREFIX} && .travis/install-amcl.sh ${AMCL_DIR} ${INSTALL_PREFIX} ${ECDAA_CURVES} && mkdir -p ${ECDAA_BUILD_DIR} && pushd ${ECDAA_BUILD_DIR} && cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON && popd"
             build_command:   "pushd ${ECDAA_BUILD_DIR} && cmake --build . && popd"
             branch_pattern: coverity_scan
 
