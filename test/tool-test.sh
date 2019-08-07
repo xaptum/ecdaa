@@ -2,13 +2,13 @@
 
 set -e
 
-if [[ $# -ne 2 ]]; then
-        echo "usage: $0 <tool directory> <tmp directory>"
+if [[ $# -ne 1 ]]; then
+        echo "usage: $0 <tool binary directory>"
         exit 1
 fi
 
 tool_dir="$1"
-tmp_dir="$2"
+tmp_dir=$(mktemp -d)
 
 echo "Generating issuer keys..."
 ${tool_dir}/ecdaa issuer genkeys -p ${tmp_dir}/ipk.bin -s ${tmp_dir}/isk.bin

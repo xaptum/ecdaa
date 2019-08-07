@@ -113,7 +113,8 @@ matrix:
           - cmake --build . --target install -- -j2
           - ${TRAVIS_BUILD_DIR}/.travis/run-ibm-tpm2.sh ${IBM_TPM_DIR}
           - ${TRAVIS_BUILD_DIR}/.travis/prepare-tpm2.sh ${IBM_TPM_DIR} ${TPM_KEY_DIR}
-          - ctest -VV -E benchmarks\|fuzz -T memcheck
+          - ctest -VV -E benchmarks\|fuzz\|tool_test -T memcheck
+          - ../test/valgrind-tool-test.sh ${ECDAA_BUILD_DIR}/tool
           - popd
         after_failure:
           - .travis/show-memcheck-results.sh ${TRAVIS_BUILD_DIR}
