@@ -162,6 +162,9 @@ static void serialize_deserialize_public_no_check()
     struct ecdaa_member_public_key_ZZZ pk;
     ecp_ZZZ_set_to_generator(&pk.Q);
     ECP_ZZZ_mul(&pk.Q, sk);
+    BIG_XXX_zero(pk.c);
+    BIG_XXX_zero(pk.s);
+    BIG_XXX_zero(pk.n);
 
     uint8_t buffer[ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH];
     ecdaa_member_public_key_ZZZ_serialize(buffer, &pk);
@@ -220,6 +223,9 @@ static void serialize_deserialize_public_no_check_file()
     struct ecdaa_member_public_key_ZZZ pk;
     ecp_ZZZ_set_to_generator(&pk.Q);
     ECP_ZZZ_mul(&pk.Q, sk);
+    BIG_XXX_zero(pk.c);
+    BIG_XXX_zero(pk.s);
+    BIG_XXX_zero(pk.n);
 
     TEST_ASSERT(0 == ecdaa_member_public_key_ZZZ_serialize_file(pk_file, &pk));
 
@@ -284,14 +290,16 @@ static void serialize_deserialize_public_no_check_fp()
     struct ecdaa_member_public_key_ZZZ pk;
     ecp_ZZZ_set_to_generator(&pk.Q);
     ECP_ZZZ_mul(&pk.Q, sk);
+    BIG_XXX_zero(pk.c);
+    BIG_XXX_zero(pk.s);
+    BIG_XXX_zero(pk.n);
 
     FILE *pk_fp = fopen(pk_file, "wb");
     TEST_ASSERT(NULL != pk_fp);
     TEST_ASSERT(0 == ecdaa_member_public_key_ZZZ_serialize_fp(pk_fp, &pk));
     fclose(pk_fp);
 
-    pk_fp = fopen(pk_file, "rb");
-    TEST_ASSERT(NULL != pk_fp);
+    pk_fp = fopen(pk_file, "rb"); TEST_ASSERT(NULL != pk_fp);
     struct ecdaa_member_public_key_ZZZ pk_deserialized;
     TEST_ASSERT(0 == ecdaa_member_public_key_ZZZ_deserialize_no_check_fp(&pk_deserialized, pk_fp));
     fclose(pk_fp);
