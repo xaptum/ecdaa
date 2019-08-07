@@ -46,8 +46,8 @@ void issuer_secrets_are_valid()
     ecdaa_issuer_key_pair_ZZZ_generate(&pk1, &sk1, test_randomness);
 
     TEST_ASSERT(BIG_XXX_comp(sk1.x, sk1.y) != 0);
-    TEST_ASSERT(!pk1.gpk.X.inf);
-    TEST_ASSERT(!pk1.gpk.Y.inf);
+    TEST_ASSERT(0 == ECP2_ZZZ_isinf(&pk1.gpk.X));
+    TEST_ASSERT(0 == ECP2_ZZZ_isinf(&pk1.gpk.Y));
 
     struct ecdaa_issuer_secret_key_ZZZ sk2;
     struct ecdaa_issuer_public_key_ZZZ pk2;

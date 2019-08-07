@@ -66,7 +66,7 @@ void member_secret_is_valid()
 
     TEST_ASSERT(0 == ecdaa_member_key_pair_ZZZ_generate(&pk1, &sk1, nonce, sizeof(nonce), test_randomness));
 
-    TEST_ASSERT(!pk1.Q.inf);
+    TEST_ASSERT(0 == ECP_ZZZ_isinf(&pk1.Q));
 
     struct ecdaa_member_secret_key_ZZZ sk2;
     struct ecdaa_member_public_key_ZZZ pk2;
