@@ -28,4 +28,5 @@ build_dir="$(my_expand_path $2)"
 mkdir -p "$build_dir"
 cd "$build_dir"
 scan-build cmake "$cmake_dir" -DCMAKE_BUILD_TYPE=Debug
-scan-build --status-bugs cmake --build . -- -j2 #status-bugs means a bug causes a non-zero return code
+scan-build cmake --build . -- -j2 # First, build as usual, to make sure the build itself is passing
+scan-build --status-bugs cmake --build . -- -j2 # status-bugs means a bug causes a non-zero return code

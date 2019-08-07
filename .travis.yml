@@ -125,7 +125,7 @@ matrix:
           - .travis/install-amcl.sh ${AMCL_DIR} ${INSTALL_PREFIX} ${ECDAA_CURVES}
           - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} ${INSTALL_PREFIX}
         script:
-          - .travis/run-scanbuild.sh ${TRAVIS_BUILD_DIR} ${TRAVIS_BUILD_DIR}
+          - .travis/run-scanbuild.sh ${TRAVIS_BUILD_DIR} ${ECDAA_BUILD_DIR}
       - name: "Sanitizers, clang"
         sudo: true
         compiler: clang
