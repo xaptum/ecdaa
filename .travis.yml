@@ -126,16 +126,17 @@ matrix:
           - .travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} ${INSTALL_PREFIX}
         script:
           - .travis/run-scanbuild.sh ${TRAVIS_BUILD_DIR} ${ECDAA_BUILD_DIR}
+      - name: "Sanitizers, gcc"
+        sudo: true
+        env:
+          - TYPE=SANITIZE
+          - BUILD_TYPE=RelWithSanitize
       - name: "Sanitizers, clang"
         sudo: true
         compiler: clang
         env:
           - TYPE=SANITIZE
           - BUILD_TYPE=RelWithSanitize
-        after_success:
-          - pushd ${ECDAA_BUILD_DIR}
-          - ctest -VV -E benchmarks
-          - popd
       - if: branch = coverity_scan
         name: "Coverage"
         env: TYPE=COVERITY_SCAN
