@@ -98,21 +98,13 @@ void ecdaa_member_public_key_ZZZ_serialize(uint8_t *buffer_out,
 int ecdaa_member_public_key_ZZZ_serialize_file(const char* file,
                                            struct ecdaa_member_public_key_ZZZ *pk)
 {
-    FILE *file_ptr = fopen(file, "wb");
-
-    if (NULL == file_ptr){
-        return READ_FROM_FILE_ERROR;
+    uint8_t buffer[ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH] = {0};
+    ecdaa_member_public_key_ZZZ_serialize(buffer, pk);
+    int write_ret = ecdaa_write_buffer_to_file(file, buffer, ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH);
+    if (ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH != write_ret) {
+        return write_ret;
     }
-
-    int ret = ecdaa_member_public_key_ZZZ_serialize_fp(file_ptr, pk);
-
-    if (ret >= 0) {
-        if (0 != fclose(file_ptr)) {
-            return READ_FROM_FILE_ERROR;
-        }
-    }
-
-    return ret;
+    return SUCCESS;
 }
 
 int ecdaa_member_public_key_ZZZ_serialize_fp(FILE* fp,
@@ -122,7 +114,7 @@ int ecdaa_member_public_key_ZZZ_serialize_fp(FILE* fp,
     ecdaa_member_public_key_ZZZ_serialize(buffer, pk);
     int write_ret = ecdaa_write_buffer_to_fp(fp, buffer, ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH);
     if (ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH != write_ret) {
-        return WRITE_TO_FILE_ERROR;
+        return write_ret;
     }
     return SUCCESS;
 }
@@ -155,21 +147,16 @@ int ecdaa_member_public_key_ZZZ_deserialize_file(struct ecdaa_member_public_key_
                                             uint8_t *nonce,
                                             uint32_t nonce_len)
 {
-    FILE *file_ptr = fopen(file, "rb");
-
-    if (NULL == file_ptr){
-        return READ_FROM_FILE_ERROR;
+    uint8_t buffer[ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH] = {0};
+    int read_ret = ecdaa_read_from_file(buffer, ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH, file);
+    if (ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH != read_ret) {
+        return read_ret;
     }
-
-    int ret = ecdaa_member_public_key_ZZZ_deserialize_fp(pk_out, file_ptr, nonce, nonce_len);
-
-    if (ret >= 0) {
-        if (0 != fclose(file_ptr)) {
-            return READ_FROM_FILE_ERROR;
-        }
+    int deserialize_ret = ecdaa_member_public_key_ZZZ_deserialize(pk_out, buffer, (uint8_t*)nonce, (uint32_t)nonce_len);
+    if (0 != deserialize_ret) {
+        return DESERIALIZE_KEY_ERROR;
     }
-
-    return ret;
+    return SUCCESS;
 }
 
 int ecdaa_member_public_key_ZZZ_deserialize_fp(struct ecdaa_member_public_key_ZZZ *pk_out,
@@ -180,7 +167,7 @@ int ecdaa_member_public_key_ZZZ_deserialize_fp(struct ecdaa_member_public_key_ZZ
     uint8_t buffer[ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH] = {0};
     int read_ret = ecdaa_read_from_fp(buffer, ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH, file);
     if (ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH != read_ret) {
-        return READ_FROM_FILE_ERROR;
+        return read_ret;
     }
     int deserialize_ret = ecdaa_member_public_key_ZZZ_deserialize(pk_out, buffer, (uint8_t*)nonce, (uint32_t)nonce_len);
     if (0 != deserialize_ret) {
@@ -210,21 +197,18 @@ int ecdaa_member_public_key_ZZZ_deserialize_no_check(struct ecdaa_member_public_
 int ecdaa_member_public_key_ZZZ_deserialize_no_check_file(struct ecdaa_member_public_key_ZZZ *pk_out,
                                                      const char *file)
 {
-    FILE *file_ptr = fopen(file, "rb");
-
-    if (NULL == file_ptr){
-        return READ_FROM_FILE_ERROR;
+    uint8_t buffer[ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH] = {0};
+    int read_ret = ecdaa_read_from_file(buffer, ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH, file);
+    if (ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH != read_ret) {
+        return read_ret;
     }
 
-    int ret = ecdaa_member_public_key_ZZZ_deserialize_no_check_fp(pk_out, file_ptr);
-
-    if (ret >= 0) {
-        if (0 != fclose(file_ptr)) {
-            return READ_FROM_FILE_ERROR;
-        }
+    int ret = ecdaa_member_public_key_ZZZ_deserialize_no_check(pk_out, buffer);
+    if (0 != ret) {
+        return DESERIALIZE_KEY_ERROR;
     }
 
-    return ret;
+    return SUCCESS;
 }
 
 int ecdaa_member_public_key_ZZZ_deserialize_no_check_fp(struct ecdaa_member_public_key_ZZZ *pk_out,
@@ -233,7 +217,7 @@ int ecdaa_member_public_key_ZZZ_deserialize_no_check_fp(struct ecdaa_member_publ
     uint8_t buffer[ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH] = {0};
     int read_ret = ecdaa_read_from_fp(buffer, ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH, file);
     if (ECDAA_MEMBER_PUBLIC_KEY_ZZZ_LENGTH != read_ret) {
-        return READ_FROM_FILE_ERROR;
+        return read_ret;
     }
 
     int ret = ecdaa_member_public_key_ZZZ_deserialize_no_check(pk_out, buffer);
@@ -253,21 +237,13 @@ void ecdaa_member_secret_key_ZZZ_serialize(uint8_t *buffer_out,
 int ecdaa_member_secret_key_ZZZ_serialize_file(const char* file,
                                            struct ecdaa_member_secret_key_ZZZ *sk)
 {
-    FILE *file_ptr = fopen(file, "wb");
-
-    if (NULL == file_ptr){
-        return READ_FROM_FILE_ERROR;
+    uint8_t buffer[ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH] = {0};
+    ecdaa_member_secret_key_ZZZ_serialize(buffer, sk);
+    int write_ret = ecdaa_write_buffer_to_file(file, buffer, ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH);
+    if (ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH != write_ret) {
+        return write_ret;
     }
-
-    int ret = ecdaa_member_secret_key_ZZZ_serialize_fp(file_ptr, sk);
-
-    if (ret >= 0) {
-        if (0 != fclose(file_ptr)) {
-            return READ_FROM_FILE_ERROR;
-        }
-    }
-
-    return ret;
+    return SUCCESS;
 }
 
 int ecdaa_member_secret_key_ZZZ_serialize_fp(FILE* fp,
@@ -277,7 +253,7 @@ int ecdaa_member_secret_key_ZZZ_serialize_fp(FILE* fp,
     ecdaa_member_secret_key_ZZZ_serialize(buffer, sk);
     int write_ret = ecdaa_write_buffer_to_fp(fp, buffer, ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH);
     if (ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH != write_ret) {
-        return WRITE_TO_FILE_ERROR;
+        return write_ret;
     }
     return SUCCESS;
 }
@@ -293,21 +269,16 @@ int ecdaa_member_secret_key_ZZZ_deserialize(struct ecdaa_member_secret_key_ZZZ *
 int ecdaa_member_secret_key_ZZZ_deserialize_file(struct ecdaa_member_secret_key_ZZZ *sk_out,
                                             const char* file)
 {
-    FILE *file_ptr = fopen(file, "rb");
-
-    if (NULL == file_ptr){
-        return READ_FROM_FILE_ERROR;
+    uint8_t buffer[ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH] = {0};
+    int read_ret = ecdaa_read_from_file(buffer, ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH, file);
+    if (ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH != read_ret) {
+        return read_ret;
     }
-
-    int ret = ecdaa_member_secret_key_ZZZ_deserialize_fp(sk_out, file_ptr);
-
-    if (ret >= 0) {
-        if (0 != fclose(file_ptr)) {
-            return READ_FROM_FILE_ERROR;
-        }
+    int ret = ecdaa_member_secret_key_ZZZ_deserialize(sk_out, buffer);
+    if (0 != ret) {
+        return DESERIALIZE_KEY_ERROR;
     }
-
-    return ret;
+    return SUCCESS;
 }
 
 int ecdaa_member_secret_key_ZZZ_deserialize_fp(struct ecdaa_member_secret_key_ZZZ *sk_out,
@@ -316,7 +287,7 @@ int ecdaa_member_secret_key_ZZZ_deserialize_fp(struct ecdaa_member_secret_key_ZZ
     uint8_t buffer[ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH] = {0};
     int read_ret = ecdaa_read_from_fp(buffer, ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH, fp);
     if (ECDAA_MEMBER_SECRET_KEY_ZZZ_LENGTH != read_ret) {
-        return READ_FROM_FILE_ERROR;
+        return read_ret;
     }
     int ret = ecdaa_member_secret_key_ZZZ_deserialize(sk_out, buffer);
     if (0 != ret) {

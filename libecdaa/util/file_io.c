@@ -30,10 +30,8 @@ int ecdaa_read_from_file(unsigned char *buffer, size_t bytes_to_read, const char
 
     int ret = ecdaa_read_from_fp(buffer, bytes_to_read, file_ptr);
 
-    if (ret >= 0 && bytes_to_read == (size_t)ret) {
-        if (0 != fclose(file_ptr)) {
-            return READ_FROM_FILE_ERROR;
-        }
+    if (0 != fclose(file_ptr)) {
+        return READ_FROM_FILE_ERROR;
     }
 
     return ret;
@@ -49,10 +47,8 @@ int ecdaa_write_buffer_to_file(const char *filename, uint8_t *buffer, size_t byt
 
     int ret = ecdaa_write_buffer_to_fp(file_ptr, buffer, bytes_to_write);
 
-    if (ret >= 0 && bytes_to_write == (size_t)ret) {
-        if (0 != fclose(file_ptr)) {
-            return WRITE_TO_FILE_ERROR;
-        }
+    if (0 != fclose(file_ptr)) {
+        return WRITE_TO_FILE_ERROR;
     }
 
     return ret;
@@ -66,12 +62,15 @@ int ecdaa_read_from_fp(unsigned char *buffer, size_t bytes_to_read, FILE *file_p
 
     size_t bytes_read = fread(buffer, 1, bytes_to_read, file_ptr);
 
+    // If we were asked to read an unknown-length file (bytes_to_read > file-length)
+    //  then we better already have hit EOF.
     if (bytes_to_read != bytes_read && !feof(file_ptr)) {
        return READ_FROM_FILE_ERROR;
     }
 
-    fgetc(file_ptr);
-    if (!feof(file_ptr)){
+    // If we were asked to read a specific number of bytes (bytes_to_read == file-length)
+    //  then the file better be exactly bytes_to_read bytes long.
+    if (EOF != fgetc(file_ptr)){
         return READ_FROM_FILE_ERROR;
     }
 
