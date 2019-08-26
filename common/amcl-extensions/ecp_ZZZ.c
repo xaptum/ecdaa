@@ -138,7 +138,7 @@ void ecp_ZZZ_random_mod_order(BIG_XXX *big_out,
     // 3) Generate a random BIG bit-by-bit,
     //      then reduce it modulo the group order.
     // Adapted from AMCL big.c.in::BIG_XXX_randomnum() function
-    int i,b,j=0;
+    int i,j=0;
     uint8_t r=0;
     DBIG_XXX d;
     BIG_XXX_dzero(d);
@@ -147,7 +147,7 @@ void ecp_ZZZ_random_mod_order(BIG_XXX *big_out,
     {
         if (j==0) r=get_random_byte(&rand_pool);
         else r>>=1;
-        b=r&1;
+        int b=r&1;
         BIG_XXX_dshl(d,1);
         d[0]+=b;
         j++;

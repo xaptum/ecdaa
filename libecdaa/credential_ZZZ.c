@@ -269,10 +269,12 @@ int ecdaa_credential_ZZZ_deserialize_with_signature_file(struct ecdaa_credential
                                                     const char *credential_signature_file)
 {
     FILE *cred_file_ptr = fopen(credential_file, "rb");
+    if (NULL == cred_file_ptr) {
+        return READ_FROM_FILE_ERROR;
+    }
     FILE *cred_sig_file_ptr = fopen(credential_signature_file, "rb");
-
-
-    if (NULL == cred_file_ptr || NULL == cred_sig_file_ptr){
+    if (NULL == cred_sig_file_ptr) {
+        fclose(cred_file_ptr);
         return READ_FROM_FILE_ERROR;
     }
 

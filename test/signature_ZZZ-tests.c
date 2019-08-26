@@ -214,6 +214,8 @@ static void lengths_same()
 
     TEST_ASSERT(ECDAA_SIGNATURE_ZZZ_LENGTH == ecdaa_signature_ZZZ_length());
 
+    TEST_ASSERT(ECDAA_SIGNATURE_ZZZ_WITH_NYM_LENGTH == ecdaa_signature_ZZZ_with_nym_length());
+
     printf("\tsuccess\n");
 }
 

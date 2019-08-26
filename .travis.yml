@@ -99,7 +99,7 @@ matrix:
           - pushd ${ECDAA_BUILD_DIR}
           - cmake --build . --target install -- -j2
           - popd
-          - .travis/run-cppcheck.sh build
+          - .travis/run-cppcheck.sh ${TRAVIS_BUILD_DIR} ${ECDAA_BUILD_DIR}
       - name: "MemCheck"
         env:
           - TYPE=MEMCHECK
