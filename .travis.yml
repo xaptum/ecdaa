@@ -138,7 +138,7 @@ matrix:
           - TYPE=SANITIZE
           - BUILD_TYPE=RelWithSanitize
       - if: branch = coverity_scan
-        name: "Coverage"
+        name: "Coverity Scan"
         env: TYPE=COVERITY_SCAN
         env:
           - secure: "jZ3ilXiiqM2qdkPXkOow0RqHz9eA4zZwZbhDKjBfL2wFEiV8u9u5GSzXjLZ6++oh5UzIyp/UdfLyN7vp1+mm7XSYx9X3TeLCmhmP/PZkys/YzrBgTeIxgLubekI4kOa9YdgPQ+d35Nm0AXngw2WrSaefeeKeaRTn/LFAfI5SYlhBXnnZmsRORuCCWDoSWDwvjIUGzcEqpq0uJ+C5Dps8gSExBUFyEkQ5tyaZvCxfujfwB6yP/wDgJzeQL+gSe47/RFinYqJeSvWBViwrGk78sCAZtbHaPy9HbqLUKSslb6WlPMecVbV+kqcN7i4b/bbr68WGDN2fEMzdlBIYJRkhtYFB3nR3T7mh50HQ8l9ZZmWkKekoU9YDcCuRb4HeA20bNF5U/bVFZSnfQPDOXAKnT+jlzAgH3XNEo2YeaCPNLnHZexrGKu9VedzvmCKFjTAW3oj096TLMgon3yg2Wax3XXV7UE0SiRkS9h0P6K1vW+CVKDll6KN5uaRGe4mOOo8Mlb+6l+iagrYpksk4fi4KhhuRkGLOeixNxVWjupaML7C/ShrOzj5XxMkVVgI8Jh7ucY7HguTQW2s6VurZ58jzaqmFBZwZgQ+m1uT7cKnnBBWsL84NVJ1jedPcf034kkxoGABtHWzRGP5gKf3RJTsS7nAwkNXBctKkoNJQ7bQVitM="
@@ -148,11 +148,10 @@ matrix:
               name: "xaptum/ecdaa"
               description: "A C implementation of elliptic-curve-based Direct Anonymous Attestation signatures"
             notification_email: ecdaa-coverity-reports@xaptum.com
-            build_command_prepend: ".travis/install-xaptum-tpm.sh ${XAPTUM_TPM_DIR} ${INSTALL_PREFIX} && .travis/install-amcl.sh ${AMCL_DIR} ${INSTALL_PREFIX} ${ECDAA_CURVES} && mkdir -p ${ECDAA_BUILD_DIR} && pushd ${ECDAA_BUILD_DIR} && cmake .. -DCMAKE_BUILD_TYPE=Release -DECDAA_CURVES=${ECDAA_CURVES} -DBUILD_EXAMPLES=ON && popd"
-            build_command:   "pushd ${ECDAA_BUILD_DIR} && cmake --build . && popd"
+            build_command: "cmake --build ${ECDAA_BUILD_DIR}"
             branch_pattern: coverity_scan
 
         before_install:
           - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
         script:
-          - echo "Done"
+          - cat "${TRAVIS_BUILD_DIR}/cov-int/scm_log.txt"

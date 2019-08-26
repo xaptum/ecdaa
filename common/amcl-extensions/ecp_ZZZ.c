@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,7 +31,7 @@ void ecp_ZZZ_set_to_generator(ECP_ZZZ *point)
     BIG_XXX gx, gy;
     BIG_XXX_rcopy(gx, CURVE_Gx_ZZZ);
     BIG_XXX_rcopy(gy, CURVE_Gy_ZZZ);
-    ECP_ZZZ_set(point, gx, gy);
+    (void)ECP_ZZZ_set(point, gx, gy);   // we know this will succeed, b/c the coords are for the generator
 }
 
 void ecp_ZZZ_serialize(uint8_t *buffer_out,
