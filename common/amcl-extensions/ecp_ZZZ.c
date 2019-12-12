@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,7 +31,7 @@ void ecp_ZZZ_set_to_generator(ECP_ZZZ *point)
     BIG_XXX gx, gy;
     BIG_XXX_rcopy(gx, CURVE_Gx_ZZZ);
     BIG_XXX_rcopy(gy, CURVE_Gy_ZZZ);
-    ECP_ZZZ_set(point, gx, gy);
+    (void)ECP_ZZZ_set(point, gx, gy);   // we know this will succeed, b/c the coords are for the generator
 }
 
 void ecp_ZZZ_serialize(uint8_t *buffer_out,
@@ -138,7 +138,7 @@ void ecp_ZZZ_random_mod_order(BIG_XXX *big_out,
     // 3) Generate a random BIG bit-by-bit,
     //      then reduce it modulo the group order.
     // Adapted from AMCL big.c.in::BIG_XXX_randomnum() function
-    int i,b,j=0;
+    int i,j=0;
     uint8_t r=0;
     DBIG_XXX d;
     BIG_XXX_dzero(d);
@@ -147,7 +147,7 @@ void ecp_ZZZ_random_mod_order(BIG_XXX *big_out,
     {
         if (j==0) r=get_random_byte(&rand_pool);
         else r>>=1;
-        b=r&1;
+        int b=r&1;
         BIG_XXX_dshl(d,1);
         d[0]+=b;
         j++;

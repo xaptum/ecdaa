@@ -15,20 +15,25 @@
 
 set -e
 
-if [[ $# -ne 2 ]]; then
-        echo "usage: $0 <absolute-path-to-amcl-source-directory> <comma-separated-curve-list>"
+source "${BASH_SOURCE%/*}/path_expansion.sh"
+
+if [[ $# -ne 3 ]]; then
+        echo "usage: $0 <source-download-target> <install-target> <comma-separated-curve-list>"
         exit 1
 fi
 
 repo_url=https://github.com/xaptum/amcl
 tag=4.7.3
-source_dir="$1"
-curves="$2"
+source_dir="$(my_expand_path $1)"
+install_dir="$(my_expand_path $2)"
+curves="$3"
+
+rm -rf "${source_dir}"
 git clone -b $tag "${repo_url}" "${source_dir}"
 pushd "${source_dir}"
 mkdir -p build
 pushd build
-cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DAMCL_CURVE=${curves} -DAMCL_RSA="" -DAMCL_INCLUDE_SUBDIR=amcl -DBUILD_PYTHON=Off -DBUILD_MPIN=Off -DBUILD_WCC=Off -DBUILD_DOCS=Off  -DBUILD_SHARED_LIBS=On
+cmake .. -DCMAKE_INSTALL_PREFIX=${install_dir} -DAMCL_CURVE=${curves} -DAMCL_RSA="" -DAMCL_INCLUDE_SUBDIR=amcl -DBUILD_PYTHON=Off -DBUILD_MPIN=Off -DBUILD_WCC=Off -DBUILD_DOCS=Off  -DBUILD_SHARED_LIBS=On
 cmake --build .
 cmake --build . --target install
 popd
