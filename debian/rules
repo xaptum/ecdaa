@@ -1,0 +1,15 @@
+#!/usr/bin/make -f
+
+%:
+	dh ${@}
+
+override_dh_auto_configure:
+	dh_auto_configure --      \
+	  -DBUILD_SHARED_LIBS=ON  \
+	  -DBUILD_STATIC_LIBS=ON  \
+	  -DBUILD_EXAMPLES=OFF  \
+	  -DBUILD_TESTING=OFF
+
+override_dh_auto_test:
+	# The test suite requires a TPM simulator, which we don't want to
+	# require for packaging.

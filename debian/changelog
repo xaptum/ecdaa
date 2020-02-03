@@ -1,0 +1,128 @@
+ecdaa (0.10.0-1) unstable; urgency=medium
+
+  [ Zane Beckwith ]
+  * Set compiler flags (e.g. -std= and -Werror) as add_compile_options.
+
+  [ David R. Bild ]
+  * Separate benchmarks from tests
+  * add 'ecdaa-' prefix to tests
+
+  [ Zane Beckwith ]
+  * Travis: Use prefixed `prepare-tpm2` utility.
+
+  [ David R. Bild ]
+  * readme: add release badge to readme
+
+  [ Zane Beckwith ]
+  * Tests: Don't terminate test macros with semicolon
+  * Add editorconfig.org file
+  * test: Support device-file TCTI for TPM
+  * test: Update tpm_ZZZ-test for new TPM_Sign behavior
+  * Update signature algorithm for TCG Errata v1.15
+  * travis: Use new simulator mirror
+  * Use length-checked version of AMCL deserialization when reading output from TPM.
+  * Improve return codes from schnorr functions.
+  * test: Add repetetive "fuzzing" schnorr tests.
+  * Mod-reduce c_out in schnorr-TPM
+  * tpm: Retry TPM_Sign if nonce isn't full-length.
+  * Bump minor version number.
+
+ -- Zane Beckwith <zane.beckwtih@xaptum.com>  Mon, 12 Nov 2018 17:27:29 +0000
+
+ecdaa (0.9.1-1) unstable; urgency=medium
+
+  [ Zane Beckwith ]
+  * Use urandom in examples as fall-through (don't check RNDGETENTROPY)
+
+  [ David R. Bild ]
+  * cmake: simplify checking of BUILD_SHARED_LIBS
+  * cmake: same target name if only building static or shared
+  * cmake: include ecdaa-tpm in ecdaa_Libraries
+
+  [ Zane Beckwith ]
+  * Bump patch number
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Mon, 11 Jun 2018 15:58:48 +0000
+
+ecdaa (0.9.0-3) unstable; urgency=medium
+
+  [ Zane Beckwith ]
+  * Don't build examples in packages
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Wed, 02 May 2018 17:20:04 +0000
+
+ecdaa (0.9.0-2) unstable; urgency=medium
+
+  [ Zane Beckwith ]
+  * Make sure to install omnibus headers.
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Tue, 01 May 2018 22:16:25 +0000
+
+ecdaa (0.9.0-1) unstable; urgency=medium
+
+  [ Zane Beckwith ]
+  * Our travis builds were using AMCL 4.7 but CMake/README used 4.6
+
+  [ David R. Bild ]
+  * cmake: add helper module to determine wordsize
+  * cmake: use word_size when expanding templates
+  * Do not hardcode BIG_256_66 for TPM
+  * Do not hardcode BIG_256_56 for tests
+  * Do not hardcode BIG_256_56 for examples
+
+  [ Zane Beckwith ]
+  * Make test vectors in BIG test chunk-size-dependent.
+  * Move TPM-things into separate library, and only allow certain TPM curves
+  * Print usable CMake error message if ECDAA_TPM_SUPPORT=ON but no TPM-allowed curve selected.
+  * Use local copies of tpm-simulator scripts, and make a tpm-create-key utility
+  * Use static allocation, not malloc, for TPM structs in tests.
+  * Update the README
+  * Use a user-provided source of randomness, not a user-space CSPRNG
+  * Update README to explain new randomness.
+  * Remove libsodium linking requirements.
+  * Improve randomness tests in ecp-tests
+  * Bump minor version number
+  * Split debian packaging in two: libecdaa and libecdaa-tpm
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Mon, 30 Apr 2018 21:08:57 +0000
+
+ecdaa (0.8.5-3) unstable; urgency=medium
+
+  [ Zane Beckwith ]
+  * Specify AMCL and xaptum-tpm dependencies in -dev package.
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Mon, 16 Apr 2018 21:20:09 +0000
+
+ecdaa (0.8.5-2) unstable; urgency=medium
+
+  * Go back to using pre-depends
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Mon, 16 Apr 2018 20:00:39 +0000
+
+ecdaa (0.8.5-1) unstable; urgency=medium
+
+  * In Findsodium, when checking variable against empty string, also check if it's not defined.
+  * Bump patch number
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Tue, 10 Apr 2018 00:39:18 -0500
+
+ecdaa (0.8.4-1) unstable; urgency=medium
+
+  * Bump revision number, to reflect recent changes and cut a release
+  * Add FOUND_VAR to FindSodium script, to work with CMake 3.0
+  * Bump revision number, to cut a new release
+  * Ensure that limits.h is included in prng.c, even when not using sodium
+  * Build in a 'build' directory in travis, not in-tree.
+  * Specify build dirs in variables, and use pushd/popd
+  * Install example executables, don't wrap in a `if(NOT BUILD_SHARED_LIBS)`
+  * Bump patch number.
+  * Include example binaries in debian package
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Fri, 06 Apr 2018 18:57:38 -0500
+
+ecdaa (0.8.2) unstable; urgency=medium
+
+  * Initial release.
+
+ -- Zane Beckwith <zane.beckwith@xaptum.com>  Fri, 6 Apr 2018 21:07:37 +0000
+
