@@ -1,0 +1,5 @@
+/usr/include/ecdaa-tpm
+/usr/include/ecdaa-tpm.h
+/usr/lib/*/libecdaa-tpm.so
+/usr/lib/*/libecdaa-tpm.a
+/usr/lib/*/pkgconfig/ecdaa-tpm.pc
