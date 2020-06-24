@@ -22,13 +22,13 @@ See [doc/BUILDING.md](doc/BUILDING.md) for more information on building from sou
 
 Packages are also available for the following distributions.
 
-### Debian (Jessie or Stretch)
+### Debian (Jessie, Stretch, or Buster)
 
 ``` bash
 # Install the Xaptum APT repo GPG signing key.
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys c615bfaa7fe1b4ca
 
-# Add the repository to your APT sources, replacing <dist> with either jessie or stretch.
+# Add the repository to your APT sources, replacing <dist> with either jessie, stretch, or buster.
 echo "deb http://dl.bintray.com/xaptum/deb <dist> main" | sudo tee /etc/apt/sources.list.d/xaptum.list
 
 # Update APT
@@ -44,6 +44,29 @@ sudo apt-get install libecdaa-dev
 sudo apt-get install libecdaa-tpm0
 sudo apt-get install libecdaa-tpm-dev
 
+```
+
+### Ubuntu (Bionic)
+
+``` bash
+# Install the Xaptum API repo GPG signing key.
+apt-key adv --keyserver keyserver.ubuntu.com --recv-keys c615bfaa7fe1b4ca
+
+# Add the repository to your APT sources
+echo "deb http://dl.bintray.com/xaptum/deb bionic main" > /etc/apt/sources.list.d/xaptum.list
+
+# Update APT
+sudo apt-get update
+
+# Install the CLI tool and shared library
+sudo apt-get install ecdaa
+
+# For developers, header files and shared libraries can also be installed
+sudo apt-get install libecdaa-dev
+
+# For using a TPM 2.0, install the ecdaa-tpm library (and, optionally, development package)
+sudo apt-get install libecdaa-tpm0
+sudo apt-get install libecdaa-tpm-dev
 ```
 
 ### Homebrew (MacOS)
