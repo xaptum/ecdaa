@@ -26,8 +26,8 @@ extern "C" {
 
 #include <ecdaa/rand.h>
 
-#include <amcl/big_XXX.h>
-#include <amcl/ecp_ZZZ.h>
+#include <amcl/include/big_XXX.h>
+#include <amcl/include/ecp_ZZZ.h>
 
 struct ecdaa_credential_ZZZ;
 struct ecdaa_member_secret_key_ZZZ;

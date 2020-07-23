@@ -19,8 +19,8 @@
 #include "./big_XXX.h"
 #include "internal-utilities/explicit_bzero.h"
 
-#include <amcl/ecp_ZZZ.h>
-#include <amcl/amcl.h>
+#include <amcl/include/ecp_ZZZ.h>
+#include <amcl/include/amcl.h>
 
 #include <assert.h>
 

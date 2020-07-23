@@ -26,7 +26,7 @@ extern "C" {
 
 struct ecdaa_member_secret_key_ZZZ;
 
-#include <amcl/ecp_ZZZ.h>
+#include <amcl/include/ecp_ZZZ.h>
 
 #include <stddef.h>
 

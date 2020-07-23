@@ -24,6 +24,8 @@ include(GNUInstallDirs)
 include(CTest)
 include(DetermineWordSize)
 
+include_directories(/usr/local/include/ /opt/)
+
 option(BUILD_SHARED_LIBS "Build as a shared library" ON)
 option(BUILD_STATIC_LIBS "Build as a static library" OFF)
 
@@ -54,6 +56,13 @@ endif()
 
 set(ECDAA_VERSION ${PROJECT_VERSION})
 set(ECDAA_SOVERSION ${PROJECT_VERSION_MAJOR})
+
+### GLF
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
 
 find_package(AMCL 4.7.0 REQUIRED QUIET)
 if(ECDAA_TPM_SUPPORT)

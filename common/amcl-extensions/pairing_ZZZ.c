@@ -18,8 +18,8 @@
 
 #include "./pairing_ZZZ.h"
 
-#include <amcl/fp2_ZZZ.h>
-#include <amcl/pair_ZZZ.h>
+#include <amcl/include/fp2_ZZZ.h>
+#include <amcl/include/pair_ZZZ.h>
 
 void compute_pairing_ZZZ(FP12_YYY *pairing_out,
                          ECP_ZZZ *g1_point,

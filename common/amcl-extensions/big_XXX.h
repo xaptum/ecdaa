@@ -24,9 +24,9 @@
 extern "C" {
 #endif
 
-#include <amcl/big_XXX.h>
-#include <amcl/amcl.h>
-#include <amcl/randapi.h>
+#include <amcl/include/big_XXX.h>
+#include <amcl/include/amcl.h>
+#include <amcl/include/randapi.h>
 
 #include <stdint.h>
 

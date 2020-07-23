@@ -20,8 +20,8 @@
 
 #include "amcl-extensions/big_XXX.h"
 
-#include <amcl/ecp_ZZZ.h>
-#include <amcl/arch.h>
+#include <amcl/include/ecp_ZZZ.h>
+#include <amcl/include/arch.h>
 
 #include <stdio.h>
 #include <string.h>

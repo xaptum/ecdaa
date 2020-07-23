@@ -30,8 +30,8 @@ struct ecdaa_member_public_key_ZZZ;
 struct ecdaa_issuer_secret_key_ZZZ;
 struct ecdaa_group_public_key_ZZZ;
 
-#include <amcl/ecp_ZZZ.h>
-#include <amcl/big_XXX.h>
+#include <amcl/include/ecp_ZZZ.h>
+#include <amcl/include/big_XXX.h>
 
 #include <stdint.h>
 

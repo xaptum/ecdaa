@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-#include <amcl/ecp2_ZZZ.h>
+#include <amcl/include/ecp2_ZZZ.h>
 
 #include <stdint.h>
 

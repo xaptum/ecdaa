@@ -23,8 +23,8 @@
 #include "amcl-extensions/ecp_ZZZ.h"
 #include "amcl-extensions/ecp2_ZZZ.h"
 
-#include <amcl/ecp_ZZZ.h>
-#include <amcl/amcl.h>
+#include <amcl/include/ecp_ZZZ.h>
+#include <amcl/include/amcl.h>
 
 #include <assert.h>
 

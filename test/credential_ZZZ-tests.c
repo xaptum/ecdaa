@@ -26,8 +26,8 @@
 #include "amcl-extensions/ecp_ZZZ.h"
 #include "amcl-extensions/ecp2_ZZZ.h"
 
-#include <amcl/ecp_ZZZ.h>
-#include <amcl/ecp2_ZZZ.h>
+#include <amcl/include/ecp_ZZZ.h>
+#include <amcl/include/ecp2_ZZZ.h>
 
 #include <string.h>
 

@@ -31,8 +31,8 @@
 #include "amcl-extensions/ecp2_ZZZ.h"
 #include "amcl-extensions/pairing_ZZZ.h"
 
-#include <amcl/pair_ZZZ.h>
-#include <amcl/fp12_ZZZ.h>
+#include <amcl/include/pair_ZZZ.h>
+#include <amcl/include/fp12_ZZZ.h>
 
 static
 void randomize_credential_ZZZ(struct ecdaa_credential_ZZZ *cred,

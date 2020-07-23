@@ -26,8 +26,8 @@
 
 #include <ecdaa/credential_ZZZ.h>
 
-#include <amcl/big_XXX.h>
-#include <amcl/ecp_ZZZ.h>
+#include <amcl/include/big_XXX.h>
+#include <amcl/include/ecp_ZZZ.h>
 
 #include <string.h>
 #include <stdio.h>

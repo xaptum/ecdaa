@@ -42,6 +42,18 @@ if (BUILD_SHARED_LIBS)
         set_target_properties(ecdaa_utilities PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endif()
 
+message ("")
+message ("######################################")
+message ("$<TARGET_PROPERTY:AMCL::core,INTERFACE_INCLUDE_DIRECTORIES>")
+message ("")
+message ("")
+
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
+
 target_include_directories(ecdaa_utilities
         PUBLIC ${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}
         PUBLIC $<TARGET_PROPERTY:AMCL::core,INTERFACE_INCLUDE_DIRECTORIES>

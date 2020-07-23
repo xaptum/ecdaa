@@ -27,7 +27,7 @@ extern "C" {
 #include <ecdaa/group_public_key_ZZZ.h>
 #include <ecdaa/rand.h>
 
-#include <amcl/big_XXX.h>
+#include <amcl/include/big_XXX.h>
 
 /*
  * Issuer's public key.
