@@ -9,9 +9,8 @@
 * [AMCL](https://github.com/xaptum/amcl) (version 4.7)
   * Built with the support for the necessary curves
   * This library provides the pairing-based cryptography primitives
-* [xaptum-tpm](https://github.com/xaptum/xaptum-tpm) (version 0.5.0 or higher)
+* [tpm2-tss](https://github.com/tpm2-software/tpm2-tss) (version 2.3.3 or higher)
   * Only required if building ECDAA with TPM support
-  * This library provides a minimal interface to a TPM 2.0 chip
 
 ## Pairing-friendly Curves
 
@@ -50,8 +49,8 @@ export CMAKE_PREFIX_PATH=$(pwd)/deps
 # Build the AMCL library
 ../.travis/install-amcl.sh ./amcl ./deps ${ECDAA_CURVES}
 
-# Build the xaptum-tpm library (if building with TPM support)
-../.travis/install-xaptum-tpm.sh ./xaptum-tpm ./deps
+# Build the tpm2-tss library (if building with TPM support)
+../.travis/install-tpm2-tss.sh ./tpm2-tss ./deps
 ```
 
 ### Building the ECDAA libraries and CLI tool

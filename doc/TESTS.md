@@ -48,23 +48,18 @@ Note that the simulator requires OpenSSL libraries and header files to be availa
 ### Key Creation for a Physical TPM
 
 If using a physical TPM for the tests, the required ECDAA signing key can
-be created and loaded in the TPM using a test program in the `xaptum-tpm` project
-if you built that project from source:
+be created and loaded in the TPM using the test utility
+`testBin/ecdaa-create_tpm_key-util` in the build directory:
 ```bash
-# Use the copy of the xaptum-tpm project
-cd xaptum-tpm/build/testBin
+... change directory to the build directory ...
 
 # Run the key-creation program
-./create_load_evict-test
-
-# Copy the output files to the test directory
-cp pub_key.txt ../../../test/tpm
-cp handle.txt ../../../test/tpm
+./testBin/ecdaa-create_tpm_key-util test/tpm/pub_key.txt test/tpm/handle.txt
 ```
 
 The tests will now be able to use this key.
 
-NOTE: This program must only be run against a TPM on which you have Platform authorization,
+NOTE: This program must only be run against a TPM on which you have LOCKOUT and ENDORSEMENT authorization,
 and which holds no important data.
 The preparation program runs `TPM2_Clear`!
 
