@@ -49,6 +49,8 @@ int tpm_initialize(struct tpm_test_context *ctx)
     const char *mssim_conf = "host=localhost,port=2321";
     const char *device_conf = "/dev/tpm0";
 
+    memset(ctx->tcti_buffer, 0, sizeof(ctx->tcti_buffer));
+
     int ret = 0;
 
     TPM2_HANDLE key_handle = 0;
