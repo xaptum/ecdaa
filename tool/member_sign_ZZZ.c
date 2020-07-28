@@ -56,7 +56,7 @@ int member_sign_ZZZ(const char* secret_key_file, const char* credential_file, co
     if (NULL != basename_file) {
         basename = basename_buffer;
 
-        int read_ret = ecdaa_read_from_file(basename_buffer, sizeof(basename_buffer), basename_file);
+        read_ret = ecdaa_read_from_file(basename_buffer, sizeof(basename_buffer), basename_file);
         if (read_ret < 0) {
             return READ_FROM_FILE_ERROR;
         }

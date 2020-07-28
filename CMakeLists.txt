@@ -57,7 +57,7 @@ set(ECDAA_SOVERSION ${PROJECT_VERSION_MAJOR})
 
 find_package(AMCL 4.7.0 REQUIRED QUIET)
 if(ECDAA_TPM_SUPPORT)
-  find_package(xaptum-tpm 0.5.0 REQUIRED QUIET)
+  find_package(TSS2 REQUIRED QUIET)
 endif()
 
 add_compile_options(-std=c99 -Wall -Wextra -Wno-missing-field-initializers)
@@ -177,3 +177,11 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config-version.cmake
   DESTINATION ${INSTALL_CONFIGDIR}
 )
+
+if(ECDAA_TPM_SUPPORT)
+  install(FILES
+    ${CMAKE_CURRENT_LIST_DIR}/cmake/FindTSS2.cmake
+    ${CMAKE_CURRENT_LIST_DIR}/cmake/LibFindMacros.cmake
+    DESTINATION ${INSTALL_CONFIGDIR}
+  )
+endif()

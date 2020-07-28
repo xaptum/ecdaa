@@ -272,7 +272,7 @@ static void serialize_deserialize_secret_fp()
     sk_fp = fopen(sk_file, "rb");
     TEST_ASSERT(NULL != sk_fp);
     struct ecdaa_member_secret_key_ZZZ sk_deserialized;
-    TEST_ASSERT(0 == ecdaa_member_secret_key_ZZZ_deserialize_file(&sk_deserialized, sk_file));
+    TEST_ASSERT(0 == ecdaa_member_secret_key_ZZZ_deserialize_fp(&sk_deserialized, sk_fp));
     fclose(sk_fp);
 
     printf("\tsuccess\n");
