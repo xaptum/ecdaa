@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 10), cmake (>= 3.0.2)
 Standards-Version: 3.9.8
 Homepage: https://github.com/xaptum/ecdaa
 
-Package: libecdaa0
+Package: libecdaa1
 Section: libs
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
@@ -19,12 +19,12 @@ Package: libecdaa-dev
 Section: libdevel
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, libecdaa0 (= ${binary:Version}), libamcl-dev (>= 4.7)
+Depends: ${misc:Depends}, libecdaa1 (= ${binary:Version}), libamcl-dev (>= 4.7)
 Description: Elliptic-curve-based Direct Anonymous Attestation signatures
  .
  This package contains the development files.
 
-Package: libecdaa-tpm0
+Package: libecdaa-tpm1
 Section: libs
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
@@ -37,7 +37,7 @@ Package: libecdaa-tpm-dev
 Section: libdevel
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, libecdaa-tpm0 (= ${binary:Version}), libecdaa-dev (= ${binary:Version}), libtss2-dev (>= 2.1)
+Depends: ${misc:Depends}, libecdaa-tpm1 (= ${binary:Version}), libecdaa-dev (= ${binary:Version}), libtss2-dev (>= 2.1)
 Description: Elliptic-curve-based Direct Anonymous Attestation signatures, with support for a TPM2.0
  .
  This package contains the development files.
