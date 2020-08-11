@@ -88,5 +88,4 @@ set(CURRENT_TEST_BINARY_DIR ${CMAKE_BINARY_DIR}/testBin/)
 add_test(NAME "tool_test"
   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tool-test.sh
   ${PROJECT_SOURCE_DIR}/build/tool
-  ${CURRENT_TEST_BINARY_DIR}
   )

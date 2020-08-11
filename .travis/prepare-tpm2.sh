@@ -15,12 +15,14 @@
 
 set -e
 
+source "${BASH_SOURCE%/*}/path_expansion.sh"
+
 if [[ $# -ne 2 ]]; then
-        echo "usage: $0 <absolute-path-to-tpm-simulator-installation-directory> <absolute-path-to-save-public-key>"
+        echo "usage: $0 <tpm simulator directory> <path to save key info>"
         exit 1
 fi
 
-installation_dir="$1"
-out_dir="$2"
+installation_dir="$(my_expand_path $1)"
+out_dir="$(my_expand_path $2)"
 
 ${installation_dir}/create_daa_key.sh "${out_dir}/pub_key.txt" "${out_dir}/handle.txt"

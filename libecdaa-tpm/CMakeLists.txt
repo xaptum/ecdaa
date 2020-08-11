@@ -69,7 +69,7 @@ if (BUILD_SHARED_LIBS)
 
         target_link_libraries(ecdaa-tpm
           PUBLIC ecdaa
-          PUBLIC xaptum-tpm::xaptum-tpm 
+          PUBLIC tss2::sys
           PUBLIC AMCL::AMCL
         )
 
@@ -112,7 +112,7 @@ if (BUILD_STATIC_LIBS)
 
         target_link_libraries(${STATIC_TARGET}
           PUBLIC ecdaa_static
-          PUBLIC xaptum-tpm::xaptum-tpm
+          PUBLIC tss2::sys
           PUBLIC AMCL::AMCL
         )
 

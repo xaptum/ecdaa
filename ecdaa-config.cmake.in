@@ -10,7 +10,7 @@ list(APPEND CMAKE_MODULE_PATH ${ecdaa_CMAKE_DIR})
 
 find_dependency(AMCL 4.7.0)
 if(ECDAA_TPM_SUPPORT)
-  find_dependency(xaptum-tpm 0.5.0)
+  find_dependency(TSS2)
 endif()
 
 list(REMOVE_AT CMAKE_MODULE_PATH -1)

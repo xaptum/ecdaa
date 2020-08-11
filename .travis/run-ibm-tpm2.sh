@@ -15,12 +15,14 @@
 
 set -e
 
+source "${BASH_SOURCE%/*}/path_expansion.sh"
+
 if [[ $# -ne 1 ]]; then
-        echo "usage: $0 <absolute-path-to-tpm-simulator-installation-directory>"
+        echo "usage: $0 <path-to-tpm-simulator-installation-directory>"
         exit 1
 fi
 
-installation_dir="$1"
+installation_dir="$(my_expand_path $1)"
 
 pkill tpm_server || true
 

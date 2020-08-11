@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2017-2018 Xaptum, Inc.
+# Copyright 2020 Xaptum, Inc.
 # 
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -15,18 +15,26 @@
 
 set -e
 
-if [[ $# -ne 1 ]]; then
-        echo "usage: $0 <absolute-path-to-xaptum-tpm-source-directory>"
+source "${BASH_SOURCE%/*}/path_expansion.sh"
+
+if [[ $# -ne 2 ]]; then
+        echo "usage: $0 <source-download-target> <install-target>"
         exit 1
 fi
 
-source_dir="$1"
-git clone https://github.com/xaptum/xaptum-tpm "${source_dir}"
+repo_url=https://github.com/tpm2-software/tpm2-tss
+tag=2.3.3
+source_dir="$(my_expand_path $1)"
+install_dir="$(my_expand_path $2)"
+
+rm -rf "${source_dir}"
+git clone -b $tag "${repo_url}" "${source_dir}"
+
 pushd "${source_dir}"
-mkdir -p build
-pushd build
-cmake .. -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} -DBUILD_SHARED_LIBS=On -DBUILD_TESTING=On
-cmake --build .
-cmake --build . --target install
-popd
+
+./bootstrap
+./configure --prefix=${install_dir} --disable-esapi --disable-doxygen-doc --enable-fapi=no --enable-tcti-partial-reads=no
+make -j $(nproc)
+make install
+
 popd

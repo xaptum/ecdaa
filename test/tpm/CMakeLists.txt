@@ -29,11 +29,15 @@ macro(add_tpm_test_case case_file)
   add_executable(${case_name} ${case_file} $<TARGET_OBJECTS:ecdaa_utilities> ${ECDAA_TPM_UTILS_LIST})
 
   if(BUILD_SHARED_LIBS)
-          target_link_libraries(${case_name} PRIVATE
-                                ecdaa-tpm)
+          target_link_libraries(${case_name}
+                                PRIVATE ecdaa-tpm
+                                PRIVATE tss2::tcti_device
+                                PRIVATE tss2::tcti_mssim)
   else()
-          target_link_libraries(${case_name} PRIVATE
-                                ecdaa-tpm_static)
+          target_link_libraries(${case_name}
+                                PRIVATE ecdaa-tpm_static
+                                PRIVATE tss2::tcti_device
+                                PRIVATE tss2::tcti_mssim)
   endif()
 
   target_include_directories(${case_name}

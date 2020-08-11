@@ -47,14 +47,14 @@ void g2_basepoint_not_inf()
     ECP2_ZZZ point;
     ecp2_ZZZ_set_to_generator(&point);
 
-    TEST_ASSERT(!point.inf);
+    TEST_ASSERT(0 == ECP2_ZZZ_isinf(&point));
 
     printf("\tsuccess\n");
 }
 
 static void g2_serialize_then_deserialize_basepoint()
 {
-    printf("Starting ecp2_ZZZ::g2_basepoint_not_inf...\n");
+    printf("Starting ecp2_ZZZ::g2_serialize_then_deserialize_basepoint...\n");
 
     ECP2_ZZZ point;
     ecp2_ZZZ_set_to_generator(&point);
