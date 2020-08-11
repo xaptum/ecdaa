@@ -18,7 +18,7 @@ list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
 project(ecdaa
         LANGUAGES C
-        VERSION "0.10.3")
+        VERSION "1.0.0")
 
 include(GNUInstallDirs)
 include(CTest)
