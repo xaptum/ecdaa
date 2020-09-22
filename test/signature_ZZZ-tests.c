@@ -38,6 +38,7 @@ static void sign_then_verify_on_rev_list();
 static void sign_then_verify_bad_basename_fails();
 static void sign_then_verify_no_basename();
 static void sign_then_verify_on_bsn_rev_list();
+static void sign_then_verify_unlinkable();
 static void lengths_same();
 static void serialize_deserialize();
 static void serialize_deserialize_file();
@@ -68,6 +69,7 @@ int main()
     sign_then_verify_bad_basename_fails();
     sign_then_verify_no_basename();
     sign_then_verify_on_bsn_rev_list();
+    sign_then_verify_unlinkable();
     lengths_same();
     serialize_deserialize();
     serialize_deserialize_file();
@@ -202,6 +204,32 @@ static void sign_then_verify_no_basename()
     TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.sk, &fixture.cred, test_randomness));
 
     TEST_ASSERT(0 != ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, NULL, 0));
+
+    teardown(&fixture);
+
+    printf("\tsuccess\n");
+}
+
+static void sign_then_verify_unlinkable()
+{
+    printf("Starting signature::sign_then_verify_unlinkable...\n");
+
+    sign_and_verify_fixture fixture;
+    setup(&fixture);
+
+    struct ecdaa_signature_ZZZ sig;
+    // non-NULL basename, 0 basename_length
+    TEST_ASSERT(0 != ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, 0, &fixture.sk, &fixture.cred, test_randomness));
+    // NULL basename, non-0 basename_length
+    TEST_ASSERT(0 != ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, NULL, fixture.basename_len, &fixture.sk, &fixture.cred, test_randomness));
+
+    // NULL basename, 0 basename_length
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, NULL, 0, &fixture.sk, &fixture.cred, test_randomness));
+
+    TEST_ASSERT(0 == ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, NULL, 0));
+
+    // NULL basename, non-0 basename_length
+    TEST_ASSERT(0 != ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, NULL, fixture.basename_len));
 
     teardown(&fixture);
 

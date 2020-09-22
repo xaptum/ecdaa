@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,6 +40,7 @@
 static void sign_then_verify_good();
 static void sign_then_verify_bad_basename_fails();
 static void sign_then_verify_no_basename();
+static void sign_then_verify_unlinkable();
 
 typedef struct sign_and_verify_fixture {
     uint8_t *msg;
@@ -63,6 +64,7 @@ int main()
     sign_then_verify_good();
     sign_then_verify_bad_basename_fails();
     sign_then_verify_no_basename();
+    sign_then_verify_unlinkable();
 }
 
 static void setup(sign_and_verify_fixture* fixture)
@@ -147,9 +149,35 @@ static void sign_then_verify_no_basename()
     setup(&fixture);
 
     struct ecdaa_signature_ZZZ sig;
+    TEST_ASSERT(0 == ecdaa_signature_TPM_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, fixture.basename_len, &fixture.cred, test_randomness, &fixture.tpm_ctx.tpm_ctx));
+
+    TEST_ASSERT(0 != ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, NULL, 0));
+
+    teardown(&fixture);
+
+    printf("\tsuccess\n");
+}
+
+static void sign_then_verify_unlinkable()
+{
+    printf("Starting signature_TPM_ZZZ::sign_then_verify_unlinkable...\n");
+
+    sign_and_verify_fixture fixture;
+    setup(&fixture);
+
+    struct ecdaa_signature_ZZZ sig;
+    // non-NULL basename, 0 basename_length
+    TEST_ASSERT(0 != ecdaa_signature_TPM_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, fixture.basename, 0, &fixture.cred, test_randomness, &fixture.tpm_ctx.tpm_ctx));
+    // NULL basename, non-0 basename_length
+    TEST_ASSERT(0 != ecdaa_signature_TPM_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, NULL, fixture.basename_len, &fixture.cred, test_randomness, &fixture.tpm_ctx.tpm_ctx));
+
+    // NULL basename, 0 basename_length
     TEST_ASSERT(0 == ecdaa_signature_TPM_ZZZ_sign(&sig, fixture.msg, fixture.msg_len, NULL, 0, &fixture.cred, test_randomness, &fixture.tpm_ctx.tpm_ctx));
 
     TEST_ASSERT(0 == ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, NULL, 0));
+
+    // NULL basename, non-0 basename_length
+    TEST_ASSERT(0 != ecdaa_signature_ZZZ_verify(&sig, &fixture.ipk.gpk, &fixture.revocations, fixture.msg, fixture.msg_len, NULL, fixture.basename_len));
 
     teardown(&fixture);
 

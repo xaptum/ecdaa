@@ -141,6 +141,10 @@ int try_tpm_sign(TPMT_SIGNATURE *signature_out,
     //      (modular-reduce c', too).
     BIG_XXX c_prime;
     if (basename_len != 0) {
+        // If any of these is non-zero, ALL must be non-zero.
+        if (NULL == basename || NULL == K_out)
+            return -1;
+
         // 2i) Find P2 by hashing basename
         ECP_ZZZ P2;
         int32_t hash_ret = ecp_ZZZ_fromhash(&P2, basename, basename_len);

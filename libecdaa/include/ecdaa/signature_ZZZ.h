@@ -36,6 +36,8 @@ struct ecdaa_group_public_key_ZZZ;
 
 /*
  * ECDAA signature.
+ *
+ * If unlinkable signature, `K` will be garbage and should be ignored.
  */
 struct ecdaa_signature_ZZZ {
     BIG_XXX c;
@@ -57,6 +59,9 @@ size_t ecdaa_signature_ZZZ_with_nym_length(void);
 /*
  * Create an ECDAA signature.
  *
+ * To create an unlinkable signature,
+ * `basename` must be `NULL` *and* `basename_len` must be `0`.
+ *
  * Returns:
  * 0 on success
  * -1 if unable to create signature
@@ -72,6 +77,9 @@ int ecdaa_signature_ZZZ_sign(struct ecdaa_signature_ZZZ *signature_out,
 
 /*
  * Verify an ECDAA signature.
+ *
+ * If verifying an unlinkable signature,
+ * `basename` must be `NULL` *and* `basename_len` must be `0`.
  *
  * Returns:
  * 0 on success

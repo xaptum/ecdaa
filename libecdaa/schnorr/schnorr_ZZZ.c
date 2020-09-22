@@ -81,6 +81,10 @@ int schnorr_sign_ZZZ(BIG_XXX *c_out,
     //      (modular-reduce c', too).
     BIG_XXX c_prime;
     if (basename_len != 0) {
+        // If any of these is non-zero, ALL must be non-zero.
+        if (NULL == basename || NULL == K_out)
+            return -1;
+
         // Compute c' = Hash( R | basepoint | public_key | L | P2 | K_out | basename | msg_in )
         uint8_t hash_input_begin[SIX_ECP_LENGTH];
         assert(6*ECP_ZZZ_LENGTH == sizeof(hash_input_begin));
@@ -157,6 +161,10 @@ int schnorr_verify_ZZZ(BIG_XXX c,
     //      (modular-reduce c'', too)
     BIG_XXX c_dbl_prime;
     if (0 != basename_len) {
+        // If any of these is non-zero, ALL must be non-zero.
+        if (NULL == basename || NULL == K)
+            return -1;
+
         // 1,2,3,4 part ii) If checking a basename signature:
         ECP_ZZZ P2;
         ECP_ZZZ L;
