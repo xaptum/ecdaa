@@ -49,7 +49,7 @@ void g1_basepoint_not_inf()
     ECP_ZZZ point;
     ecp_ZZZ_set_to_generator(&point);
 
-    TEST_ASSERT(!point.inf);
+    TEST_ASSERT(0 == ECP_ZZZ_isinf(&point));
 
     printf("\tsuccess\n");
 }

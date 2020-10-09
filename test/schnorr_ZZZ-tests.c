@@ -75,8 +75,8 @@ void schnorr_keygen_sane()
     TEST_ASSERT(0 != BIG_XXX_comp(private_one, private_two));
     TEST_ASSERT(1 != ECP_ZZZ_equals(&public_one, &public_two));
 
-    TEST_ASSERT(!public_one.inf);
-    TEST_ASSERT(!public_two.inf);
+    TEST_ASSERT(0 == ECP_ZZZ_isinf(&public_one));
+    TEST_ASSERT(0 == ECP_ZZZ_isinf(&public_two));
 
     printf("\tsuccess\n");
 }

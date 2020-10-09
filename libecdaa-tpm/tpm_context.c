@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,12 +28,12 @@ sapi_ctx_init(uint8_t *memory_pool,
              TSS2_TCTI_CONTEXT *tcti_context);
 
 static int tpm_context_init_common(struct ecdaa_tpm_context *tpm_ctx,
-                                   TPM_HANDLE key_handle_in,
+                                   TPM2_HANDLE key_handle_in,
                                    const char *password,
                                    uint16_t password_length);
 
 int ecdaa_tpm_context_init(struct ecdaa_tpm_context *tpm_ctx,
-                           TPM_HANDLE key_handle_in,
+                           TPM2_HANDLE key_handle_in,
                            const char *key_password,
                            uint16_t key_password_length,
                            TSS2_TCTI_CONTEXT *tcti_context)
@@ -64,10 +64,10 @@ sapi_ctx_init(uint8_t *memory_pool,
     if (memory_pool_size < sapi_ctx_size)
         return NULL;
     TSS2_SYS_CONTEXT *sapi_ctx = (TSS2_SYS_CONTEXT*)memory_pool;
-    
+
     TSS2_RC init_ret;
 
-    TSS2_ABI_VERSION abi_version = TSS2_ABI_CURRENT_VERSION;
+    TSS2_ABI_VERSION abi_version = TSS2_ABI_VERSION_CURRENT;
     init_ret = Tss2_Sys_Initialize(sapi_ctx,
                                    sapi_ctx_size,
                                    tcti_context,
@@ -79,11 +79,11 @@ sapi_ctx_init(uint8_t *memory_pool,
 }
 
 int tpm_context_init_common(struct ecdaa_tpm_context *tpm_ctx,
-                            TPM_HANDLE key_handle_in,
+                            TPM2_HANDLE key_handle_in,
                             const char *key_password,
                             uint16_t key_password_length)
 {
-    if (key_password_length > sizeof(tpm_ctx->key_authentication.hmac.buffer))
+    if (key_password_length > sizeof(tpm_ctx->key_authentication_cmd.auths[0].hmac.buffer))
         return -1;
 
     tpm_ctx->commit_counter = UINT16_MAX;
@@ -92,25 +92,21 @@ int tpm_context_init_common(struct ecdaa_tpm_context *tpm_ctx,
 
     static TPMA_SESSION empty_session_attributes = {0};    // attributes for password either can't be set or don't make sense
 
-    tpm_ctx->key_authentication.sessionHandle = TPM_RS_PW;
-    tpm_ctx->key_authentication.nonce.size = 0; // TODO: Does a nonce ever make sense for password authentication?
-    tpm_ctx->key_authentication.sessionAttributes = empty_session_attributes;
-    tpm_ctx->key_authentication.hmac.size = key_password_length;
+    tpm_ctx->key_authentication_cmd.auths[0].sessionHandle = TPM2_RS_PW;
+    tpm_ctx->key_authentication_cmd.auths[0].nonce.size = 0; // TODO: Does a nonce ever make sense for password authentication?
+    tpm_ctx->key_authentication_cmd.auths[0].sessionAttributes = empty_session_attributes;
+    tpm_ctx->key_authentication_cmd.auths[0].hmac.size = key_password_length;
     if (0 != key_password_length) {
         if (NULL == key_password)
             return -1;
-        memcpy(tpm_ctx->key_authentication.hmac.buffer, key_password, key_password_length);
+        memcpy(tpm_ctx->key_authentication_cmd.auths[0].hmac.buffer, key_password, key_password_length);
     }
-    tpm_ctx->key_authentication_array[0] = &tpm_ctx->key_authentication;
-    tpm_ctx->key_authentication_cmd.cmdAuths = &tpm_ctx->key_authentication_array[0];
-    tpm_ctx->key_authentication_cmd.cmdAuthsCount = 1;
+    tpm_ctx->key_authentication_cmd.count = 1;
 
-    tpm_ctx->last_auth_response.nonce.size = 0;
-    tpm_ctx->last_auth_response.sessionAttributes = empty_session_attributes;
-    tpm_ctx->last_auth_response.hmac.size = 0;
-    tpm_ctx->last_auth_response_array[0] = &tpm_ctx->last_auth_response;
-    tpm_ctx->last_auth_response_cmd.rspAuths = &tpm_ctx->last_auth_response_array[0];
-    tpm_ctx->last_auth_response_cmd.rspAuthsCount = 1;
+    tpm_ctx->last_auth_response_cmd.auths[0].nonce.size = 0;
+    tpm_ctx->last_auth_response_cmd.auths[0].sessionAttributes = empty_session_attributes;
+    tpm_ctx->last_auth_response_cmd.auths[0].hmac.size = 0;
+    tpm_ctx->last_auth_response_cmd.count = 1;
 
     return 0;
 }

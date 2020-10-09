@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,15 +35,11 @@ struct ecdaa_tpm_context {
 
     TSS2_SYS_CONTEXT *sapi_context;
     uint16_t commit_counter;
-    TPM_HANDLE key_handle;
+    TPM2_HANDLE key_handle;
 
-    TPMS_AUTH_COMMAND key_authentication;
-    TPMS_AUTH_COMMAND *key_authentication_array[1];    // for passing into functions
-    TSS2_SYS_CMD_AUTHS key_authentication_cmd;    // for passing into functions
+    TSS2L_SYS_AUTH_COMMAND key_authentication_cmd;    // for passing into functions
 
-    TPMS_AUTH_RESPONSE last_auth_response;
-    TPMS_AUTH_RESPONSE *last_auth_response_array[1];    // for passing into functions
-    TSS2_SYS_RSP_AUTHS last_auth_response_cmd;    // for passing into functions
+    TSS2L_SYS_AUTH_RESPONSE last_auth_response_cmd;    // for passing into functions
 
     TSS2_RC last_return_code;
 };
@@ -60,7 +56,7 @@ struct ecdaa_tpm_context {
  * -1 on failure
  */
 int ecdaa_tpm_context_init(struct ecdaa_tpm_context *tpm_ctx,
-                           TPM_HANDLE key_handle_in,
+                           TPM2_HANDLE key_handle_in,
                            const char *key_password,
                            uint16_t key_password_length,
                            TSS2_TCTI_CONTEXT *tcti_context);
