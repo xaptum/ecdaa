@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2017 Xaptum, Inc.
+ * Copyright 2017-2020 Xaptum, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -74,6 +74,9 @@ void initialize(struct test_context *ctx)
     const char *device_conf = "/dev/tpm0";
 
     int init_ret;
+
+    memset(ctx->tcti_buffer, 0, sizeof(ctx->tcti_buffer));
+    memset(ctx->sapi_buffer, 0, sizeof(ctx->sapi_buffer));
 
     TSS2_TCTI_CONTEXT *tcti_ctx = (TSS2_TCTI_CONTEXT*)ctx->tcti_buffer;
 #ifdef USE_TCP_TPM
@@ -231,12 +234,12 @@ int clear(struct test_context *ctx)
 {
     TPMI_RH_CLEAR auth_handle = TPM2_RH_LOCKOUT;
 
-    TSS2L_SYS_AUTH_COMMAND sessionsData;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = {};
     sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
     sessionsData.auths[0].sessionAttributes = empty_session_attributes;
     sessionsData.count = 1;
 
-    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut = {};
     sessionsDataOut.count = 1;
 
     TSS2_RC ret = Tss2_Sys_Clear(ctx->sapi_ctx,
@@ -253,48 +256,43 @@ int create_primary(struct test_context *ctx)
 {
     TPMI_RH_HIERARCHY hierarchy = TPM2_RH_ENDORSEMENT;
 
-    TSS2L_SYS_AUTH_COMMAND sessionsData;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = {};
     sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
     sessionsData.auths[0].sessionAttributes = empty_session_attributes;
     sessionsData.count = 1;
 
-    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut = {};
     sessionsDataOut.count = 1;
 
-    TPM2B_SENSITIVE_CREATE inSensitive = {.sensitive={.data.size = 0,
-                                                     .userAuth.size = 0}};
+    TPM2B_SENSITIVE_CREATE inSensitive = {};
 
-    TPMA_OBJECT obj_attrs = TPMA_OBJECT_FIXEDTPM |
-                            TPMA_OBJECT_FIXEDPARENT |
-                            TPMA_OBJECT_SENSITIVEDATAORIGIN |
-                            TPMA_OBJECT_USERWITHAUTH |
-                            TPMA_OBJECT_DECRYPT |
-                            TPMA_OBJECT_RESTRICTED;
-    TPM2B_PUBLIC in_public = {.publicArea = {.type=TPM2_ALG_ECC,
-                                            .nameAlg=TPM2_ALG_SHA256,
-                                            .objectAttributes=obj_attrs}};
+    TPM2B_PUBLIC in_public = {};
+    in_public.publicArea.type = TPM2_ALG_ECC;
+    in_public.publicArea.nameAlg = TPM2_ALG_SHA256;
+    in_public.publicArea.objectAttributes = TPMA_OBJECT_FIXEDTPM |
+        TPMA_OBJECT_FIXEDPARENT |
+        TPMA_OBJECT_SENSITIVEDATAORIGIN |
+        TPMA_OBJECT_USERWITHAUTH |
+        TPMA_OBJECT_DECRYPT |
+        TPMA_OBJECT_RESTRICTED;
     in_public.publicArea.parameters.eccDetail.symmetric.algorithm = TPM2_ALG_AES;
     in_public.publicArea.parameters.eccDetail.symmetric.keyBits.aes = 128;
     in_public.publicArea.parameters.eccDetail.symmetric.mode.sym = TPM2_ALG_CFB;
     in_public.publicArea.parameters.eccDetail.scheme.scheme = TPM2_ALG_NULL;
     in_public.publicArea.parameters.eccDetail.curveID = TPM2_ECC_NIST_P256;
     in_public.publicArea.parameters.eccDetail.kdf.scheme = TPM2_ALG_NULL;
-    in_public.publicArea.unique.ecc.x.size = 0;
-    in_public.publicArea.unique.ecc.y.size = 0;
 
-    TPM2B_DATA outsideInfo = {.size=0};
+    TPM2B_DATA outsideInfo = {};
 
-    TPML_PCR_SELECTION creationPCR = {.count=0};
+    TPML_PCR_SELECTION creationPCR = {};
 
-    TPM2B_CREATION_DATA creationData = {.size=0};
-    TPM2B_DIGEST creationHash = {.size=sizeof(TPMU_HA)};
-    TPMT_TK_CREATION creationTicket = {.tag=0,
-                                   .hierarchy=0,
-                                   .digest={.size=0}};
+    TPM2B_CREATION_DATA creationData = {};
+    TPM2B_DIGEST creationHash = {};
+    TPMT_TK_CREATION creationTicket = {};
 
-    TPM2B_NAME name = {.size=sizeof(TPMU_NAME)};
+    TPM2B_NAME name = {};
 
-    TPM2B_PUBLIC public_key;
+    TPM2B_PUBLIC public_key = {};
 
     TSS2_RC ret = Tss2_Sys_CreatePrimary(ctx->sapi_ctx,
                                         hierarchy,
@@ -318,44 +316,38 @@ int create_primary(struct test_context *ctx)
 
 int create(struct test_context *ctx)
 {
-    TSS2L_SYS_AUTH_COMMAND sessionsData;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = {};
     sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
     sessionsData.auths[0].sessionAttributes = empty_session_attributes;
     sessionsData.count = 1;
 
-    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut = {};
     sessionsDataOut.count = 1;
 
-    TPM2B_SENSITIVE_CREATE inSensitive = {.sensitive={.data.size = 0,
-                                                      .userAuth.size = 0}};
+    TPM2B_SENSITIVE_CREATE inSensitive = {};
 
-    TPMA_OBJECT obj_attrs = TPMA_OBJECT_FIXEDTPM |
-                            TPMA_OBJECT_FIXEDPARENT |
-                            TPMA_OBJECT_SENSITIVEDATAORIGIN |
-                            TPMA_OBJECT_USERWITHAUTH |
-                            TPMA_OBJECT_SIGN_ENCRYPT;
-    TPM2B_PUBLIC in_public = {.publicArea = {.type=TPM2_ALG_ECC,
-                                             .nameAlg=TPM2_ALG_SHA256,
-                                             .objectAttributes=obj_attrs}};
+    TPM2B_PUBLIC in_public = {};
+    in_public.publicArea.type = TPM2_ALG_ECC;
+    in_public.publicArea.nameAlg = TPM2_ALG_SHA256;
+    in_public.publicArea.objectAttributes = TPMA_OBJECT_FIXEDTPM |
+        TPMA_OBJECT_FIXEDPARENT |
+        TPMA_OBJECT_SENSITIVEDATAORIGIN |
+        TPMA_OBJECT_USERWITHAUTH |
+        TPMA_OBJECT_SIGN_ENCRYPT;
     in_public.publicArea.parameters.eccDetail.symmetric.algorithm = TPM2_ALG_NULL;
     in_public.publicArea.parameters.eccDetail.scheme.scheme = TPM2_ALG_ECDAA;
     in_public.publicArea.parameters.eccDetail.scheme.details.ecdaa.hashAlg = TPM2_ALG_SHA256;
     in_public.publicArea.parameters.eccDetail.scheme.details.ecdaa.count = 1;
     in_public.publicArea.parameters.eccDetail.curveID = TPM2_ECC_BN_P256;
     in_public.publicArea.parameters.eccDetail.kdf.scheme = TPM2_ALG_NULL;
-    in_public.publicArea.unique.ecc.x.size = 0;
-    in_public.publicArea.unique.ecc.y.size = 0;
 
+    TPM2B_DATA outsideInfo = {};
 
-    TPM2B_DATA outsideInfo = {.size=0};
+    TPML_PCR_SELECTION creationPCR = {};
 
-    TPML_PCR_SELECTION creationPCR = {.count=0};
-
-    TPM2B_CREATION_DATA creationData = {.size=0};
-    TPM2B_DIGEST creationHash = {.size=sizeof(TPMU_HA)};
-    TPMT_TK_CREATION creationTicket = {.tag=0,
-		                               .hierarchy=0,
-		                               .digest={.size=0}};
+    TPM2B_CREATION_DATA creationData = {};
+    TPM2B_DIGEST creationHash = {};
+    TPMT_TK_CREATION creationTicket = {};
 
     TSS2_RC ret = Tss2_Sys_Create(ctx->sapi_ctx,
                                   ctx->primary_key_handle,
@@ -378,15 +370,15 @@ int create(struct test_context *ctx)
 
 int load(struct test_context *ctx)
 {
-    TSS2L_SYS_AUTH_COMMAND sessionsData;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = {};
     sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
     sessionsData.auths[0].sessionAttributes = empty_session_attributes;
     sessionsData.count = 1;
 
-    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut = {};
     sessionsDataOut.count = 1;
 
-    TPM2B_NAME name = {.size=sizeof(TPMU_NAME)};
+    TPM2B_NAME name = {};
 
     int ret = Tss2_Sys_Load(ctx->sapi_ctx,
                             ctx->primary_key_handle,
@@ -404,12 +396,12 @@ int load(struct test_context *ctx)
 
 int evict_control(struct test_context *ctx)
 {
-    TSS2L_SYS_AUTH_COMMAND sessionsData;
+    TSS2L_SYS_AUTH_COMMAND sessionsData = {};
     sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
     sessionsData.auths[0].sessionAttributes = empty_session_attributes;
     sessionsData.count = 1;
 
-    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut = {};
     sessionsDataOut.count = 1;
 
     ctx->persistent_key_handle = 0x81010000;
