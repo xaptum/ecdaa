@@ -33,6 +33,8 @@
 #include <stdio.h>
 
 #define MAX_REPS 10000
+#define MAX_MSG_LEN 1024
+#define MAX_BASENAME_LEN 1024
 
 static void schnorr_repeated(int schnorr_repetitions);
 
@@ -58,11 +60,11 @@ void schnorr_repeated(int schnorr_repetitions)
 
     printf("Starting schnorr::schnorr_repeated...\n");
 
-    uint8_t *msg = (uint8_t*) "Test message";
-    uint32_t msg_len = strlen((char*)msg);
+    uint8_t msg[MAX_MSG_LEN] = {};
+    uint32_t msg_len = 0;
 
-    uint8_t *basename = (uint8_t*) "BASENAME";
-    uint32_t basename_len = strlen((char*)basename);
+    uint8_t basename[MAX_BASENAME_LEN] = {};
+    uint32_t basename_len = 0;
 
     BIG_XXX c, s, n;
     ECP_ZZZ K;
@@ -75,9 +77,21 @@ void schnorr_repeated(int schnorr_repetitions)
     BIG_XXX private;
 
     for (int i=0; i<schnorr_repetitions; ++i) {
+        // Randomize msg and msg_len
+        test_randomness(&msg_len, sizeof(msg_len));
+        msg_len = (msg_len % sizeof(msg)) + 1;
+        test_randomness(msg, msg_len);
+
+        // Randomize basename and basename_len
+        test_randomness(&basename_len, sizeof(basename_len));
+        basename_len = (basename_len % sizeof(basename)) + 1;
+        test_randomness(basename, basename_len);
+
+        // Randomize basepoint
         ecp_ZZZ_random_mod_order(&rand, test_randomness);
         ECP_ZZZ_mul(&basepoint, rand);
 
+        // Randomize private key
         ecp_ZZZ_random_mod_order(&private, test_randomness);
         ECP_ZZZ_copy(&public, &basepoint);
         ECP_ZZZ_mul(&public, private);
