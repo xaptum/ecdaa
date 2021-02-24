@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright 2017 Xaptum, Inc.
+ * Copyright 2017-2021 Xaptum, Inc.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -97,8 +97,6 @@ int ecp_ZZZ_deserialize(ECP_ZZZ *point_out,
 
 int32_t ecp_ZZZ_fromhash(ECP_ZZZ *point_out, const uint8_t *message, uint32_t message_length)
 {
-    // Following the Appendix of Chen and Li, 2013
-
     BIG_XXX curve_order;
     BIG_XXX_rcopy(curve_order, CURVE_Order_ZZZ);
 
@@ -109,12 +107,20 @@ int32_t ecp_ZZZ_fromhash(ECP_ZZZ *point_out, const uint8_t *message, uint32_t me
         // Check if generated point is on curve:
         //  (the 0 indicates we want the y-coord with lsb=0)
         if (ECP_ZZZ_setx(point_out, x, 0)) {
-            // If on curve, and cofactor != 1, multiply by cofactor to get on correct subgroup.
+            // If on curve, and cofactor != 1,
+            // multiply by cofactor to get on correct subgroup.
+            // If this results in the identity,
+            // we're on the low-order subgroup, so keep trying.
             BIG_XXX cofactor;
             BIG_XXX_rcopy(cofactor, CURVE_Cof_ZZZ);
             if (!BIG_XXX_isunity(cofactor)) {
                 ECP_ZZZ_mul(point_out, cofactor);
+
+                if (ECP_ZZZ_isinf(point_out)) {
+                    continue;
+                }
             }
+
             return i;
         }
     }
