@@ -1,3 +1,71 @@
+ecdaa (1.0.0-1) unstable; urgency=medium
+
+  [ Kathryn Fejer ]
+  * travis: add build matrix
+  * travis: add static build test
+
+  [ Zane Beckwith ]
+  * pkg-config: Add a missing $ in the Libs for the pkg-config file
+
+  [ Unknown ]
+  * Add CLI wrapper for utils in /examples
+
+  [ Zane Beckwith ]
+  * cmake: Handle non-template source files correctly.
+  * Move rand_util from util into tool.
+  * Templatize the tool functions.
+
+  [ Kathryn Fejer ]
+  * Change file naming and tool option naming
+  * Add running tool to ctest
+
+  [ Zane Beckwith ]
+  * Add test of _file and _fp functions
+  * cmake: Remove -Werror, but add Dev builds that re-enable it.
+  * cmake: Install non-templatized header files.
+  * travis: Add a step to test the installation, by building against it.
+
+  [ David R. Bild ]
+  * Release v0.10.1
+
+  [ Zane Beckwith ]
+  * Properly templatize tool files.
+
+  [ David R. Bild ]
+  * make explicit option to build examples
+  * readme: document build_benchmarks and build_tool options
+
+  [ Kathryn Fejer ]
+  * Change AMCL url since the original is not supported
+
+  [ Zane Beckwith ]
+  * Release v0.10.3
+  * travis: Take installation path, and allow relative paths, in install scripts.
+  * ctest: Move valgrind options into CTestConfig.cmake file.
+  * test: Use `isinf` function, not `inf` member directly in ECP points.
+  * test: Remove `trivial_credential_fails` test from signature tests.
+  * test: Explicitly zero the signature components of member public keys.
+  * tool-test: Use mktemp, and create version for using Valgrind.
+  * scan-build: Run correctly in Travis, and check build itself first.
+  * sanitizer: Don't use unsigned-integer-overflow (not available in gcc).
+  * cppcheck: Update script, and make small changes for passing.
+  * coverity: Get coverity scan working again on travis-ci.
+  * file IO: Improve error checking, and consolidate code.
+  * Reorganize, update, and correct documentation.
+  * README: Add Ubuntu Bionic and Debian Buster install instructions.
+  * cmake: Add package to use tpm2-software/tpm2-tss for TSS.
+  * cmake: Use tpm2-tss, not xaptum-tpm, for TSS.
+  * libecdaa-tpm: Update TSS calls to use tpm2-tss (not xaptum-tpm).
+  * travis: Use bionic (Ubuntu 18.04, up from 16.04).
+  * travis: Install and build against tpm2-tss (not xaptum-tpm).
+  * tool: Don't shadow local variable when reading basename.
+  * test: Deserialize using file pointer, in member_secret_key tests.
+  * test/tpm: Zero-initialize TCTI context.
+  * doc/BUILDING: Update for xaptum-tpm -> tpm2-tss.
+  * Bump major version, to 1.0.0.
+
+ -- David R. Bild <david.bild@xaptum.com>  Fri, 21 May 2021 04:39:05 +0000
+
 ecdaa (0.10.0-1) unstable; urgency=medium
 
   [ Zane Beckwith ]
