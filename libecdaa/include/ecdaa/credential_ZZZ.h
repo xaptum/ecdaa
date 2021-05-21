@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -96,6 +96,13 @@ int ecdaa_credential_ZZZ_validate(struct ecdaa_credential_ZZZ *credential,
  * The provided buffer is assumed to be large enough.
  */
 void ecdaa_credential_ZZZ_serialize(uint8_t *buffer_out,
+                                     struct ecdaa_credential_ZZZ *credential);
+
+
+int ecdaa_credential_ZZZ_serialize_file(const char* file,
+                                    struct ecdaa_credential_ZZZ *credential);
+
+int ecdaa_credential_ZZZ_serialize_fp(FILE* fp,
                                     struct ecdaa_credential_ZZZ *credential);
 
 /*
@@ -110,6 +117,11 @@ void ecdaa_credential_ZZZ_serialize(uint8_t *buffer_out,
 void ecdaa_credential_ZZZ_signature_serialize(uint8_t *buffer_out,
                                               struct ecdaa_credential_ZZZ_signature *cred_sig);
 
+int ecdaa_credential_ZZZ_signature_serialize_file(const char* file,
+                                              struct ecdaa_credential_ZZZ_signature *cred_sig);
+
+int ecdaa_credential_ZZZ_signature_serialize_fp(FILE* fp,
+                                              struct ecdaa_credential_ZZZ_signature *cred_sig);
 /*
  * De-serialize an `ecdaa_credential_ZZZ` and `ecdaa_credential_ZZZ_signature`,
  *  and check both validity _and_ signature.
@@ -134,6 +146,17 @@ int ecdaa_credential_ZZZ_deserialize_with_signature(struct ecdaa_credential_ZZZ 
                                                     uint8_t *cred_buffer_in,
                                                     uint8_t *cred_sig_buffer_in);
 
+int ecdaa_credential_ZZZ_deserialize_with_signature_file(struct ecdaa_credential_ZZZ *credential_out,
+                                                    struct ecdaa_member_public_key_ZZZ *pk,
+                                                    struct ecdaa_group_public_key_ZZZ *gpk,
+                                                    const char *credential_file,
+                                                    const char *credential_signature_file);
+
+int ecdaa_credential_ZZZ_deserialize_with_signature_fp(struct ecdaa_credential_ZZZ *credential_out,
+                                                    struct ecdaa_member_public_key_ZZZ *pk,
+                                                    struct ecdaa_group_public_key_ZZZ *gpk,
+                                                    FILE *credential_file,
+                                                    FILE *credential_signature_file);
 /*
  * De-serialize an `ecdaa_credential_ZZZ`, check its validity (signature _not_ checked).
  *
@@ -151,9 +174,14 @@ int ecdaa_credential_ZZZ_deserialize_with_signature(struct ecdaa_credential_ZZZ 
 int ecdaa_credential_ZZZ_deserialize(struct ecdaa_credential_ZZZ *credential_out,
                                      uint8_t *buffer_in);
 
+int ecdaa_credential_ZZZ_deserialize_file(struct ecdaa_credential_ZZZ *credential_out,
+                                     const char* file);
+
+int ecdaa_credential_ZZZ_deserialize_fp(struct ecdaa_credential_ZZZ *credential_out,
+                                     FILE* file);
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-

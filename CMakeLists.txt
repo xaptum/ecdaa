@@ -1,11 +1,11 @@
 # Copyright 2017-2018 Xaptum, Inc.
-# 
+#
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
 #    You may obtain a copy of the License at
-# 
+#
 #        http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #    Unless required by applicable law or agreed to in writing, software
 #    distributed under the License is distributed on an "AS IS" BASIS,
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,7 +18,7 @@ list(APPEND CMAKE_MODULE_PATH CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 
 project(ecdaa
         LANGUAGES C
-        VERSION "0.10.0")
+        VERSION "1.0.0")
 
 include(GNUInstallDirs)
 include(CTest)
@@ -28,6 +28,8 @@ option(BUILD_SHARED_LIBS "Build as a shared library" ON)
 option(BUILD_STATIC_LIBS "Build as a static library" OFF)
 
 option(BUILD_BENCHMARKS "Build benchmarks" ON)
+option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_TOOL "Build with ECDAA tools" ON)
 
 # If not building as a shared library, force build as a static.  This
 # is to match the CMake default semantics of using
@@ -55,29 +57,24 @@ set(ECDAA_SOVERSION ${PROJECT_VERSION_MAJOR})
 
 find_package(AMCL 4.7.0 REQUIRED QUIET)
 if(ECDAA_TPM_SUPPORT)
-  find_package(xaptum-tpm 0.5.0 REQUIRED QUIET)
+  find_package(TSS2 REQUIRED QUIET)
 endif()
 
-add_compile_options(-std=c99 -Werror -Wall -Wextra -Wno-missing-field-initializers)
+add_compile_options(-std=c99 -Wall -Wextra -Wno-missing-field-initializers)
 SET(CMAKE_C_FLAGS_DEBUGWITHCOVERAGE "${CMAKE_C_FLAGS_DEBUGWITHCOVERAGE} -O0 -fprofile-arcs -ftest-coverage")
-SET(CMAKE_C_FLAGS_RELWITHSANITIZE "${CMAKE_C_FLAGS_RELWITHSANITIZE} -O2 -g -fsanitize=address,undefined -fsanitize=unsigned-integer-overflow")
-
-# The following options are automatically passed to the `memcheck` executable:
-# `--error-exitcode=5` A memory error causes a return code of 5, so memory errors will fail the tests.
-# `--leak-check=full` Search for memory leaks after program completion, and give a full report for each individually.
-#   - As we're striving for "malloc-free" code, we expect to have zero memory leaks
-# `-v` Verbose `memcheck` output
-# `--track-origins=yes` Track the origin of uninitialized values (small Valgrind performance hit)
-# `--partial-loads-ok=no` Loads from partially invalid addresses are treated the same as loads from completely invalid addresses
-find_program(MEMORYCHECK_COMMAND NAMES valgrind)
-set(MEMORYCHECK_COMMAND_OPTIONS
-        "--error-exitcode=5 --leak-check=full -v --track-origins=yes --partial-loads-ok=no")
+SET(CMAKE_C_FLAGS_RELWITHSANITIZE "${CMAKE_C_FLAGS_RELWITHSANITIZE} -O2 -g -fsanitize=address,undefined")
+SET(CMAKE_C_FLAGS_DEV "${CMAKE_C_FLAGS_RELEASE} -Werror")
+SET(CMAKE_C_FLAGS_DEVDEBUG "${CMAKE_C_FLAGS_DEBUG} -Werror")
 
 set(TOPLEVEL_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}")
 
-macro(expand_template template_file srcs_list use_tpm)
+macro(expand_template template_file srcs_list use_tpm is_tool)
         if (${use_tpm})
                 set(use_tpm_flag "--use-tpm")
+        endif()
+
+        if (${is_tool})
+                set(is_tool_flag "--tool")
         endif()
 
         execute_process(COMMAND python3 ${PROJECT_SOURCE_DIR}/cmake/template_expansion.py
@@ -104,6 +101,7 @@ macro(expand_template template_file srcs_list use_tpm)
                                 --out-dir ${TOPLEVEL_BINARY_DIR}
                                 --top-level-dir ${PROJECT_SOURCE_DIR}
                                 ${use_tpm_flag}
+                                ${is_tool_flag}
                 DEPENDS ${template_file})
 
         list(APPEND ${srcs_list} ${processed_file_names})
@@ -135,6 +133,13 @@ endif()
 ################################################################################
 if (BUILD_TESTING)
         add_subdirectory(test)
+endif()
+
+################################################################################
+# Tool
+################################################################################
+if (BUILD_TOOL)
+        add_subdirectory(tool)
 endif()
 
 ################################################################################
@@ -172,3 +177,11 @@ install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/ecdaa-config-version.cmake
   DESTINATION ${INSTALL_CONFIGDIR}
 )
+
+if(ECDAA_TPM_SUPPORT)
+  install(FILES
+    ${CMAKE_CURRENT_LIST_DIR}/cmake/FindTSS2.cmake
+    ${CMAKE_CURRENT_LIST_DIR}/cmake/LibFindMacros.cmake
+    DESTINATION ${INSTALL_CONFIGDIR}
+  )
+endif()

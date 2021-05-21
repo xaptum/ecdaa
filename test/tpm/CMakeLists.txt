@@ -20,7 +20,7 @@ if(TEST_USE_TCP_TPM)
         add_definitions(-DUSE_TCP_TPM)
 endif()
 
-expand_template(${CMAKE_CURRENT_SOURCE_DIR}/tpm_ZZZ-test-utils.h ECDAA_TPM_UTILS_LIST TRUE)
+expand_template(${CMAKE_CURRENT_SOURCE_DIR}/tpm_ZZZ-test-utils.h ECDAA_TPM_UTILS_LIST TRUE FALSE)
 
 macro(add_tpm_test_case case_file)
   get_filename_component(case_name ${case_file} NAME_WE)
@@ -29,11 +29,15 @@ macro(add_tpm_test_case case_file)
   add_executable(${case_name} ${case_file} $<TARGET_OBJECTS:ecdaa_utilities> ${ECDAA_TPM_UTILS_LIST})
 
   if(BUILD_SHARED_LIBS)
-          target_link_libraries(${case_name} PRIVATE
-                                ecdaa-tpm)
+          target_link_libraries(${case_name}
+                                PRIVATE ecdaa-tpm
+                                PRIVATE tss2::tcti_device
+                                PRIVATE tss2::tcti_mssim)
   else()
-          target_link_libraries(${case_name} PRIVATE
-                                ecdaa-tpm_static)
+          target_link_libraries(${case_name}
+                                PRIVATE ecdaa-tpm_static
+                                PRIVATE tss2::tcti_device
+                                PRIVATE tss2::tcti_mssim)
   endif()
 
   target_include_directories(${case_name}
@@ -64,7 +68,7 @@ set(ECDAA_TPM_TEST_FILES
         )
 
 foreach(template_file ${ECDAA_TPM_TEST_FILES})
-        expand_template(${template_file} ECDAA_TPM_TEST_SRCS TRUE)
+        expand_template(${template_file} ECDAA_TPM_TEST_SRCS TRUE FALSE)
 endforeach()
 
 foreach(case_file ${ECDAA_TPM_TEST_SRCS})

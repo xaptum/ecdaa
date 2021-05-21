@@ -30,7 +30,7 @@ set(ECDAA_INTERNAL_UTILITIES_INPUT_FILES
         )
 
 foreach(template_file ${ECDAA_INTERNAL_UTILITIES_INPUT_FILES})
-        expand_template(${template_file} ECDAA_INTERNAL_UTILITIES_SRCS FALSE)
+        expand_template(${template_file} ECDAA_INTERNAL_UTILITIES_SRCS FALSE FALSE)
 endforeach()
 
 set(ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR "${TOPLEVEL_BINARY_DIR}/common")

@@ -90,6 +90,11 @@ int ecdaa_member_public_key_ZZZ_validate(struct ecdaa_member_public_key_ZZZ *pk,
 void ecdaa_member_public_key_ZZZ_serialize(uint8_t *buffer_out,
                                            struct ecdaa_member_public_key_ZZZ *pk);
 
+int ecdaa_member_public_key_ZZZ_serialize_file(const char* file,
+                                           struct ecdaa_member_public_key_ZZZ *pk);
+
+int ecdaa_member_public_key_ZZZ_serialize_fp(FILE* fp,
+                                           struct ecdaa_member_public_key_ZZZ *pk);
 /*
  * De-serialize an `ecdaa_member_public_key_ZZZ`, and check its validity and signature.
  *
@@ -106,7 +111,17 @@ void ecdaa_member_public_key_ZZZ_serialize(uint8_t *buffer_out,
  * -2 if  (c,s,n) don't verify
  */
 int ecdaa_member_public_key_ZZZ_deserialize(struct ecdaa_member_public_key_ZZZ *pk_out,
-                                            uint8_t *buffer_in,
+                                             uint8_t *buffer_in,
+                                             uint8_t *nonce_in,
+                                             uint32_t nonce_length);
+
+int ecdaa_member_public_key_ZZZ_deserialize_file(struct ecdaa_member_public_key_ZZZ *pk_out,
+                                            const char* file,
+                                            uint8_t *nonce_in,
+                                            uint32_t nonce_length);
+
+int ecdaa_member_public_key_ZZZ_deserialize_fp(struct ecdaa_member_public_key_ZZZ *pk_out,
+                                            FILE* file,
                                             uint8_t *nonce_in,
                                             uint32_t nonce_length);
 
@@ -127,6 +142,12 @@ int ecdaa_member_public_key_ZZZ_deserialize(struct ecdaa_member_public_key_ZZZ *
 int ecdaa_member_public_key_ZZZ_deserialize_no_check(struct ecdaa_member_public_key_ZZZ *pk_out,
                                                      uint8_t *buffer_in);
 
+int ecdaa_member_public_key_ZZZ_deserialize_no_check_file(struct ecdaa_member_public_key_ZZZ *pk_out,
+                                                     const char *file);
+
+int ecdaa_member_public_key_ZZZ_deserialize_no_check_fp(struct ecdaa_member_public_key_ZZZ *pk_out,
+                                                     FILE *file);
+
 /*
  * Serialize an `ecdaa_member_secret_key_ZZZ`
  *
@@ -137,6 +158,11 @@ int ecdaa_member_public_key_ZZZ_deserialize_no_check(struct ecdaa_member_public_
 void ecdaa_member_secret_key_ZZZ_serialize(uint8_t *buffer_out,
                                            struct ecdaa_member_secret_key_ZZZ *sk);
 
+int ecdaa_member_secret_key_ZZZ_serialize_file(const char* file,
+                                           struct ecdaa_member_secret_key_ZZZ *sk);
+
+int ecdaa_member_secret_key_ZZZ_serialize_fp(FILE* fp,
+                                           struct ecdaa_member_secret_key_ZZZ *sk);
 /*
  * De-serialize an `ecdaa_member_secret_key_ZZZ`
  *
@@ -148,9 +174,15 @@ void ecdaa_member_secret_key_ZZZ_serialize(uint8_t *buffer_out,
 int ecdaa_member_secret_key_ZZZ_deserialize(struct ecdaa_member_secret_key_ZZZ *sk_out,
                                             uint8_t *buffer_in);
 
+int ecdaa_member_secret_key_ZZZ_deserialize_file(struct ecdaa_member_secret_key_ZZZ *sk_out,
+                                            const char* file);
+
+int ecdaa_member_secret_key_ZZZ_deserialize_fp(struct ecdaa_member_secret_key_ZZZ *sk_out,
+                                            FILE* fp);
+
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-

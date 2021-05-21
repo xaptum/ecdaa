@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,8 @@
  *****************************************************************************/
 
 #include <ecdaa/issuer_keypair_ZZZ.h>
+#include <ecdaa/util/file_io.h>
+#include <ecdaa/util/errors.h>
 
 #include "amcl-extensions/ecp_ZZZ.h"
 #include "amcl-extensions/ecp2_ZZZ.h"
@@ -77,6 +79,34 @@ void ecdaa_issuer_public_key_ZZZ_serialize(uint8_t *buffer_out,
     BIG_XXX_toBytes((char*)(buffer_out + ecdaa_group_public_key_ZZZ_length() + 2*MODBYTES_XXX), ipk->sy);
 }
 
+int ecdaa_issuer_public_key_ZZZ_serialize_file(const char* file,
+                                           struct ecdaa_issuer_public_key_ZZZ *ipk)
+{
+    uint8_t buffer[ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH] = {0};
+    ecdaa_issuer_public_key_ZZZ_serialize(buffer, ipk);
+
+    int write_ret = ecdaa_write_buffer_to_file(file, buffer, ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH);
+    if (ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH != write_ret) {
+        return write_ret;
+    }
+
+    return SUCCESS;
+}
+
+int ecdaa_issuer_public_key_ZZZ_serialize_fp(FILE* fp,
+                                           struct ecdaa_issuer_public_key_ZZZ *ipk)
+{
+    uint8_t buffer[ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH] = {0};
+    ecdaa_issuer_public_key_ZZZ_serialize(buffer, ipk);
+
+    int write_ret = ecdaa_write_buffer_to_fp(fp, buffer, ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH);
+    if (ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH != write_ret) {
+        return write_ret;
+    }
+
+    return SUCCESS;
+}
+
 int ecdaa_issuer_public_key_ZZZ_deserialize(struct ecdaa_issuer_public_key_ZZZ *ipk_out,
                                             uint8_t *buffer_in)
 {
@@ -101,11 +131,67 @@ int ecdaa_issuer_public_key_ZZZ_deserialize(struct ecdaa_issuer_public_key_ZZZ *
     return ret;
 }
 
+int ecdaa_issuer_public_key_ZZZ_deserialize_file(struct ecdaa_issuer_public_key_ZZZ *ipk_out,
+                                            const char* file)
+{
+    uint8_t buffer[ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH] = {0};
+
+    int read_ret = ecdaa_read_from_file(buffer, ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH, file);
+    if (ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH != read_ret) {
+        return read_ret;
+    }
+    int deserialize_ret = ecdaa_issuer_public_key_ZZZ_deserialize(ipk_out, buffer);
+    if (0 != deserialize_ret)
+        return DESERIALIZE_KEY_ERROR;
+
+    return SUCCESS;
+}
+
+int ecdaa_issuer_public_key_ZZZ_deserialize_fp(struct ecdaa_issuer_public_key_ZZZ *ipk_out,
+                                            FILE* fp)
+{
+    uint8_t buffer[ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH] = {0};
+
+    int read_ret = ecdaa_read_from_fp(buffer, ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH, fp);
+    if (ECDAA_ISSUER_PUBLIC_KEY_ZZZ_LENGTH != read_ret) {
+        return read_ret;
+    }
+    int deserialize_ret = ecdaa_issuer_public_key_ZZZ_deserialize(ipk_out, buffer);
+    if (0 != deserialize_ret)
+        return DESERIALIZE_KEY_ERROR;
+
+    return SUCCESS;
+}
+
 void ecdaa_issuer_secret_key_ZZZ_serialize(uint8_t *buffer_out,
                                            struct ecdaa_issuer_secret_key_ZZZ *isk)
 {
     BIG_XXX_toBytes((char*)buffer_out, isk->x);
     BIG_XXX_toBytes((char*)(buffer_out + MODBYTES_XXX), isk->y);
+}
+
+int ecdaa_issuer_secret_key_ZZZ_serialize_file(const char* file, struct ecdaa_issuer_secret_key_ZZZ *isk)
+{
+    uint8_t buffer[ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH] = {0};
+    ecdaa_issuer_secret_key_ZZZ_serialize(buffer, isk);
+    int write_ret = ecdaa_write_buffer_to_file(file, buffer, ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH);
+    if (ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH != write_ret) {
+        return write_ret;
+    }
+
+    return SUCCESS;
+}
+
+int ecdaa_issuer_secret_key_ZZZ_serialize_fp(FILE* fp, struct ecdaa_issuer_secret_key_ZZZ *isk)
+{
+    uint8_t buffer[ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH] = {0};
+    ecdaa_issuer_secret_key_ZZZ_serialize(buffer, isk);
+    int write_ret = ecdaa_write_buffer_to_fp(fp, buffer, ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH);
+    if (ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH != write_ret) {
+        return write_ret;
+    }
+
+    return SUCCESS;
 }
 
 int ecdaa_issuer_secret_key_ZZZ_deserialize(struct ecdaa_issuer_secret_key_ZZZ *isk_out,
@@ -115,4 +201,40 @@ int ecdaa_issuer_secret_key_ZZZ_deserialize(struct ecdaa_issuer_secret_key_ZZZ *
     BIG_XXX_fromBytes(isk_out->y, (char*)(buffer_in + MODBYTES_XXX));
 
     return 0;
+}
+
+int ecdaa_issuer_secret_key_ZZZ_deserialize_file(struct ecdaa_issuer_secret_key_ZZZ *isk_out,
+                                            const char* file)
+{
+    uint8_t buffer[ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH] = {0};
+
+    int read_ret = ecdaa_read_from_file(buffer, ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH, file);
+    if (ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH != read_ret) {
+        return read_ret;
+    }
+
+    int deserialize_ret = ecdaa_issuer_secret_key_ZZZ_deserialize(isk_out, buffer);
+    if (0 != deserialize_ret) {
+        return DESERIALIZE_KEY_ERROR;
+    }
+
+    return SUCCESS;
+}
+
+int ecdaa_issuer_secret_key_ZZZ_deserialize_fp(struct ecdaa_issuer_secret_key_ZZZ *isk_out,
+                                            FILE* fp)
+{
+    uint8_t buffer[ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH] = {0};
+
+    int read_ret = ecdaa_read_from_fp(buffer, ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH, fp);
+    if (ECDAA_ISSUER_SECRET_KEY_ZZZ_LENGTH != read_ret) {
+        return read_ret;
+    }
+
+    int deserialize_ret = ecdaa_issuer_secret_key_ZZZ_deserialize(isk_out, buffer);
+    if (0 != deserialize_ret) {
+        return DESERIALIZE_KEY_ERROR;
+    }
+
+    return SUCCESS;
 }

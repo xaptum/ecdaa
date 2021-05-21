@@ -30,6 +30,9 @@
 #include <amcl/ecp_ZZZ.h>
 
 #include <string.h>
+#include <stdio.h>
+
+#define MAX_REPS 10000
 
 static void schnorr_repeated(int schnorr_repetitions);
 
@@ -38,6 +41,10 @@ int main(int argc, char *argv[])
     int schnorr_repetitions = 20;
     if (argc == 2) {
         schnorr_repetitions = atoi(argv[1]);
+        if (schnorr_repetitions < 1 || schnorr_repetitions > MAX_REPS) {
+            fprintf(stderr, "Invalid value '%s' pass to 'repetitions' argument\n", argv[1]);
+            return 1;
+        }
     }
 
     schnorr_repeated(schnorr_repetitions);

@@ -21,6 +21,8 @@
 
 #include <stdlib.h>
 
+static TPMA_SESSION empty_session_attributes = {0};    // attributes for password either can't be set or don't make sense
+
 void parse_cmd_args(int argc, char *argv[]) {
     if (3 != argc) {
         printf("usage: %s <public key output file> <handle output file>\n", argv[0]);
@@ -34,9 +36,9 @@ void parse_cmd_args(int argc, char *argv[]) {
 
 struct test_context {
     TSS2_SYS_CONTEXT *sapi_ctx;
-    TPM_HANDLE primary_key_handle;
-    TPM_HANDLE signing_key_handle;
-    TPM_HANDLE persistent_key_handle;
+    TPM2_HANDLE primary_key_handle;
+    TPM2_HANDLE signing_key_handle;
+    TPM2_HANDLE persistent_key_handle;
     TPM2B_PUBLIC out_public;
     TPM2B_PRIVATE out_private;
     unsigned char tcti_buffer[256];
@@ -68,32 +70,42 @@ int main(int argc, char *argv[])
 
 void initialize(struct test_context *ctx)
 {
-    const char *hostname = "localhost";
-    const char *port = "2321";
-    const char *dev_filepath = "/dev/tpm0";
+    const char *mssim_conf = "host=localhost,port=2321";
+    const char *device_conf = "/dev/tpm0";
 
     int init_ret;
 
     TSS2_TCTI_CONTEXT *tcti_ctx = (TSS2_TCTI_CONTEXT*)ctx->tcti_buffer;
 #ifdef USE_TCP_TPM
-    (void)dev_filepath;
-    if (tss2_tcti_getsize_socket() > sizeof(ctx->tcti_buffer)) {
+    (void)device_conf;
+    size_t size;
+    init_ret = Tss2_Tcti_Mssim_Init(NULL, &size, mssim_conf);
+    if (TSS2_RC_SUCCESS != init_ret) {
+        printf("Error: failed to get allocation size for tcti context\n");
+        exit(1);
+    }
+    if (size > sizeof(ctx->tcti_buffer)) {
         printf("Error: socket TCTI context size larger than pre-allocated buffer\n");
         exit(1);
     }
-    init_ret = tss2_tcti_init_socket(hostname, port, tcti_ctx);
+    init_ret = Tss2_Tcti_Mssim_Init(tcti_ctx, &size, mssim_conf);
     if (TSS2_RC_SUCCESS != init_ret) {
         printf("Error: Unable to initialize socket TCTI context\n");
         exit(1);
     }
 #else
-    (void)hostname;
-    (void)port;
-    if (tss2_tcti_getsize_device() > sizeof(ctx->tcti_buffer)) {
+    (void)mssim_conf;
+    size_t size;
+    init_ret = Tss2_Tcti_Device_Init(NULL, &size, device_conf);
+    if (TSS2_RC_SUCCESS != init_ret) {
+        printf("Failed to get allocation size for tcti context\n");
+        exit(1);
+    }
+    if (size > sizeof(ctx->tcti_buffer)) {
         printf("Error: device TCTI context size larger than pre-allocated buffer\n");
         exit(1);
     }
-    init_ret = tss2_tcti_init_device(dev_filepath, strlen(dev_filepath), tcti_ctx);
+    init_ret = Tss2_Tcti_Device_Init(tcti_ctx, &size, device_conf);
     if (TSS2_RC_SUCCESS != init_ret) {
         printf("Error: Unable to initialize device TCTI context\n");
         exit(1);
@@ -104,7 +116,7 @@ void initialize(struct test_context *ctx)
     size_t sapi_ctx_size = Tss2_Sys_GetContextSize(0);
     TEST_ASSERT(sizeof(ctx->sapi_buffer) >= sapi_ctx_size);
 
-    TSS2_ABI_VERSION abi_version = TSS2_ABI_CURRENT_VERSION;
+    TSS2_ABI_VERSION abi_version = TSS2_ABI_VERSION_CURRENT;
     init_ret = Tss2_Sys_Initialize(ctx->sapi_ctx,
                                    sapi_ctx_size,
                                    tcti_ctx,
@@ -124,7 +136,7 @@ void cleanup(struct test_context *ctx)
         rc = Tss2_Sys_GetTctiContext(ctx->sapi_ctx, &tcti_context);
         TEST_ASSERT(TSS2_RC_SUCCESS == rc);
 
-        tss2_tcti_finalize(tcti_context);
+        Tss2_Tcti_Finalize(tcti_context);
 
         Tss2_Sys_Finalize(ctx->sapi_ctx);
     }
@@ -217,25 +229,15 @@ int save_public_key_info(const struct test_context *ctx, const char* pub_key_fil
 
 int clear(struct test_context *ctx)
 {
-   TPMI_RH_CLEAR auth_handle = TPM_RH_PLATFORM;
+    TPMI_RH_CLEAR auth_handle = TPM2_RH_LOCKOUT;
 
-    TPMS_AUTH_COMMAND session_data = {
-        .sessionHandle = TPM_RS_PW,
-        .sessionAttributes = {0},
-    };
-    TPMS_AUTH_RESPONSE sessionDataOut = {{0}, {0}, {0}};
-    (void)sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    sessionDataArray[0] = &session_data;
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-    sessionDataOutArray[0] = &sessionDataOut;
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-    sessionsDataOut.rspAuthsCount = 1;
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &session_data;
+    TSS2L_SYS_AUTH_COMMAND sessionsData;
+    sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
+    sessionsData.auths[0].sessionAttributes = empty_session_attributes;
+    sessionsData.count = 1;
+
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    sessionsDataOut.count = 1;
 
     TSS2_RC ret = Tss2_Sys_Clear(ctx->sapi_ctx,
                                  auth_handle,
@@ -249,39 +251,34 @@ int clear(struct test_context *ctx)
 
 int create_primary(struct test_context *ctx)
 {
-    TPMI_RH_HIERARCHY hierarchy = TPM_RH_ENDORSEMENT;
+    TPMI_RH_HIERARCHY hierarchy = TPM2_RH_ENDORSEMENT;
 
-    TPMS_AUTH_COMMAND session_data = {
-        .sessionHandle = TPM_RS_PW,
-        .sessionAttributes = {0},
-    };
-    TPMS_AUTH_RESPONSE sessionDataOut = {{0}, {0}, {0}};
-    (void)sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    sessionDataArray[0] = &session_data;
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-    sessionDataOutArray[0] = &sessionDataOut;
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-    sessionsDataOut.rspAuthsCount = 1;
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &session_data;
+    TSS2L_SYS_AUTH_COMMAND sessionsData;
+    sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
+    sessionsData.auths[0].sessionAttributes = empty_session_attributes;
+    sessionsData.count = 1;
+
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    sessionsDataOut.count = 1;
 
     TPM2B_SENSITIVE_CREATE inSensitive = {.sensitive={.data.size = 0,
-                                                      .userAuth.size = 0}};
+                                                     .userAuth.size = 0}};
 
-    TPMA_OBJECT obj_attrs = {.fixedTPM=1, .fixedParent=1, .sensitiveDataOrigin=1, .userWithAuth=1, .decrypt=1, .restricted=1, .sign=0};
-    TPM2B_PUBLIC in_public = {.publicArea = {.type=TPM_ALG_ECC,
-                                             .nameAlg=TPM_ALG_SHA256,
-                                             .objectAttributes=obj_attrs}};
-    in_public.publicArea.parameters.eccDetail.symmetric.algorithm = TPM_ALG_AES;
+    TPMA_OBJECT obj_attrs = TPMA_OBJECT_FIXEDTPM |
+                            TPMA_OBJECT_FIXEDPARENT |
+                            TPMA_OBJECT_SENSITIVEDATAORIGIN |
+                            TPMA_OBJECT_USERWITHAUTH |
+                            TPMA_OBJECT_DECRYPT |
+                            TPMA_OBJECT_RESTRICTED;
+    TPM2B_PUBLIC in_public = {.publicArea = {.type=TPM2_ALG_ECC,
+                                            .nameAlg=TPM2_ALG_SHA256,
+                                            .objectAttributes=obj_attrs}};
+    in_public.publicArea.parameters.eccDetail.symmetric.algorithm = TPM2_ALG_AES;
     in_public.publicArea.parameters.eccDetail.symmetric.keyBits.aes = 128;
-    in_public.publicArea.parameters.eccDetail.symmetric.mode.sym = TPM_ALG_CFB;
-    in_public.publicArea.parameters.eccDetail.scheme.scheme = TPM_ALG_NULL;
-    in_public.publicArea.parameters.eccDetail.curveID = TPM_ECC_NIST_P256;
-    in_public.publicArea.parameters.eccDetail.kdf.scheme = TPM_ALG_NULL;
+    in_public.publicArea.parameters.eccDetail.symmetric.mode.sym = TPM2_ALG_CFB;
+    in_public.publicArea.parameters.eccDetail.scheme.scheme = TPM2_ALG_NULL;
+    in_public.publicArea.parameters.eccDetail.curveID = TPM2_ECC_NIST_P256;
+    in_public.publicArea.parameters.eccDetail.kdf.scheme = TPM2_ALG_NULL;
     in_public.publicArea.unique.ecc.x.size = 0;
     in_public.publicArea.unique.ecc.y.size = 0;
 
@@ -292,27 +289,27 @@ int create_primary(struct test_context *ctx)
     TPM2B_CREATION_DATA creationData = {.size=0};
     TPM2B_DIGEST creationHash = {.size=sizeof(TPMU_HA)};
     TPMT_TK_CREATION creationTicket = {.tag=0,
-		                               .hierarchy=0,
-		                               .digest={.size=0}};
+                                   .hierarchy=0,
+                                   .digest={.size=0}};
 
     TPM2B_NAME name = {.size=sizeof(TPMU_NAME)};
 
     TPM2B_PUBLIC public_key;
 
     TSS2_RC ret = Tss2_Sys_CreatePrimary(ctx->sapi_ctx,
-                                         hierarchy,
-                                         &sessionsData,
-                                         &inSensitive,
-                                         &in_public,
-                                         &outsideInfo,
-                                         &creationPCR,
-                                         &ctx->primary_key_handle,
-                                         &public_key,
-                                         &creationData,
-                                         &creationHash,
-                                         &creationTicket,
-                                         &name,
-                                         &sessionsDataOut);
+                                        hierarchy,
+                                        &sessionsData,
+                                        &inSensitive,
+                                        &in_public,
+                                        &outsideInfo,
+                                        &creationPCR,
+                                        &ctx->primary_key_handle,
+                                        &public_key,
+                                        &creationData,
+                                        &creationHash,
+                                        &creationTicket,
+                                        &name,
+                                        &sessionsDataOut);
 
     printf("CreatePrimary ret=%#X\n", ret);
 
@@ -321,37 +318,31 @@ int create_primary(struct test_context *ctx)
 
 int create(struct test_context *ctx)
 {
-    TPMS_AUTH_COMMAND session_data = {
-        .sessionHandle = TPM_RS_PW,
-        .sessionAttributes = {0},
-    };
-    TPMS_AUTH_RESPONSE sessionDataOut = {{0}, {0}, {0}};
-    (void)sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    sessionDataArray[0] = &session_data;
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-    sessionDataOutArray[0] = &sessionDataOut;
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-    sessionsDataOut.rspAuthsCount = 1;
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &session_data;
+    TSS2L_SYS_AUTH_COMMAND sessionsData;
+    sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
+    sessionsData.auths[0].sessionAttributes = empty_session_attributes;
+    sessionsData.count = 1;
+
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    sessionsDataOut.count = 1;
 
     TPM2B_SENSITIVE_CREATE inSensitive = {.sensitive={.data.size = 0,
                                                       .userAuth.size = 0}};
 
-    TPMA_OBJECT obj_attrs = {.fixedTPM=1, .fixedParent=1, .sensitiveDataOrigin=1, .userWithAuth=1, .sign=1};
-    TPM2B_PUBLIC in_public = {.publicArea = {.type=TPM_ALG_ECC,
-                                             .nameAlg=TPM_ALG_SHA256,
+    TPMA_OBJECT obj_attrs = TPMA_OBJECT_FIXEDTPM |
+                            TPMA_OBJECT_FIXEDPARENT |
+                            TPMA_OBJECT_SENSITIVEDATAORIGIN |
+                            TPMA_OBJECT_USERWITHAUTH |
+                            TPMA_OBJECT_SIGN_ENCRYPT;
+    TPM2B_PUBLIC in_public = {.publicArea = {.type=TPM2_ALG_ECC,
+                                             .nameAlg=TPM2_ALG_SHA256,
                                              .objectAttributes=obj_attrs}};
-    in_public.publicArea.parameters.eccDetail.symmetric.algorithm = TPM_ALG_NULL;
-    in_public.publicArea.parameters.eccDetail.scheme.scheme = TPM_ALG_ECDAA;
-    in_public.publicArea.parameters.eccDetail.scheme.details.ecdaa.hashAlg = TPM_ALG_SHA256;
+    in_public.publicArea.parameters.eccDetail.symmetric.algorithm = TPM2_ALG_NULL;
+    in_public.publicArea.parameters.eccDetail.scheme.scheme = TPM2_ALG_ECDAA;
+    in_public.publicArea.parameters.eccDetail.scheme.details.ecdaa.hashAlg = TPM2_ALG_SHA256;
     in_public.publicArea.parameters.eccDetail.scheme.details.ecdaa.count = 1;
-    in_public.publicArea.parameters.eccDetail.curveID = TPM_ECC_BN_P256;
-    in_public.publicArea.parameters.eccDetail.kdf.scheme = TPM_ALG_NULL;
+    in_public.publicArea.parameters.eccDetail.curveID = TPM2_ECC_BN_P256;
+    in_public.publicArea.parameters.eccDetail.kdf.scheme = TPM2_ALG_NULL;
     in_public.publicArea.unique.ecc.x.size = 0;
     in_public.publicArea.unique.ecc.y.size = 0;
 
@@ -387,23 +378,13 @@ int create(struct test_context *ctx)
 
 int load(struct test_context *ctx)
 {
-    TPMS_AUTH_COMMAND session_data = {
-        .sessionHandle = TPM_RS_PW,
-        .sessionAttributes = {0},
-    };
-    TPMS_AUTH_RESPONSE sessionDataOut = {{0}, {0}, {0}};
-    (void)sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    sessionDataArray[0] = &session_data;
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-    sessionDataOutArray[0] = &sessionDataOut;
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-    sessionsDataOut.rspAuthsCount = 1;
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &session_data;
+    TSS2L_SYS_AUTH_COMMAND sessionsData;
+    sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
+    sessionsData.auths[0].sessionAttributes = empty_session_attributes;
+    sessionsData.count = 1;
+
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    sessionsDataOut.count = 1;
 
     TPM2B_NAME name = {.size=sizeof(TPMU_NAME)};
 
@@ -423,29 +404,18 @@ int load(struct test_context *ctx)
 
 int evict_control(struct test_context *ctx)
 {
-    TPMS_AUTH_COMMAND session_data = {
-        .sessionHandle = TPM_RS_PW,
-        .sessionAttributes = {0},
-    };
-    TPMS_AUTH_RESPONSE sessionDataOut = {{0}, {0}, {0}};
-    (void)sessionDataOut;
-    TSS2_SYS_CMD_AUTHS sessionsData;
-    TSS2_SYS_RSP_AUTHS sessionsDataOut;
-    TPMS_AUTH_COMMAND *sessionDataArray[1];
-    sessionDataArray[0] = &session_data;
-    TPMS_AUTH_RESPONSE *sessionDataOutArray[1];
-    sessionDataOutArray[0] = &sessionDataOut;
-    sessionsDataOut.rspAuths = &sessionDataOutArray[0];
-    sessionsData.cmdAuths = &sessionDataArray[0];
-    sessionsDataOut.rspAuthsCount = 1;
-    sessionsData.cmdAuthsCount = 1;
-    sessionsData.cmdAuths[0] = &session_data;
+    TSS2L_SYS_AUTH_COMMAND sessionsData;
+    sessionsData.auths[0].sessionHandle = TPM2_RS_PW;
+    sessionsData.auths[0].sessionAttributes = empty_session_attributes;
+    sessionsData.count = 1;
 
+    TSS2L_SYS_AUTH_RESPONSE sessionsDataOut;
+    sessionsDataOut.count = 1;
 
     ctx->persistent_key_handle = 0x81010000;
 
     TSS2_RC ret = Tss2_Sys_EvictControl(ctx->sapi_ctx,
-                                        TPM_RH_OWNER,
+                                        TPM2_RH_OWNER,
                                         ctx->signing_key_handle,
                                         &sessionsData,
                                         ctx->persistent_key_handle,

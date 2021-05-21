@@ -17,23 +17,24 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 set(ECDAA_TPM_INPUT_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa-tpm/member_keypair_TPM_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa-tpm/signature_TPM_ZZZ.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa-tpm/tpm_context.h
 
         ${CMAKE_CURRENT_SOURCE_DIR}/member_keypair_TPM_ZZZ.c
         ${CMAKE_CURRENT_SOURCE_DIR}/signature_TPM_ZZZ.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/tpm_context.c
 
         ${CMAKE_CURRENT_SOURCE_DIR}/tpm/commit_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/tpm/commit_ZZZ.c
-        ${CMAKE_CURRENT_SOURCE_DIR}/tpm/sign.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/tpm/sign.c
         ${CMAKE_CURRENT_SOURCE_DIR}/schnorr-tpm/schnorr_TPM_ZZZ.h
         ${CMAKE_CURRENT_SOURCE_DIR}/schnorr-tpm/schnorr_TPM_ZZZ.c
         )
 
 foreach(template_file ${ECDAA_TPM_INPUT_FILES})
-        expand_template(${template_file} ECDAA_TPM_SRCS TRUE)
+        expand_template(${template_file} ECDAA_TPM_SRCS TRUE FALSE)
 endforeach()
+
+list(APPEND ECDAA_TPM_SRCS
+        ${CMAKE_CURRENT_SOURCE_DIR}/tpm_context.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/tpm/sign.c
+        )
 
 set(ECDAA_TPM_GENERATED_TOPLEVEL_INCLUDE_DIR "${TOPLEVEL_BINARY_DIR}/libecdaa-tpm/include")
 
@@ -61,12 +62,14 @@ if (BUILD_SHARED_LIBS)
         target_include_directories(ecdaa-tpm PUBLIC
                 $<BUILD_INTERFACE:${ECDAA_TPM_GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
         target_link_libraries(ecdaa-tpm
           PUBLIC ecdaa
-          PUBLIC xaptum-tpm::xaptum-tpm 
+          PUBLIC tss2::sys
           PUBLIC AMCL::AMCL
         )
 
@@ -102,12 +105,14 @@ if (BUILD_STATIC_LIBS)
         target_include_directories(${STATIC_TARGET} PUBLIC
                 $<BUILD_INTERFACE:${ECDAA_TPM_GENERATED_TOPLEVEL_INCLUDE_DIR}>
                 $<BUILD_INTERFACE:${ECDAA_INTERNAL_UTILITIES_INCLUDE_DIR}>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                 $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         )
 
         target_link_libraries(${STATIC_TARGET}
           PUBLIC ecdaa_static
-          PUBLIC xaptum-tpm::xaptum-tpm
+          PUBLIC tss2::sys
           PUBLIC AMCL::AMCL
         )
 
@@ -129,6 +134,11 @@ endif()
 ################################################################################
 # Headers
 ################################################################################
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ecdaa-tpm
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+        PATTERN "*_ZZZ.h" EXCLUDE
+)
+
 install(DIRECTORY ${ECDAA_TPM_GENERATED_TOPLEVEL_INCLUDE_DIR}/ecdaa-tpm
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
 )

@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,8 @@ static void issuer_secrets_are_valid();
 static void generated_validates();
 static void lengths_same();
 static void generate_then_serialize_deserialize();
+static void generate_then_serialize_deserialize_file();
+static void generate_then_serialize_deserialize_fp();
 
 int main()
 {
@@ -31,6 +33,8 @@ int main()
     generated_validates();
     lengths_same();
     generate_then_serialize_deserialize();
+    generate_then_serialize_deserialize_file();
+    generate_then_serialize_deserialize_fp();
 }
 
 void issuer_secrets_are_valid()
@@ -42,8 +46,8 @@ void issuer_secrets_are_valid()
     ecdaa_issuer_key_pair_ZZZ_generate(&pk1, &sk1, test_randomness);
 
     TEST_ASSERT(BIG_XXX_comp(sk1.x, sk1.y) != 0);
-    TEST_ASSERT(!pk1.gpk.X.inf);
-    TEST_ASSERT(!pk1.gpk.Y.inf);
+    TEST_ASSERT(0 == ECP2_ZZZ_isinf(&pk1.gpk.X));
+    TEST_ASSERT(0 == ECP2_ZZZ_isinf(&pk1.gpk.Y));
 
     struct ecdaa_issuer_secret_key_ZZZ sk2;
     struct ecdaa_issuer_public_key_ZZZ pk2;
@@ -95,6 +99,64 @@ static void generate_then_serialize_deserialize()
     struct ecdaa_issuer_secret_key_ZZZ isk_deserialized;
     ecdaa_issuer_secret_key_ZZZ_serialize(secret_buffer, &isk);
     TEST_ASSERT(0 == ecdaa_issuer_secret_key_ZZZ_deserialize(&isk_deserialized, secret_buffer));
+
+    printf("\tsuccess\n");
+}
+
+static void generate_then_serialize_deserialize_file()
+{
+    printf("Starting issuer_keypair::generate_then_serialize_deserialize_file...\n");
+
+    const char *ipk_file = "ipk.bin";
+    const char *isk_file = "isk.bin";
+
+    struct ecdaa_issuer_secret_key_ZZZ isk;
+    struct ecdaa_issuer_public_key_ZZZ ipk;
+    ecdaa_issuer_key_pair_ZZZ_generate(&ipk, &isk, test_randomness);
+
+    ecdaa_issuer_public_key_ZZZ_serialize_file(ipk_file, &ipk);
+    struct ecdaa_issuer_public_key_ZZZ ipk_deserialized;
+    TEST_ASSERT(0 == ecdaa_issuer_public_key_ZZZ_deserialize_file(&ipk_deserialized, ipk_file));
+
+    struct ecdaa_issuer_secret_key_ZZZ isk_deserialized;
+    TEST_ASSERT(0 == ecdaa_issuer_secret_key_ZZZ_serialize_file(isk_file, &isk));
+    TEST_ASSERT(0 == ecdaa_issuer_secret_key_ZZZ_deserialize_file(&isk_deserialized, isk_file));
+
+    printf("\tsuccess\n");
+}
+
+static void generate_then_serialize_deserialize_fp()
+{
+    printf("Starting issuer_keypair::generate_then_serialize_deserialize_fp...\n");
+
+    const char *ipk_file = "ipk.bin";
+    const char *isk_file = "isk.bin";
+
+    struct ecdaa_issuer_secret_key_ZZZ isk;
+    struct ecdaa_issuer_public_key_ZZZ ipk;
+    ecdaa_issuer_key_pair_ZZZ_generate(&ipk, &isk, test_randomness);
+
+    FILE *ipk_fp = fopen(ipk_file, "wb");
+    TEST_ASSERT(NULL != ipk_fp);
+    ecdaa_issuer_public_key_ZZZ_serialize_fp(ipk_fp, &ipk);
+    fclose(ipk_fp);
+
+    ipk_fp = fopen(ipk_file, "rb");
+    TEST_ASSERT(NULL != ipk_fp);
+    struct ecdaa_issuer_public_key_ZZZ ipk_deserialized;
+    TEST_ASSERT(0 == ecdaa_issuer_public_key_ZZZ_deserialize_fp(&ipk_deserialized, ipk_fp));
+    fclose(ipk_fp);
+
+    FILE *isk_fp = fopen(isk_file, "wb");
+    TEST_ASSERT(NULL != isk_fp);
+    struct ecdaa_issuer_secret_key_ZZZ isk_deserialized;
+    TEST_ASSERT(0 == ecdaa_issuer_secret_key_ZZZ_serialize_fp(isk_fp, &isk));
+    fclose(isk_fp);
+
+    isk_fp = fopen(isk_file, "rb");
+    TEST_ASSERT(NULL != isk_fp);
+    TEST_ASSERT(0 == ecdaa_issuer_secret_key_ZZZ_deserialize_fp(&isk_deserialized, isk_fp));
+    fclose(isk_fp);
 
     printf("\tsuccess\n");
 }

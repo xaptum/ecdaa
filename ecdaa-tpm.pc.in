@@ -6,5 +6,5 @@ includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 Name: ecdaa-tpm
 Description: Library for Elliptic Curve Direct Anonymous Attestation, using a TPM2.0
 Version: @ECDAA_VERSION@
-Libs: -L{libdir} -lecdaa-tpm
+Libs: -L${libdir} -lecdaa-tpm
 Cflags: -I${includedir}

@@ -1,13 +1,13 @@
 /******************************************************************************
  *
  * Copyright 2017 Xaptum, Inc.
- * 
+ *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
  *    You may obtain a copy of the License at
- * 
+ *
  *        http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  *    Unless required by applicable law or agreed to in writing, software
  *    distributed under the License is distributed on an "AS IS" BASIS,
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,8 @@
  *****************************************************************************/
 
 #include <ecdaa/credential_ZZZ.h>
+#include <ecdaa/util/file_io.h>
+#include <ecdaa/util/errors.h>
 
 #include "schnorr/schnorr_ZZZ.h"
 #include "internal-utilities/explicit_bzero.h"
@@ -116,7 +118,7 @@ int ecdaa_credential_ZZZ_validate(struct ecdaa_credential_ZZZ *credential,
     // 1) Check A,B,C,D for membership in group, and A for !=inf
     // NOTE: We assume the credential was obtained from a call to `deserialize`,
     //  which already checked the validity of the points A,B,C,D
-    
+
     // 2) Verify schnorr-like signature
     int schnorr_ret = credential_schnorr_verify_ZZZ(credential_signature->c,
                                                     credential_signature->s,
@@ -164,11 +166,59 @@ void ecdaa_credential_ZZZ_serialize(uint8_t *buffer_out,
     ecp_ZZZ_serialize(buffer_out + 3*ECP_ZZZ_LENGTH, &credential->D);
 }
 
+int ecdaa_credential_ZZZ_serialize_file(const char* file,
+                                    struct ecdaa_credential_ZZZ *credential)
+{
+    uint8_t buffer[ECDAA_CREDENTIAL_ZZZ_LENGTH] = {0};
+    ecdaa_credential_ZZZ_serialize(buffer, credential);
+    int write_ret = ecdaa_write_buffer_to_file(file, buffer, ECDAA_CREDENTIAL_ZZZ_LENGTH);
+    if (ECDAA_CREDENTIAL_ZZZ_LENGTH != write_ret) {
+        return write_ret;
+    }
+    return SUCCESS;
+}
+
+int ecdaa_credential_ZZZ_serialize_fp(FILE* fp,
+                                    struct ecdaa_credential_ZZZ *credential)
+{
+    uint8_t buffer[ECDAA_CREDENTIAL_ZZZ_LENGTH] = {0};
+    ecdaa_credential_ZZZ_serialize(buffer, credential);
+    int write_ret = ecdaa_write_buffer_to_fp(fp, buffer, ECDAA_CREDENTIAL_ZZZ_LENGTH);
+    if (ECDAA_CREDENTIAL_ZZZ_LENGTH != write_ret) {
+        return write_ret;
+    }
+    return SUCCESS;
+}
+
 void ecdaa_credential_ZZZ_signature_serialize(uint8_t *buffer_out,
                                               struct ecdaa_credential_ZZZ_signature *cred_sig)
 {
     BIG_XXX_toBytes((char*)buffer_out, cred_sig->c);
     BIG_XXX_toBytes((char*)(buffer_out + MODBYTES_XXX), cred_sig->s);
+}
+
+int ecdaa_credential_ZZZ_signature_serialize_file(const char* file,
+                                              struct ecdaa_credential_ZZZ_signature *cred_sig)
+{
+    uint8_t buffer[ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH] = {0};
+    ecdaa_credential_ZZZ_signature_serialize(buffer, cred_sig);
+    int write_ret = ecdaa_write_buffer_to_file(file, buffer, ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH);
+    if (ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH != write_ret) {
+        return write_ret;
+    }
+    return SUCCESS;
+}
+
+int ecdaa_credential_ZZZ_signature_serialize_fp(FILE* fp,
+                                              struct ecdaa_credential_ZZZ_signature *cred_sig)
+{
+    uint8_t buffer[ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH] = {0};
+    ecdaa_credential_ZZZ_signature_serialize(buffer, cred_sig);
+    int write_ret = ecdaa_write_buffer_to_fp(fp, buffer, ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH);
+    if (ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH != write_ret) {
+        return write_ret;
+    }
+    return SUCCESS;
 }
 
 int ecdaa_credential_ZZZ_deserialize_with_signature(struct ecdaa_credential_ZZZ *credential_out,
@@ -196,6 +246,56 @@ int ecdaa_credential_ZZZ_deserialize_with_signature(struct ecdaa_credential_ZZZ 
     return ret;
 }
 
+int ecdaa_credential_ZZZ_deserialize_with_signature_file(struct ecdaa_credential_ZZZ *credential_out,
+                                                    struct ecdaa_member_public_key_ZZZ *pk,
+                                                    struct ecdaa_group_public_key_ZZZ *gpk,
+                                                    const char *credential_file,
+                                                    const char *credential_signature_file)
+{
+    uint8_t buffer[ECDAA_CREDENTIAL_ZZZ_LENGTH + ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH] = {0};
+    int read_ret = ecdaa_read_from_file(buffer, ECDAA_CREDENTIAL_ZZZ_LENGTH, credential_file);
+    if (ECDAA_CREDENTIAL_ZZZ_LENGTH != read_ret) {
+        return read_ret;
+    }
+    read_ret = ecdaa_read_from_file(buffer + ECDAA_CREDENTIAL_ZZZ_LENGTH,
+                                    ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH,
+                                    credential_signature_file);
+    if (ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH != read_ret) {
+        return read_ret;
+    }
+    int deserialize_ret = ecdaa_credential_ZZZ_deserialize_with_signature(credential_out, pk, gpk, buffer, buffer + ECDAA_CREDENTIAL_ZZZ_LENGTH);
+    if (0 != deserialize_ret) {
+        return DESERIALIZE_KEY_ERROR;
+    }
+
+    return SUCCESS;
+}
+
+int ecdaa_credential_ZZZ_deserialize_with_signature_fp(struct ecdaa_credential_ZZZ *credential_out,
+                                                    struct ecdaa_member_public_key_ZZZ *pk,
+                                                    struct ecdaa_group_public_key_ZZZ *gpk,
+                                                    FILE *credential_file,
+                                                    FILE *credential_signature_file)
+{
+    uint8_t buffer[ECDAA_CREDENTIAL_ZZZ_LENGTH + ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH] = {0};
+    int read_ret = ecdaa_read_from_fp(buffer, ECDAA_CREDENTIAL_ZZZ_LENGTH, credential_file);
+    if (ECDAA_CREDENTIAL_ZZZ_LENGTH != read_ret) {
+        return read_ret;
+    }
+    read_ret = ecdaa_read_from_fp(buffer + ECDAA_CREDENTIAL_ZZZ_LENGTH,
+                                    ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH,
+                                    credential_signature_file);
+    if (ECDAA_CREDENTIAL_ZZZ_SIGNATURE_LENGTH != read_ret) {
+        return read_ret;
+    }
+    int deserialize_ret = ecdaa_credential_ZZZ_deserialize_with_signature(credential_out, pk, gpk, buffer, buffer + ECDAA_CREDENTIAL_ZZZ_LENGTH);
+    if (0 != deserialize_ret) {
+        return DESERIALIZE_KEY_ERROR;
+    }
+
+    return SUCCESS;
+}
+
 int ecdaa_credential_ZZZ_deserialize(struct ecdaa_credential_ZZZ *credential_out,
                                      uint8_t *buffer_in)
 {
@@ -214,4 +314,34 @@ int ecdaa_credential_ZZZ_deserialize(struct ecdaa_credential_ZZZ *credential_out
         ret = -1;
 
     return ret;
+}
+
+int ecdaa_credential_ZZZ_deserialize_file(struct ecdaa_credential_ZZZ *credential_out,
+                                     const char* file)
+{
+    uint8_t buffer[ECDAA_CREDENTIAL_ZZZ_LENGTH] = {0};
+    int read_ret = ecdaa_read_from_file(buffer, ECDAA_CREDENTIAL_ZZZ_LENGTH, file);
+    if (ECDAA_CREDENTIAL_ZZZ_LENGTH != read_ret) {
+        return read_ret;
+    }
+    int ret = ecdaa_credential_ZZZ_deserialize(credential_out, buffer);
+    if (0 != ret) {
+        return DESERIALIZE_KEY_ERROR;
+    }
+    return SUCCESS;
+}
+
+int ecdaa_credential_ZZZ_deserialize_fp(struct ecdaa_credential_ZZZ *credential_out,
+                                     FILE* fp)
+{
+    uint8_t buffer[ECDAA_CREDENTIAL_ZZZ_LENGTH] = {0};
+    int read_ret = ecdaa_read_from_fp(buffer, ECDAA_CREDENTIAL_ZZZ_LENGTH, fp);
+    if (ECDAA_CREDENTIAL_ZZZ_LENGTH != read_ret) {
+        return read_ret;
+    }
+    int ret = ecdaa_credential_ZZZ_deserialize(credential_out, buffer);
+    if (0 != ret) {
+        return DESERIALIZE_KEY_ERROR;
+    }
+    return SUCCESS;
 }

@@ -45,7 +45,7 @@ set(ECDAA_BENCHMARKS_FILES
 )
 
 foreach(template_file ${ECDAA_BENCHMARKS_FILES})
-        expand_template(${template_file} ECDAA_BENCHMARKS_SRCS FALSE)
+        expand_template(${template_file} ECDAA_BENCHMARKS_SRCS FALSE FALSE)
 endforeach()
 
 foreach(benchmark ${ECDAA_BENCHMARKS_SRCS})
