@@ -22,16 +22,17 @@ See [doc/BUILDING.md](doc/BUILDING.md) for more information on building from sou
 
 Packages are also available for the following distributions.
 
-### Debian (Jessie, Stretch, or Buster)
+### Debian (Stretch, Buster) or Ubuntu (Bionic)
 
 ``` bash
-# Install the Xaptum APT repo GPG signing key.
+DIST=$(lsb_release -cs)
+
+# Install the Xaptum APT repo GPG signing key
+sudo apt-get install dirmngr
 apt-key adv --keyserver keyserver.ubuntu.com --recv-keys c615bfaa7fe1b4ca
 
-# Add the repository to your APT sources, replacing <dist> with either jessie, stretch, or buster.
-echo "deb http://dl.bintray.com/xaptum/deb <dist> main" | sudo tee /etc/apt/sources.list.d/xaptum.list
-
-# Update APT
+# Add the repository to your APT sources
+echo "deb https://xaptum.jfrog.io/artifactory/debian ${DIST} main" | sudo tee /etc/apt/sources.list.d/xaptum.list
 sudo apt-get update
 
 # Install the CLI tool and shared library
@@ -43,7 +44,6 @@ sudo apt-get install libecdaa-dev
 # For using a TPM 2.0, install the ecdaa-tpm library (and, optionally, development package)
 sudo apt-get install libecdaa-tpm0
 sudo apt-get install libecdaa-tpm-dev
-
 ```
 
 ### Ubuntu (Bionic)
